@@ -32,7 +32,7 @@ Packager: Nicolo' Costanza <abitrules@yahoo.it>
 %define rpmrel		%mkrel 0.%{kpatch}.%{mibrel}
 %endif
 %else
-%define rpmrel		1
+%define rpmrel		2
 %endif
 
 # fakerel and fakever never change, they are used to fool
@@ -678,7 +678,6 @@ BuildRequires:		uboot-mkimage
 # might be useful too:
 Suggests:		microcode
 
-
 %description
 %common_desc_kernel
 %ifnarch %{arm}
@@ -700,9 +699,9 @@ Version:	%{fakever}				\
 Release:	%{fakerel}				\
 Provides:	%kprovides1 %kprovides2 %kprovides3	\
 %{expand:%%{?kprovides_%{1}:Provides: %{kprovides_%{1}}}} \
-Provides:   %{kname}-%{1}              			 \
-%if %{build_nrj_desktop}              		\
-Provides:   kernel-desktop              		\
+Provides:	%{kname}-%{1}              		\
+%if %{build_nrj_desktop}              			\
+Provides:	kernel-desktop              		\
 %endif                                  		\
 Requires(pre):	%requires1 %requires2 %requires3 %requires4 \
 Requires:	%requires2 %requires5			\
@@ -731,6 +730,7 @@ Summary:	The kernel-devel files for %{kname}-%{1}-%{buildrel} \
 Group:		Development/Kernel			\
 Provides:	%{kname}-devel = %{kverrel} 		\
 Provides:	%{kname}-%{1}-devel			\
+Requires:	%{kname}-%{1}-%{buildrel}		\
 %ifarch %{ix86}						\
 Conflicts:	arch(x86_64)				\
 %endif							\
@@ -751,6 +751,7 @@ Release:	%{fakerel}				\
 Summary:	Files with debuginfo for %{kname}-%{1}-%{buildrel} \
 Group:		Development/Debug			\
 Provides:	kernel-debug = %{kverrel} 		\
+Requires:	%{kname}-%{1}-%{buildrel} 		\
 %ifarch %{ix86}						\
 Conflicts:	arch(x86_64)				\
 %endif							\
@@ -1460,7 +1461,12 @@ processor mode, use the "nosmp" boot parameter.
 %package -n %{kname}-source-%{buildrel}
 Version: 	%{fakever}
 Release: 	%{fakerel}
-Requires: 	glibc-devel, ncurses-devel, make, gcc, perl, diffutils
+Requires: 	glibc-devel
+Requires: 	ncurses-devel
+Requires: 	make
+Requires: 	gcc
+Requires: 	perl
+Requires: 	diffutils
 Summary: 	The Linux source code for %{kname}-%{buildrel}
 Group: 		Development/Kernel
 Autoreqprov: 	no
@@ -1533,7 +1539,8 @@ Group:		System/Kernel and hardware
 Requires(post):  rpm-helper >= 0.24.0-3
 Requires(preun): rpm-helper >= 0.24.0-3
 %if %{mdvver} >= 201200
-Obsoletes:	cpufreq cpufrequtils
+Obsoletes:	cpufreq
+Obsoletes:	cpufrequtils
 %endif
 
 %description -n cpupower
@@ -1557,6 +1564,9 @@ Release:	%rpmrel
 Summary:	Linux kernel header files mostly used by your C library
 Group:		System/Kernel and hardware
 Epoch:		1
+# (tpg) fix bug https://issues.openmandriva.org/show_bug.cgi?id=1580
+Provides:	kernel-headers = %{kverrel}
+Requires:	%{kname} = %{kverrel}
 %rename linux-userspace-headers
 
 %description headers
@@ -1574,7 +1584,7 @@ should use the 'kernel-devel' package instead.
 %exclude %_includedir/cpufreq.h
 %endif
 
-%package -n	cross-%{name}-headers	
+%package -n	cross-%{name}-headers
 Version:	%kversion
 Release:	%rpmrel
 Summary:	Linux kernel header files for cross toolchains
@@ -1590,7 +1600,7 @@ standard programs, notably the C library.
 This package is only of interest if you're cross-compiling for one of the	
 following platforms:
 %{cross_header_archs}
-	
+
 %files -n cross-%{name}-headers
 %{_prefix}/*-%{_target_os}/include/*
 
