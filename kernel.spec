@@ -1637,12 +1637,12 @@ cd %src_dir
 %patch2 -p1
 %endif
 
-%{patches_dir}/scripts/apply_patches
-%{patches_dir}/scripts/apply_patches-NRJ
-# %{patches_dir}/scripts/apply_patches-NRJ-only
-%{patches_dir}/scripts/apply_patches-geek
-%{patches_dir}/scripts/apply_patches-latest
-%{patches_dir}/scripts/apply_patches-QL
+%{patches_dir}/scripts/autopatch -p1
+%{patches_dir}/scripts/autopatch -p1-NRJ
+# %{patches_dir}/scripts/autopatch -p1-NRJ-only
+%{patches_dir}/scripts/autopatch -p1-geek
+%{patches_dir}/scripts/autopatch -p1-latest
+%{patches_dir}/scripts/autopatch -p1-QL
 # PATCH END
 
 #
@@ -2303,7 +2303,7 @@ CreateKernel versatile
 
 %ifarch x86_64 %{arm}
 # (tpg) missing ?
-#%{patches_dir}/scripts/apply_patches-QL-x64
+#%{patches_dir}/scripts/autopatch -p1-QL-x64
 %endif
 
 %if %build_nrjQL_desktop
@@ -3794,7 +3794,7 @@ rm -rf %{buildroot}
   * change CONFIG_EFIVAR_FS from "=m" to "=y"
   * change CONFIG_EFI_VARS from "=y" to "=n"
 - add a patch to speed-up nuveau / radeon timers improvments for (from an 3.12 idea),
-- it was addded patches-NRJ-only, /scripts/apply_patches-NRJ-only, and a spec modify
+- it was addded patches-NRJ-only, /scripts/autopatch -p1-NRJ-only, and a spec modify
   * openSUSE 13.1 RC2 Updates Systemd, Has Speedy Fix:
   * http://www.phoronix.com/scan.php?page=news_item&px=MTQ5OTc
   * Here's Why Radeon Graphics Are Faster On Linux 3.12:
@@ -3835,7 +3835,7 @@ rm -rf %{buildroot}
 + update to 3.11.4 stable
 - update: tuxonice-for-linux-3.11.4-2013-10-06.patch
 - remove: patches-others, patches-extras folders as now are patches-NRJ
-- remove: /scripts/apply_patches-extras, /scripts/apply_patches-others
+- remove: /scripts/autopatch -p1-extras, /scripts/autopatch -p1-others
 - ---------------------------------------------------------------------
 - Kernel 3.11 for mdv 2010.2, 2011.0, cooker, rosa.lts2012.0, rosa2012.1
 - MIB (Mandriva International Backports) - http://mib.pianetalinux.org/
