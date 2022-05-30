@@ -1,4 +1,6 @@
 sources:
-  "linux-4.1.18-nicco1.tar.xz": fe77cc1de35ef03e999fb5fd8f1816c1f78174ce
-  "linux-4.1.tar.xz": 2470435c2218f0bcbd46ef2a0000694aca340273
-  "patch-4.1.18.xz": a457fa49f36172f6428e6d399ded8fd36cce822f
+  extra-wifi-drivers-20200301.tar.zst: 3390c738c7d91250714ce0f88d26371e93bc40b8
+  linux-5.18.tar.sign: aaf5f23b61c284eaa7ad4a9404bb743ccbe7ece8
+  linux-5.18.tar.xz: bfe7e49c12b1d098ceb805d3b6800228c60caffc
+  saa716x-driver.tar.xz: f9b6ef1cd6f1f71f53d9a8aadfba2cf6b5c3d7b6
+  patch-5.18.1.xz: d7b5e3247cacd8cdcb6841bea8dea51b6d74e72b
