@@ -250,7 +250,6 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 # because they need to be applied after stuff from the
 # virtualbox-kernel-module-sources package is copied around
 Source1005:	vbox-6.1-fix-build-on-znver1-hosts.patch
-Source1006:	vboxnetadp-kernel-5.17.patch
 Source1007:	vboxnet-clang.patch
 
 # Better support for newer x86 processors
@@ -456,7 +455,7 @@ Summary:	The heart of the %{distribution} built for ${flavour}
 Version:	%{version}
 Release:	%{release}
 Group:		System/Kernel and hardware
-%if "${flavour}" = "desktop-gcc" || "${flavour}" = "server-gcc"
+%if "${flavour}" == "desktop-gcc" || "${flavour}" == "server-gcc"
 BuildRequires:	gcc
 BuildRequires:	gcc-c++
 %endif
@@ -476,6 +475,7 @@ Conflicts:	dkms-nvidia-long-lived < 319.49-1
 Conflicts:	dkms-nvidia304 < 304.108-1
 Conflicts:	%{name}-${flavour}-latest <= %{version}-%{release}
 Obsoletes:	%{name}-${flavour}-latest <= %{version}-%{release}
+%rename kernel-release-${flavour}
 Provides:	installonlypkg(kernel)
 Provides:	should-restart = system
 Recommends:	iw
@@ -526,11 +526,12 @@ Conflicts:	%{name}-${flavour}-devel-latest <= %{version}-%{release}
 Obsoletes:	%{name}-${flavour}-devel-latest <= %{version}-%{release}
 Provides:	installonlypkg(kernel)
 Requires:	%{name}-${flavour} = %{version}-%{release}
-%rename kernel-release-${flavour} = %{version}-%{release}
+%rename kernel-release-${flavour}-devel
 %ifarch %{ix86}
 Conflicts:	arch(x86_64)
 Conflicts:	arch(znver1)
 %endif
+
 %description -n %{name}-${flavour}-devel
 This package contains the kernel files (headers and build tools)
 that should be enough to build additional drivers for
@@ -894,7 +895,6 @@ sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/pci/vboxpci/Makefile*
 echo 'obj-m += vboxpci/' >>drivers/pci/Makefile
 %endif
 patch -p1 -z .1005~ -b <%{S:1005}
-patch -p1 -z .1006~ -b <%{S:1006}
 patch -p1 -z .1007~ -b <%{S:1007}
 %endif
 
@@ -1036,17 +1036,17 @@ CreateConfig() {
 		;;
 	x86_64|x86|znver1)
 		case ${type} in
-		desktop|desktop-clang)
+		desktop|desktop-gcc)
 			rm -rf .config
 			cp -v ${config_dir}/x86_64-desktop-gcc-omv-defconfig .config
 			[ "${arch}" = "znver1" ] && amdify .config
-			echo ${type} |grep -q clang && clangify .config
+			echo ${type} |grep -qv gcc && clangify .config
 			;;
-		server|server-clang)
+		server|server-gcc)
 			rm -rf .config
 			cp -v ${config_dir}/x86_64-server-gcc-omv-defconfig .config
 			[ "${arch}" = "znver1" ] && amdify .config
-			echo ${type} |grep -q clang && clangify .config
+			echo ${type} |grep -qv gcc && clangify .config
 			;;
 		*)
 			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
@@ -1056,15 +1056,15 @@ CreateConfig() {
 		;;
 	arm)
 		case ${type} in
-		desktop|desktop-clang)
+		desktop|desktop-gcc)
 			rm -rf .config
 			cp -v ${config_dir}/armv7hnl-desktop-omv-defconfig .config
-			echo ${type} |grep -q clang && clangify .config
+			echo ${type} |grep -qv gcc && clangify .config
 			;;
-		server|server-clang)
+		server|server-gcc)
 			rm -rf .config
 			cp -v ${config_dir}/armv7hnl-desktop-omv-defconfig .config
-			echo ${type} |grep -q clang && clangify .config
+			echo ${type} |grep -qv gcc && clangify .config
 			;;
 		*)
 			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
@@ -1074,15 +1074,15 @@ CreateConfig() {
 		;;
 	arm64)
 		case ${type} in
-		desktop|desktop-clang)
+		desktop|desktop-gcc)
 			rm -rf .config
 			cp -v ${config_dir}/aarch64-desktop-omv-defconfig .config
-			echo ${type} |grep -q clang && clangify .config
+			echo ${type} |grep -qv gcc && clangify .config
 			;;
-		server|server-clang)
+		server|server-gcc)
 			rm -rf .config
 			cp -v ${config_dir}/aarch64-server-omv-defconfig .config
-			echo ${type} |grep -q clang && clangify .config
+			echo ${type} |grep -qv gcc && clangify .config
 			;;
 		*)
 			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
@@ -1438,7 +1438,7 @@ cat > $kernel_files-posttrans <<EOF
 
 %ifnarch %{armx} %{riscv}
 [ -x %{_bindir}/dracut ] && %{_bindir}/dracut -f --kver %{version}-$kernel_flavour-%{release}%{disttag}
-[ -x /usr/sbin/update-grub2 ] && /usr/sbin/update-grub2
+[ -x %{_sbindir}/update-grub2 ] && %{_sbindir}/update-grub2
 %endif
 
 ## cleanup some werid symlinks we never used anyway
@@ -1453,8 +1453,8 @@ if [ -d /usr/src/linux-%{version}-$kernel_flavour-%{release}%{disttag} ]; then
 fi
 %endif
 
-if [ -x /usr/sbin/dkms_autoinstaller ] && [ -d /usr/src/linux-%{version}-$kernel_flavour-%{release}%{disttag} ]; then
-    /usr/sbin/dkms_autoinstaller start %{version}-$kernel_flavour-%{release}%{disttag}
+if [ -x %{_sbindir}/dkms_autoinstaller ] && [ -d /usr/src/linux-%{version}-$kernel_flavour-%{release}%{disttag} ]; then
+    %{_sbindir}/dkms_autoinstaller start %{version}-$kernel_flavour-%{release}%{disttag}
 fi
 
 if [ -x %{_sbindir}/dkms ] && [ -e %{_unitdir}/dkms.service ] && [ -d /usr/src/linux-%{version}-$kernel_flavour-%{release}%{disttag} ]; then
