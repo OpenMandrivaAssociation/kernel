@@ -59,7 +59,7 @@
 # compose tar.xz name and release
 %define kernelversion	5
 %define patchlevel	18
-%define sublevel	2
+%define sublevel	3
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -376,6 +376,7 @@ BuildRequires:	pkgconfig(ncurses)
 BuildRequires:	pkgconfig(libkmod)
 # For sign-file
 BuildRequires:	pkgconfig(openssl)
+BuildRequires:	openssl
 
 %ifarch %{x86_64} %{aarch64}
 BuildRequires:	pkgconfig(numa)
@@ -480,7 +481,6 @@ Provides:	installonlypkg(kernel)
 Provides:	should-restart = system
 Recommends:	iw
 %ifarch %{ix86} %{x86_64}
-Requires:	grub2 >= 2.02-27
 Requires(post):	grub2 >= 2.02-27
 %endif
 %ifnarch %{armx}
@@ -1438,7 +1438,7 @@ cat > $kernel_files-posttrans <<EOF
 
 %ifnarch %{armx} %{riscv}
 [ -x %{_bindir}/dracut ] && %{_bindir}/dracut -f --kver %{version}-$kernel_flavour-%{release}%{disttag}
-[ -x %{_sbindir}/update-grub2 ] && %{_sbindir}/update-grub2
+[ -x %{_sbindir}/update-grub2 ] && %{_sbindir}/update-grub2 ||:
 %endif
 
 ## cleanup some werid symlinks we never used anyway
