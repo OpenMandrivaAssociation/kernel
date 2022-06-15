@@ -1,6 +1,6 @@
 # utils/cpuidle-info.c:193: error: undefined reference %{version}-%{release}%{disttag}to 'cpufreq_cpu_exists'
 # investigate aarch64
-%define _binaries_in_noarch_packages_terminate_build   0
+%define _binaries_in_noarch_packages_terminate_build 0
 #end
 %define _disable_ld_no_undefined 1
 
@@ -23,19 +23,19 @@
 # Work around incomplete debug packages
 %global _empty_manifest_terminate_build 0
 
-%global cross_header_archs	aarch64-linux armv7hnl-linux i686-linux x86_64-linux x32-linux riscv32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv32-linuxmusl riscv64-linuxmusl aarch64-android armv7l-android armv8l-android x86_64-android aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv32-linuxuclibc riscv64-linuxuclibc ppc64le-linux ppc64-linux ppc64le-linuxmusl ppc64-linuxmusl ppc64le-linuxuclibc ppc64-linuxuclibc
+%global cross_header_archs aarch64-linux armv7hnl-linux i686-linux x86_64-linux x32-linux riscv32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv32-linuxmusl riscv64-linuxmusl aarch64-android armv7l-android armv8l-android x86_64-android aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv32-linuxuclibc riscv64-linuxuclibc ppc64le-linux ppc64-linux ppc64le-linuxmusl ppc64-linuxmusl ppc64le-linuxuclibc ppc64-linuxuclibc
 %global long_cross_header_archs %(
-	for i in %{cross_header_archs}; do
-		CPU=$(echo $i |cut -d- -f1)
-		OS=$(echo $i |cut -d- -f2)
-		echo -n "$(rpm --target=${CPU}-${OS} -E %%{_target_platform}) "
-	done
+    for i in %{cross_header_archs}; do
+	CPU=$(echo $i |cut -d- -f1)
+	OS=$(echo $i |cut -d- -f2)
+	echo -n "$(rpm --target=${CPU}-${OS} -E %%{_target_platform}) "
+    done
 )
 
 # Parallelize xargs invocations on smp machines
 %define kxargs xargs %([ -z "$RPM_BUILD_NCPUS" ] \\\
-	&& RPM_BUILD_NCPUS="$(/usr/bin/getconf _NPROCESSORS_ONLN)"; \\\
-	[ "$RPM_BUILD_NCPUS" -gt 1 ] && echo "-P $RPM_BUILD_NCPUS")
+    && RPM_BUILD_NCPUS="$(/usr/bin/getconf _NPROCESSORS_ONLN)"; \\\
+    [ "$RPM_BUILD_NCPUS" -gt 1 ] && echo "-P $RPM_BUILD_NCPUS")
 
 %define target_arch %(echo %{_arch} | sed -e 's/mips.*/mips/' -e 's/arm.*/arm/' -e 's/aarch64/arm64/' -e 's/x86_64/x86/' -e 's/i.86/x86/' -e 's/znver1/x86/' -e 's/riscv.*/riscv/' -e 's/ppc.*/powerpc/')
 
@@ -57,14 +57,14 @@
 # IMPORTANT
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
-%define kernelversion	5
-%define patchlevel	18
-%define sublevel	3
+%define kernelversion 5
+%define patchlevel 18
+%define sublevel 4
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
-%define top_dir_name	%{name}-%{_arch}
-%define build_dir	${RPM_BUILD_DIR}/%{top_dir_name}
+%define top_dir_name %{name}-%{_arch}
+%define build_dir ${RPM_BUILD_DIR}/%{top_dir_name}
 
 # Common target directories
 %define _kerneldir /usr/src/linux-%{version}-%{release}%{disttag}
@@ -459,10 +459,13 @@ Group:		System/Kernel and hardware
 %if "${flavour}" == "desktop-gcc" || "${flavour}" == "server-gcc"
 BuildRequires:	gcc
 BuildRequires:	gcc-c++
+%else
+%rename kernel-release-${flavour}-clang
+Provides:	kernel-release-${flavour}-clang-%{version}-%{release}%{disttag} = %{version}-%{release}
+Provides:	kernel-release-${flavour}-clang%_isa = %{version}-%{release}
 %endif
-# (crazy) it needs kmod >= 27-3 bc ZSTD support
 Requires(pre):	kmod >= 27-3
-Requires:	kernel-firmware
+Recommends:	kernel-firmware
 Provides:	kernel = %{kernelversion}.%{patchlevel}
 Provides:	%{name} = %{version}-%{release}
 Provides:	%{name}-${flavour}-%{version}-%{release}%{disttag}
@@ -476,9 +479,9 @@ Conflicts:	dkms-nvidia-long-lived < 319.49-1
 Conflicts:	dkms-nvidia304 < 304.108-1
 Conflicts:	%{name}-${flavour}-latest <= %{version}-%{release}
 Obsoletes:	%{name}-${flavour}-latest <= %{version}-%{release}
+%rename kernel-release
 %rename kernel-release-${flavour}
 Provides:	installonlypkg(kernel)
-Provides:	should-restart = system
 Recommends:	iw
 %ifarch %{ix86} %{x86_64}
 Requires(post):	grub2 >= 2.02-27
@@ -527,6 +530,7 @@ Obsoletes:	%{name}-${flavour}-devel-latest <= %{version}-%{release}
 Provides:	installonlypkg(kernel)
 Requires:	%{name}-${flavour} = %{version}-%{release}
 %rename kernel-release-${flavour}-devel
+AutoReqProv:	no
 %ifarch %{ix86}
 Conflicts:	arch(x86_64)
 Conflicts:	arch(znver1)
@@ -559,6 +563,7 @@ Provides:	kernel-${flavour}-%{version}-%{release}%{disttag}-debuginfo
 Provides:	installonlypkg(kernel)
 Requires:	%{name}-${flavour} = %{version}-%{release}
 %rename kernel-release-${flavour}-debuginfo
+AutoReqProv:	no
 %ifarch %{ix86}
 Conflicts:	arch(x86_64)
 Conflicts:	arch(znver1)
@@ -583,6 +588,10 @@ for modules in %{modules_subpackages}; do
 %package -n %{name}-${flavour}-modules-${modules}
 Summary:	 ${modules} for kernel %{name}-${flavour}
 Group:		System/Kernel and hardware
+Requires:	%{name}-${flavour} = %{version}-%{release}
+Provides:	installonlypkg(kernel-module)
+AutoReq:	no
+AutoProv:	yes
 
 %description -n %{name}-${flavour}-modules-${modules}
 %{modules} modules for kernel %{name}-${flavour} .
@@ -620,6 +629,7 @@ Conflicts:	%{name}-source-latest <= %{version}-%{release}
 Obsoletes:	%{name}-source-latest <= %{version}-%{release}
 Conflicts:	kernel-release-source-latest <= %{version}-%{release}
 Obsoletes:	kernel-release-source-latest <= %{version}-%{release}
+%rename kernel-release-source
 Buildarch:	noarch
 
 %description -n %{name}-source
@@ -783,6 +793,7 @@ BuildArch:	noarch
 %if "%{name}" != "kernel"
 Provides:	cross-${i}-kernel-headers = %{EVRD}
 %endif
+%rename cross-${i}-kernel-release-headers
 
 %description -n cross-${i}-%{name}-headers
 C header files from the Linux kernel. The header files define
