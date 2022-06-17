@@ -59,7 +59,7 @@
 # compose tar.xz name and release
 %define kernelversion 5
 %define patchlevel 18
-%define sublevel 4
+%define sublevel 5
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -460,7 +460,7 @@ Group:		System/Kernel and hardware
 BuildRequires:	gcc
 BuildRequires:	gcc-c++
 %else
-%rename kernel-release-${flavour}-clang
+Provides:	kernel-release-${flavour}-clang
 Provides:	kernel-release-${flavour}-clang-%{version}-%{release}%{disttag} = %{version}-%{release}
 Provides:	kernel-release-${flavour}-clang%_isa = %{version}-%{release}
 %endif
@@ -479,8 +479,8 @@ Conflicts:	dkms-nvidia-long-lived < 319.49-1
 Conflicts:	dkms-nvidia304 < 304.108-1
 Conflicts:	%{name}-${flavour}-latest <= %{version}-%{release}
 Obsoletes:	%{name}-${flavour}-latest <= %{version}-%{release}
-%rename kernel-release
-%rename kernel-release-${flavour}
+Provides:	kernel-release
+Provides:	kernel-release-${flavour}
 Provides:	installonlypkg(kernel)
 Recommends:	iw
 %ifarch %{ix86} %{x86_64}
