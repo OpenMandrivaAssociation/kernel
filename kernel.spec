@@ -1,4 +1,4 @@
-# utils/cpuidle-info.c:193: error: undefined reference %{version}-%{release}%{disttag}to 'cpufreq_cpu_exists'
+# utils/cpuidle-info.c:193: error: undefined reference to 'cpufreq_cpu_exists'
 # investigate aarch64
 %define _binaries_in_noarch_packages_terminate_build 0
 #end
@@ -119,7 +119,7 @@
 #
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel
-Version:	%{kernelversion}.%{patchlevel}.%{sublevel}
+Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
 Release:	1
 License:	GPLv2
 Group:		System/Kernel and hardware
@@ -163,7 +163,7 @@ Source31:	cpupower.config
 # pulled in as Source: rather than Patch: because it's arch specific
 # and can't be applied by %%autopatch -p1
 
-%if 0%{sublevel}
+%if 0%{?sublevel:%{sublevel}}
 # The big upstream patch is added as source rather than patch
 # because "git apply" is needed to handle binary patches it
 # frequently contains (firmware updates etc.)
@@ -816,7 +816,7 @@ done
 %prep
 
 %setup -q -n linux-%{kernelversion}.%{patchlevel} -a 1003 -a 1004
-%if 0%{sublevel}
+%if 0%{?sublevel:1}
 [ -e .git ] || git init
 xzcat %{SOURCE1000} |git apply - || git apply %{SOURCE1000}
 rm -rf .git
