@@ -60,6 +60,7 @@
 %define kernelversion 5
 %define patchlevel 18
 %define sublevel 5
+#define relc 0
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -118,9 +119,9 @@
 # SRC RPM description
 #
 Summary:	Linux kernel built for %{distribution}
-Name:		kernel
+Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	1
+Release:	%{?relc:0.rc%{relc}.}1
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -132,8 +133,12 @@ URL:		http://www.kernel.org
 # Sources
 #
 ### This is for full SRC RPM
+%if 0%{?relc:1}
+Source0:	https://git.kernel.org/torvalds/t/linux-%{kernelversion}.%{patchlevel}-rc%{relc}.tar.gz
+%else
 Source0:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.xz
 Source1:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.sign
+%endif
 ### This is for stripped SRC RPM
 %if %{with build_nosrc}
 NoSource:	0
@@ -163,7 +168,7 @@ Source31:	cpupower.config
 # pulled in as Source: rather than Patch: because it's arch specific
 # and can't be applied by %%autopatch -p1
 
-%if 0%{?sublevel:%{sublevel}}
+%if 0%{?sublevel:1}
 # The big upstream patch is added as source rather than patch
 # because "git apply" is needed to handle binary patches it
 # frequently contains (firmware updates etc.)
@@ -192,10 +197,6 @@ Patch37:	socket.h-include-bitsperlong.h.patch
 # FIXME this may need porting, not sure where WC is set in 5.10
 #Patch38:	kernel-5.8-nouveau-write-combining-only-on-x86.patch
 Patch40:	kernel-5.8-aarch64-gcc-10.2-workaround.patch
-# FIXME hardening the module loader breaks it when
-# using binutils 2.35, https://sourceware.org/bugzilla/show_bug.cgi?id=26378
-# Let's revert it for now until there's a good fix.
-Patch41:	workaround-aarch64-module-loader.patch
 # (tpg) https://github.com/ClangBuiltLinux/linux/issues/1341
 Patch42:	linux-5.11-disable-ICF-for-CONFIG_UNWINDER_ORC.patch
 
@@ -449,7 +450,7 @@ of the operating system: memory allocation, process allocation, device
 input and output, etc.
 
 # (tpg) generate subpackages for kernel flavours
-%( for flavour in %{kernel_flavours}; do
+%(for flavour in %{kernel_flavours}; do
 	cat <<EOF
 %package -n %{name}-${flavour}
 Summary:	The heart of the %{distribution} built for ${flavour}
@@ -815,7 +816,7 @@ done
 #
 %prep
 
-%setup -q -n linux-%{kernelversion}.%{patchlevel} -a 1003 -a 1004
+%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 1003 -a 1004
 %if 0%{?sublevel:1}
 [ -e .git ] || git init
 xzcat %{SOURCE1000} |git apply - || git apply %{SOURCE1000}
@@ -840,8 +841,10 @@ sed -i -e '/QUANTENNA/aobj-$(CONFIG_RTL8723DE) += rtl8723de/' Makefile
 cd -
 %endif
 
+%if 0%{?sublevel:1}
 # make sure the kernel has the sublevel we know it has...
 LC_ALL=C sed -i -e "s/^SUBLEVEL.*/SUBLEVEL = %{sublevel}/" Makefile
+%endif
 
 # Pull in some externally maintained modules
 %ifarch %{x86_64}
@@ -999,6 +1002,8 @@ amdify() {
 		-e 's,^CONFIG_INTEL_SOC(.*)=(y|m),# CONFIG_INTEL_SOC\1 is not set,' \
 		-e 's,^CONFIG_AGP_(INTEL|SIS|VIA)=(y|m),# CONFIG_AGP_\1 is not set,' \
 		-e 's,^CONFIG_PECI=(y|m),# CONFIG_PECI is not set,' \
+		-e 's,^CONFIG_INTEL_TDX_GUEST=(y|m),# CONFIG_INTEL_TDX_GUEST is not set,' \
+		-e 's,^CONFIG_INTEL_IFS=(y|m),# CONFIG_INTEL_IFS is not set,' \
 		"$1"
 }
 
@@ -1366,21 +1371,21 @@ EOF
 
 ### Create -devel Post script on the fly
 cat > $kernel_devel_files-post <<EOF
-if [ -d /lib/modules/%{version}-$devel_flavour-%{release}%{disttag} ]; then
-    rm -f /lib/modules/%{version}-$devel_flavour-%{release}%{disttag}/{build,source}
-    ln -sf $DevelRoot /lib/modules/%{version}-$devel_flavour-%{release}%{disttag}/build
-    ln -sf $DevelRoot /lib/modules/%{version}-$devel_flavour-%{release}%{disttag}/source
+if [ -d %{_modulesdir}/%{version}-$devel_flavour-%{release}%{disttag} ]; then
+    rm -f %{_modulesdir}/%{version}-$devel_flavour-%{release}%{disttag}/{build,source}
+    ln -sf $DevelRoot %{_modulesdir}/%{version}-$devel_flavour-%{release}%{disttag}/build
+    ln -sf $DevelRoot %{_modulesdir}/%{version}-$devel_flavour-%{release}%{disttag}/source
 fi
 EOF
 
 
 ### Create -devel Preun script on the fly
 cat > $kernel_devel_files-preun <<EOF
-if [ -L /lib/modules/%{version}-$devel_flavour-%{release}%{disttag}/build ]; then
-    rm -f /lib/modules/%{version}-$devel_flavour-%{release}%{disttag}/build
+if [ -L %{_modulesdir}/%{version}-$devel_flavour-%{release}%{disttag}/build ]; then
+    rm -f %{_modulesdir}/%{version}-$devel_flavour-%{release}%{disttag}/build
 fi
-if [ -L /lib/modules/%{version}-$devel_flavour-%{release}%{disttag}/source ]; then
-    rm -f /lib/modules/%{version}-$devel_flavour-%{release}%{disttag}/source
+if [ -L %{_modulesdir}/%{version}-$devel_flavour-%{release}%{disttag}/source ]; then
+    rm -f %{_modulesdir}/%{version}-$devel_flavour-%{release}%{disttag}/source
 fi
 exit 0
 EOF
@@ -1458,9 +1463,9 @@ rm -rf vmlinuz-{server,desktop} initrd0.img initrd-{server,desktop}
 %if %{with build_devel}
 # create kernel-devel symlinks if matching -devel- rpm is installed
 if [ -d /usr/src/linux-%{version}-$kernel_flavour-%{release}%{disttag} ]; then
-    rm -f /lib/modules/%{version}-$kernel_flavour-%{release}%{disttag}/{build,source}
-    ln -sf /usr/src/linux-%{version}-$kernel_flavour-%{release}%{disttag} /lib/modules/%{version}-$kernel_flavour-%{release}%{disttag}/build
-    ln -sf /usr/src/linux-%{version}-$kernel_flavour-%{release}%{disttag} /lib/modules/%{version}-$kernel_flavour-%{release}%{disttag}/source
+    rm -f %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/{build,source}
+    ln -sf /usr/src/linux-%{version}-$kernel_flavour-%{release}%{disttag} %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/build
+    ln -sf /usr/src/linux-%{version}-$kernel_flavour-%{release}%{disttag} %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/source
 fi
 %endif
 
@@ -1478,11 +1483,11 @@ EOF
 ### Create kernel Postun script on the fly
 cat > $kernel_files-postun <<EOF
 
-rm -rf /lib/modules/%{version}-$kernel_flavour-%{release}%{disttag}/modules.{alias{,.bin},builtin.bin,dep{,.bin},devname,softdep,symbols{,.bin}} ||:
+rm -rf %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/modules.{alias{,.bin},builtin.bin,dep{,.bin},devname,softdep,symbols{,.bin}} ||:
 [ -e /boot/vmlinuz-%{version}-$kernel_flavour-%{release}%{disttag} ] && rm -rf /boot/vmlinuz-%{version}-$kernel_flavour-%{release}%{disttag}
 [ -e /boot/initrd-%{version}-$kernel_flavour-%{release}%{disttag}.img ] && rm -rf /boot/initrd-%{version}-$kernel_flavour-%{release}%{disttag}.img
 
-rm -rf /lib/modules/%{version}-$kernel_flavour-%{release}%{disttag} >/dev/null
+rm -rf %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag} >/dev/null
 if [ -d /var/lib/dkms ]; then
     rm -f /var/lib/dkms/*/kernel-%{version}-$devel_flavour-%{release}%{disttag}-%{_target_cpu} >/dev/null
     rm -rf /var/lib/dkms/*/*/%{version}-$devel_flavour-%{release}%{disttag} >/dev/null
@@ -1491,11 +1496,11 @@ if [ -d /var/lib/dkms ]; then
 fi
 
 %if %{with build_devel}
-if [ -L /lib/modules/%{version}-$kernel_flavour-%{release}%{disttag}/build ]; then
-    rm -f /lib/modules/%{version}-$kernel_flavour-%{release}%{disttag}/build
+if [ -L %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/build ]; then
+    rm -f %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/build
 fi
-if [ -L /lib/modules/%{version}-$kernel_flavour-%{release}%{disttag}/source ]; then
-    rm -f /lib/modules/%{version}-$kernel_flavour-%{release}%{disttag}/source
+if [ -L %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/source ]; then
+    rm -f %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/source
 fi
 %endif
 exit 0
@@ -1647,6 +1652,12 @@ cp -a %{temp_root} %{buildroot}
 for i in %{target_modules}/*; do
     rm -f $i/build $i/source
 done
+
+# binmerge
+%if "%{_bindir}" == "%{_sbindir}"
+mv %{buildroot}%{_prefix}/sbin/* %{buildroot}%{_bindir}/
+rmdir %{buildroot}%{_prefix}/sbin
+%endif
 
 # (tpg) let's compress all modules
 find %{target_modules} -name "*.ko" -type f | %kxargs zstd --format=zstd --ultra -22 -T0 --rm -f -q
