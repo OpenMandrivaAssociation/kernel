@@ -44,7 +44,7 @@
 %ifarch aarch64
 %define kernel_flavours server
 %else
-%define kernel_flavours desktop server desktop-gcc
+%define kernel_flavours desktop server desktop-gcc server-gcc
 %endif
 
 # (tpg) package these kernel modules as subpackages
@@ -59,7 +59,7 @@
 # compose tar.xz name and release
 %define kernelversion 5
 %define patchlevel 18
-%define sublevel 6
+%define sublevel 7
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -1822,7 +1822,7 @@ cd -
 %files -n perf
 %{_bindir}/perf
 %ifarch %{x86_64}
-%{_bindir}/perf-read-vdso32
+%optional %{_bindir}/perf-read-vdso32
 %endif
 %{_bindir}/trace
 %ifarch %{x86_64}
