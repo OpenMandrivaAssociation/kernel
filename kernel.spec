@@ -1472,7 +1472,7 @@ fi
 %endif
 
 ## cleanup some werid symlinks we never used anyway
-rm -rf vmlinuz-{server,desktop} initrd0.img initrd-{server,desktop} :||
+rm -rf vmlinuz-{server,desktop} initrd0.img initrd-{server,desktop} || :
 
 %if %{with build_devel}
 # create kernel-devel symlinks if matching -devel- rpm is installed
