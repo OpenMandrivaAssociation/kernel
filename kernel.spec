@@ -1506,7 +1506,7 @@ rm -rf %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/modules.{a
 
 %ifarch %{aarch64}
 if [ -d /boot/efi ] && [ -x %{_bindir}/kernel-install ]; then
-    %{_bindir}/kernel-install remove %{version}-$kernel_flavour-%{release}%{disttag} :||
+    %{_bindir}/kernel-install remove %{version}-$kernel_flavour-%{release}%{disttag} || :
 fi
 %endif
 
