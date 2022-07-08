@@ -1207,7 +1207,7 @@ BuildKernel() {
 
 # Start installing stuff
 	install -d %{temp_boot}
-	install -d %{temp_modules}
+	install -d %{temp_modules}/$KernelVer
 
 	install -m 644 System.map %{temp_modules}/$KernelVer/System.map
 	install -m 644 .config %{temp_modules}/$KernelVer/config
