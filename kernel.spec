@@ -1913,7 +1913,6 @@ cd -
 
 %files -n %{libbpfdevel}
 %{_libdir}/libbpf.so
-%{_libdir}/libbpf.a
 %{_libdir}/pkgconfig/*.pc
 %dir %{_includedir}/bpf
 %{_includedir}/bpf/*.h
