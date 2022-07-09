@@ -70,7 +70,10 @@
 # Common target directories
 %define _kerneldir %{_prefix}/src/linux-%{version}-%{release}%{disttag}
 %define _bootdir /boot
-%define _modulesdir %{_prefix}/lib/modules
+# Should really be %{_prefix}/lib/modules, but there's a few hardcodes
+# inside kernel Makefiles and it doesn't really matter given /lib is
+# a symlink to %{_prefix}/lib anyway
+%define _modulesdir /lib/modules
 
 # Directories definition needed for building
 %define temp_root %{build_dir}/temp-root
@@ -1218,7 +1221,7 @@ BuildKernel() {
 
 # modules
 	install -d %{temp_modules}/$KernelVer
-	%make_build V=0 VERBOSE=0 INSTALL_MOD_PATH=%{temp_root} ARCH=%{target_arch} SRCARCH=%{target_arch} KERNELRELEASE=$KernelVer CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" DEPMOD=/bin/false INSTALL_MOD_STRIP=1 modules_install
+	%make_build V=0 VERBOSE=0 INSTALL_MOD_PATH=%{temp_root} ARCH=%{target_arch} SRCARCH=%{target_arch} KERNELRELEASE=$KernelVer CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" DEPMOD=/bin/true INSTALL_MOD_STRIP=1 modules_install
 
 # headers
 	%make_build V=0 VERBOSE=0 INSTALL_HDR_PATH=%{temp_root}%{_prefix} KERNELRELEASE=$KernelVer ARCH=%{target_arch} SRCARCH=%{target_arch} headers_install
