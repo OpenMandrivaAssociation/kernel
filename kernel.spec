@@ -1215,7 +1215,7 @@ BuildKernel() {
 	install -m 644 System.map %{temp_modules}/$KernelVer/System.map
 	install -m 644 .config %{temp_modules}/$KernelVer/config
 	cp -f arch/%{target_arch}/boot/$IMAGE %{temp_boot}/vmlinuz-$KernelVer
-	ln -s %{_bootdir}/vmlinuz-$KernelVer %{_modulesdir}/$KernelVer/vmlinuz
+	ln -s %{_bootdir}/vmlinuz-$KernelVer %{temp_modules}/$KernelVer/vmlinuz
 	ln -s %{_modulesdir}/$KernelVer/System.map %{temp_boot}/System.map-$KernelVer
 	ln -s %{_modulesdir}/$KernelVer/config %{temp_boot}/config-$KernelVer
 
