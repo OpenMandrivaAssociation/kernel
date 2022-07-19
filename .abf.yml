@@ -3,4 +3,4 @@ sources:
   linux-5.18.tar.sign: aaf5f23b61c284eaa7ad4a9404bb743ccbe7ece8
   linux-5.18.tar.xz: bfe7e49c12b1d098ceb805d3b6800228c60caffc
   saa716x-driver.tar.xz: f9b6ef1cd6f1f71f53d9a8aadfba2cf6b5c3d7b6
-  patch-5.18.11.xz: 78011cb0c4a5153c9361b73b147784f9c7d97e10
+  patch-5.18.12.xz: fba42bfaeae7566c514e3855abfbf2911165bddd
