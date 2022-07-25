@@ -59,7 +59,7 @@
 # compose tar.xz name and release
 %define kernelversion 5
 %define patchlevel 18
-%define sublevel 13
+%define sublevel 14
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -351,7 +351,7 @@ Patch901:	0102-increase-the-ext4-default-commit-age.patch
 Patch902:	0103-silence-rapl.patch
 Patch903:	0104-pci-pme-wakeups.patch
 Patch904:	0105-ksm-wakeups.patch
-Patch905:	0106-intel_idle-tweak-cpuidle-cstates.patch
+#Patch905:	0106-intel_idle-tweak-cpuidle-cstates.patch
 Patch907:	0108-smpboot-reuse-timer-calibration.patch
 Patch908:	0109-initialize-ata-before-graphics.patch
 Patch910:	0111-ipv4-tcp-allow-the-memory-tuning-for-tcp-to-go-a-lit.patch
@@ -1215,7 +1215,7 @@ BuildKernel() {
 	install -m 644 System.map %{temp_modules}/$KernelVer/System.map
 	install -m 644 .config %{temp_modules}/$KernelVer/config
 	cp -f arch/%{target_arch}/boot/$IMAGE %{temp_boot}/vmlinuz-$KernelVer
-	ln -s %{_bootdir}/vmlinuz-$KernelVer %{temp_modules}/$KernelVer/vmlinuz
+	ln -sr %{_bootdir}/vmlinuz-$KernelVer %{temp_modules}/$KernelVer/vmlinuz
 	ln -s %{_modulesdir}/$KernelVer/System.map %{temp_boot}/System.map-$KernelVer
 	ln -s %{_modulesdir}/$KernelVer/config %{temp_boot}/config-$KernelVer
 
@@ -1500,7 +1500,7 @@ EOF
 ### Create kernel Postun script on the fly
 cat > $kernel_files-postun <<EOF
 
-rm -rf %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/modules.{alias{,.bin},builtin.bin,dep{,.bin},devname,softdep,symbols{,.bin}} ||:
+[ -e %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag} ] && rm -rf %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/modules.{alias{,.bin},builtin.bin,dep{,.bin},devname,softdep,symbols{,.bin}} ||:
 [ -e /boot/vmlinuz-%{version}-$kernel_flavour-%{release}%{disttag} ] && rm -rf /boot/vmlinuz-%{version}-$kernel_flavour-%{release}%{disttag}
 [ -e /boot/initrd-%{version}-$kernel_flavour-%{release}%{disttag}.img ] && rm -rf /boot/initrd-%{version}-$kernel_flavour-%{release}%{disttag}.img
 [ -e /boot/System.map-%{version}-$kernel_flavour-%{release}%{disttag} ] && rm -rf /boot/System.map-%{version}-$kernel_flavour-%{release}%{disttag}
