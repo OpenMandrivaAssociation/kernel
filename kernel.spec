@@ -58,8 +58,8 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 5
-%define patchlevel 18
-%define sublevel 14
+%define patchlevel 19
+%define sublevel 0
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -171,7 +171,7 @@ Source31:	cpupower.config
 # pulled in as Source: rather than Patch: because it's arch specific
 # and can't be applied by %%autopatch -p1
 
-%if 0%{?sublevel:1}
+%if 0%{?sublevel:%{sublevel}}
 # The big upstream patch is added as source rather than patch
 # because "git apply" is needed to handle binary patches it
 # frequently contains (firmware updates etc.)
@@ -727,7 +727,7 @@ Tool to report processor frequency and idle statistics.
 %endif
 
 %if %{with bpftool}
-%define bpf_major 0
+%define bpf_major 1
 %define libbpf %mklibname bpf %{bpf_major}
 %define libbpfdevel %mklibname bpf -d
 
@@ -820,7 +820,7 @@ done
 %prep
 
 %setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 1003 -a 1004
-%if 0%{?sublevel:1}
+%if 0%{?sublevel:%{sublevel}}
 [ -e .git ] || git init
 xzcat %{SOURCE1000} |git apply - || git apply %{SOURCE1000}
 rm -rf .git
@@ -1291,7 +1291,7 @@ SaveDevel() {
 	sed -i -e '/rtl8.*/d' $TempDevelRoot/drivers/net/wireless/{Makefile,Kconfig}
 	sed -i -e '/rtl8723cs.*/d' $TempDevelRoot/drivers/staging/{Makefile,Kconfig}
 
-	for i in alpha arc avr32 blackfin c6x cris csky frv h8300 hexagon ia64 m32r m68k m68knommu metag microblaze \
+	for i in alpha arc avr32 blackfin c6x cris csky frv h8300 hexagon ia64 loongarch m32r m68k m68knommu metag microblaze \
 		 mips mn10300 nds32 nios2 openrisc parisc s390 score sh sparc tile unicore32 xtensa; do
 		rm -rf $TempDevelRoot/arch/$i
 	done
@@ -1353,6 +1353,7 @@ $DevelRoot/include/sound
 $DevelRoot/include/target
 $DevelRoot/include/trace
 $DevelRoot/include/uapi
+$DevelRoot/include/ufs
 $DevelRoot/include/vdso
 $DevelRoot/include/video
 $DevelRoot/include/xen
@@ -1733,7 +1734,7 @@ rm -f %{target_source}/*_files.* %{target_source}/README.kernel-sources
 
 # we remove all the source files that we don't ship
 # first architecture files
-for i in alpha arc avr32 blackfin c6x cris csky frv h8300 hexagon ia64 m32r m68k m68knommu metag microblaze \
+for i in alpha arc avr32 blackfin c6x cris csky frv h8300 hexagon ia64 loongarch m32r m68k m68knommu metag microblaze \
 	mips nds32 nios2 openrisc parisc s390 score sh sh64 sparc tile unicore32 v850 xtensa mn10300; do
     rm -rf %{target_source}/arch/$i
     rm -rf %{target_source}/scripts/dtc/include-prefixes/$i
@@ -1814,6 +1815,7 @@ cd -
 %{_kerneldir}/include/target
 %{_kerneldir}/include/trace
 %{_kerneldir}/include/uapi
+%{_kerneldir}/include/ufs
 %{_kerneldir}/include/vdso
 %{_kerneldir}/include/video
 %{_kerneldir}/include/xen
