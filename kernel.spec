@@ -425,7 +425,7 @@ BuildRequires:	pkgconfig(libnewt)
 BuildRequires:	pkgconfig(gtk+-2.0)
 BuildRequires:	pkgconfig(python)
 BuildRequires:	pkgconfig(zlib)
-BuildRequires:	pkgconfig(babeltrace)
+BuildRequires:	pkgconfig(babeltrace2)
 BuildRequires:	jdk-current
 BuildRequires:	perl-devel
 BuildRequires:	perl(ExtUtils::Embed)
