@@ -1,0 +1,38 @@
+diff -up linux-5.19/tools/bpf/bpftool/jit_disasm.c.omv~ linux-5.19/tools/bpf/bpftool/jit_disasm.c
+--- linux-5.19/tools/bpf/bpftool/jit_disasm.c.omv~	2022-08-14 17:05:07.060719763 +0200
++++ linux-5.19/tools/bpf/bpftool/jit_disasm.c	2022-08-14 21:36:52.395937489 +0200
+@@ -73,6 +73,21 @@ static int fprintf_json(void *out, const
+ 	return 0;
+ }
+ 
++static int __attribute__ ((__format__ (__printf__, 3, 4))) __attribute__((__nonnull__ (3)))
++fprintf_styled (FILE *f, enum disassembler_style style __attribute__((unused)),
++                const char *fmt, ...)
++{
++	int res;
++	va_list ap;
++
++	va_start (ap, fmt);
++	res = vfprintf (f, fmt, ap);
++	va_end (ap);
++
++	return res;
++}
++
++
+ void disasm_print_insn(unsigned char *image, ssize_t len, int opcodes,
+ 		       const char *arch, const char *disassembler_options,
+ 		       const struct btf *btf,
+@@ -100,10 +115,10 @@ void disasm_print_insn(unsigned char *im
+ 
+ 	if (json_output)
+ 		init_disassemble_info(&info, stdout,
+-				      (fprintf_ftype) fprintf_json);
++				      (fprintf_ftype) fprintf_json, (fprintf_styled_ftype) fprintf_styled);
+ 	else
+ 		init_disassemble_info(&info, stdout,
+-				      (fprintf_ftype) fprintf);
++				      (fprintf_ftype) fprintf, (fprintf_styled_ftype) fprintf_styled);
+ 
+ 	/* Update architecture info for offload. */
+ 	if (arch) {
