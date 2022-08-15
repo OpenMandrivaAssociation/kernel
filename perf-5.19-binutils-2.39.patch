@@ -1,10 +1,11 @@
 diff -up linux-5.19/tools/perf/util/annotate.c.omv~ linux-5.19/tools/perf/util/annotate.c
 --- linux-5.19/tools/perf/util/annotate.c.omv~	2022-08-15 00:35:15.350592278 +0200
 +++ linux-5.19/tools/perf/util/annotate.c	2022-08-15 00:36:05.070974048 +0200
-@@ -64,6 +64,20 @@ struct annotation_options annotation__de
+@@ -64,6 +64,21 @@ struct annotation_options annotation__de
  	.percent_type	= PERCENT_PERIOD_LOCAL,
  };
  
++#include <dis-asm.h>
 +static int __attribute__ ((__format__ (__printf__, 3, 4))) __attribute__((__nonnull__ (3)))
 +fprintf_styled (FILE *f, enum disassembler_style style __attribute__((unused)),
 +                const char *fmt, ...)
@@ -22,7 +23,7 @@ diff -up linux-5.19/tools/perf/util/annotate.c.omv~ linux-5.19/tools/perf/util/a
  static regex_t	 file_lineno;
  
  static struct ins_ops *ins__find(struct arch *arch, const char *name);
-@@ -1763,7 +1777,7 @@ static int symbol__disassemble_bpf(struc
+@@ -1763,7 +1778,7 @@ static int symbol__disassemble_bpf(struc
  		goto out;
  	}
  	init_disassemble_info(&info, s,
