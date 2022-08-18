@@ -41,14 +41,14 @@
 
 
 # (tpg) define here per arch which kernel flavours you would like to build
-%ifarch aarch64
-%define kernel_flavours server
+%ifarch %{aarch64}
+%define kernel_flavours desktop server
 %else
 %define kernel_flavours desktop server desktop-gcc server-gcc
 %endif
 
 # (tpg) package these kernel modules as subpackages
-%ifarch aarch64
+%ifarch %{aarch64}
 %define modules_subpackages appletalk decnet fddi
 %else
 %define modules_subpackages appletalk arcnet infiniband isdn
@@ -59,7 +59,7 @@
 # compose tar.xz name and release
 %define kernelversion 5
 %define patchlevel 19
-%define sublevel 1
+%define sublevel 2
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -106,11 +106,6 @@
 %else
 # cpupower is currently x86 only
 %bcond_with build_cpupower
-%endif
-# ARM builds
-%ifarch %{armx}
-%bcond_with build_desktop
-%bcond_without build_server
 %endif
 
 # End of user definitions
