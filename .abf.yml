@@ -3,4 +3,4 @@ sources:
   linux-5.19.tar.sign: 23c72ec5f49cafdf48497fe46b2fca28e20664da
   linux-5.19.tar.xz: 400be859d587db77beb2e477ba5e9562c50e6c7e
   saa716x-driver.tar.xz: f9b6ef1cd6f1f71f53d9a8aadfba2cf6b5c3d7b6
-  patch-5.19.5.xz: 342aaace416811a122a1ecaa310209713a8db951
+  patch-5.19.6.xz: fafae73086772f0aacafc9aad35338deca3ec31a
