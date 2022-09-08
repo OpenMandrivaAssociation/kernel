@@ -59,7 +59,7 @@
 # compose tar.xz name and release
 %define kernelversion 5
 %define patchlevel 19
-%define sublevel 7
+%define sublevel 8
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -218,6 +218,10 @@ Patch51:	linux-5.5-corsair-strafe-quirks.patch
 Patch52:	http://crazy.dev.frugalware.org/smpboot-no-stack-protector-for-gcc10.patch
 Patch55:	linux-5.16-clang-no-attribute-symver.patch
 
+# Bring back ashmem to make anbox and waydroid happy
+Patch56:	revert-721412ed3d819e767cac2b06646bf03aa158aaec.patch
+#Patch57:	modular-ashmem.patch
+
 ### Additional hardware support
 ### TV tuners:
 # SAA716x DVB driver
@@ -257,8 +261,8 @@ Patch211:	https://raw.githubusercontent.com/sirlucjan/kernel-patches/master/5.17
 # Assorted fixes
 
 # Modular binder and ashmem -- let's try to make anbox happy
-#Patch212:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/debian/android-enable-building-ashmem-and-binder-as-modules.patch
-#Patch213:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/debian/export-symbols-needed-by-android-drivers.patch
+Patch212:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/debian/android-enable-building-ashmem-and-binder-as-modules.patch
+Patch213:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/debian/export-symbols-needed-by-android-drivers.patch
 
 # Fix CPU frequency governor mess caused by recent Intel patches
 Patch225:	https://gitweb.frugalware.org/frugalware-current/raw/50690405717979871bb17b8e6b553799a203c6ae/source/base/kernel/0001-Revert-cpufreq-Avoid-configuring-old-governors-as-de.patch
