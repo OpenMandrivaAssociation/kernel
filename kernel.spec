@@ -49,18 +49,18 @@
 
 # (tpg) package these kernel modules as subpackages
 %ifarch %{aarch64}
-%define modules_subpackages appletalk decnet fddi
+%define modules_subpackages appletalk decnet fddi can
 %else
-%define modules_subpackages appletalk arcnet infiniband isdn
+%define modules_subpackages appletalk arcnet infiniband isdn can
 %endif
 
 # IMPORTANT
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
-%define kernelversion 5
-%define patchlevel 19
-%define sublevel 12
-#define relc 0
+%define kernelversion 6
+%define patchlevel 0
+%define sublevel 0
+#define relc 1
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -119,7 +119,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}2
+Release:	%{?relc:0.rc%{relc}.}1
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -181,7 +181,6 @@ Source1000:	https://cdn.kernel.org/pub/linux/kernel/v%(echo %{version}|cut -d. -
 Source1001:	revert-7a8b64d17e35810dc3176fe61208b45c15d25402.patch
 Source1002:	revert-9d55bebd9816903b821a403a69a94190442ac043.patch
 
-Patch30:	linux-5.6-fix-disassembler-4args-detection.patch
 Patch31:	die-floppy-die.patch
 Patch32:	0001-Add-support-for-Acer-Predator-macro-keys.patch
 Patch34:	kernel-5.6-kvm-gcc10.patch
@@ -218,10 +217,6 @@ Patch51:	linux-5.5-corsair-strafe-quirks.patch
 Patch52:	http://crazy.dev.frugalware.org/smpboot-no-stack-protector-for-gcc10.patch
 Patch55:	linux-5.16-clang-no-attribute-symver.patch
 
-# Bring back ashmem to make anbox and waydroid happy
-Patch56:	revert-721412ed3d819e767cac2b06646bf03aa158aaec.patch
-#Patch57:	modular-ashmem.patch
-
 ### Additional hardware support
 ### TV tuners:
 # SAA716x DVB driver
@@ -255,18 +250,16 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 Source1005:	vbox-6.1-fix-build-on-znver1-hosts.patch
 Source1007:	vboxnet-clang.patch
 
-# Better support for newer x86 processors
-Patch211:	https://raw.githubusercontent.com/sirlucjan/kernel-patches/master/5.17/cpu-patches/0001-cpu-patches.patch
-
 # Assorted fixes
 
+# Bring back ashmem -- anbox and waydroid still need it
+Patch211:	revert-721412ed3d819e767cac2b06646bf03aa158aaec.patch
 # Modular binder and ashmem -- let's try to make anbox happy
 Patch212:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/debian/android-enable-building-ashmem-and-binder-as-modules.patch
 Patch213:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/debian/export-symbols-needed-by-android-drivers.patch
 
 Patch215:	linux-5.19-prefer-amdgpu-over-radeon.patch
-Patch216:       https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git/patch/?id=e400ad8b7e6a1b9102123c6240289a811501f7d9#/speed-up-amd-boxes.patch
-Patch217:       acpi-chipset-workarounds-shouldnt-be-necessary-on-non-x86.patch
+Patch217:	acpi-chipset-workarounds-shouldnt-be-necessary-on-non-x86.patch
 
 # Fix CPU frequency governor mess caused by recent Intel patches
 Patch225:	https://gitweb.frugalware.org/frugalware-current/raw/50690405717979871bb17b8e6b553799a203c6ae/source/base/kernel/0001-Revert-cpufreq-Avoid-configuring-old-governors-as-de.patch
@@ -334,8 +327,7 @@ Patch298:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/maste
 Patch300:	add-board-orangepi-4.patch
 Patch303:	rk3399-add-sclk-i2sout-src-clock.patch
 #Patch304:	rtl8723cs-compile.patch
-Patch305:	bpftool-binutils-2.39.patch
-Patch306:	perf-5.19-binutils-2.39.patch
+Patch305:	kernel-6.0-rc2-perf-x86-compile.patch
 
 Patch350:	rtla-5.17-fix-make-clean.patch
 
@@ -428,7 +420,8 @@ BuildRequires:	flex
 BuildRequires:	pkgconfig(libunwind)
 BuildRequires:	pkgconfig(libnewt)
 BuildRequires:	pkgconfig(gtk+-2.0)
-BuildRequires:	pkgconfig(python)
+BuildRequires:	pkgconfig(python3)
+BuildRequires:	python%{py_ver}dist(setuptools)
 BuildRequires:	pkgconfig(zlib)
 BuildRequires:	pkgconfig(babeltrace2)
 BuildRequires:	jdk-current
@@ -1354,6 +1347,7 @@ $DevelRoot/include/net
 $DevelRoot/include/pcmcia
 $DevelRoot/include/ras
 $DevelRoot/include/rdma
+$DevelRoot/include/rv
 $DevelRoot/include/scsi
 $DevelRoot/include/soc
 $DevelRoot/include/sound
@@ -1451,10 +1445,12 @@ CreateFiles() {
 %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/vmlinuz
 %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/appletalk
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/can
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/decnet
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/infiniband
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/isdn
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/net/arcnet
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/net/can
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/net/fddi
 %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/modules.*
 # device tree binary
@@ -1817,6 +1813,7 @@ cd -
 %{_kerneldir}/include/pcmcia
 %{_kerneldir}/include/ras
 %{_kerneldir}/include/rdma
+%{_kerneldir}/include/rv
 %{_kerneldir}/include/scsi
 %{_kerneldir}/include/soc
 %{_kerneldir}/include/sound

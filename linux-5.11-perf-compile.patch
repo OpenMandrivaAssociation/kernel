@@ -1,24 +1,24 @@
-diff -up linux-5.19/tools/build/feature/test-libcrypto.c.29~ linux-5.19/tools/build/feature/test-libcrypto.c
---- linux-5.19/tools/build/feature/test-libcrypto.c.29~	2022-08-26 13:28:38.299225319 +0200
-+++ linux-5.19/tools/build/feature/test-libcrypto.c	2022-08-26 13:29:18.389400522 +0200
+diff -up linux-6.0-rc1/tools/build/feature/test-libcrypto.c.27~ linux-6.0-rc1/tools/build/feature/test-libcrypto.c
+--- linux-6.0-rc1/tools/build/feature/test-libcrypto.c.27~	2022-08-15 14:13:01.431464502 +0200
++++ linux-6.0-rc1/tools/build/feature/test-libcrypto.c	2022-08-15 14:13:45.940978564 +0200
 @@ -1,4 +1,5 @@
  // SPDX-License-Identifier: GPL-2.0
 +#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
  #include <openssl/evp.h>
  #include <openssl/sha.h>
  #include <openssl/md5.h>
-diff -up linux-5.19/tools/build/feature/test-libperl.c.29~ linux-5.19/tools/build/feature/test-libperl.c
---- linux-5.19/tools/build/feature/test-libperl.c.29~	2022-07-31 23:03:01.000000000 +0200
-+++ linux-5.19/tools/build/feature/test-libperl.c	2022-08-26 13:28:38.299225319 +0200
+diff -up linux-6.0-rc1/tools/build/feature/test-libperl.c.27~ linux-6.0-rc1/tools/build/feature/test-libperl.c
+--- linux-6.0-rc1/tools/build/feature/test-libperl.c.27~	2022-08-15 00:50:18.000000000 +0200
++++ linux-6.0-rc1/tools/build/feature/test-libperl.c	2022-08-15 14:13:01.431464502 +0200
 @@ -1,4 +1,5 @@
  // SPDX-License-Identifier: GPL-2.0
 +#pragma GCC diagnostic ignored "-Wcompound-token-split-by-macro"
  #include <EXTERN.h>
  #include <perl.h>
  
-diff -up linux-5.19/tools/perf/Makefile.config.29~ linux-5.19/tools/perf/Makefile.config
---- linux-5.19/tools/perf/Makefile.config.29~	2022-07-31 23:03:01.000000000 +0200
-+++ linux-5.19/tools/perf/Makefile.config	2022-08-26 13:28:38.300225324 +0200
+diff -up linux-6.0-rc1/tools/perf/Makefile.config.27~ linux-6.0-rc1/tools/perf/Makefile.config
+--- linux-6.0-rc1/tools/perf/Makefile.config.27~	2022-08-15 00:50:18.000000000 +0200
++++ linux-6.0-rc1/tools/perf/Makefile.config	2022-08-15 14:13:01.432464491 +0200
 @@ -126,6 +126,11 @@ ifdef LIBUNWIND_DIR
    LIBUNWIND_LDFLAGS = -L$(LIBUNWIND_DIR)/lib
    LIBUNWIND_ARCHS = x86 x86_64 arm aarch64 debug-frame-arm debug-frame-aarch64
@@ -31,7 +31,7 @@ diff -up linux-5.19/tools/perf/Makefile.config.29~ linux-5.19/tools/perf/Makefil
  endif
  
  # Set per-feature check compilation flags
-@@ -1079,11 +1084,15 @@ ifndef NO_AUXTRACE
+@@ -1099,11 +1104,15 @@ ifndef NO_AUXTRACE
  endif
  
  ifndef NO_JVMTI
@@ -51,9 +51,9 @@ diff -up linux-5.19/tools/perf/Makefile.config.29~ linux-5.19/tools/perf/Makefil
      endif
    endif
    ifndef JDIR
-diff -up linux-5.19/tools/perf/Makefile.perf.29~ linux-5.19/tools/perf/Makefile.perf
---- linux-5.19/tools/perf/Makefile.perf.29~	2022-07-31 23:03:01.000000000 +0200
-+++ linux-5.19/tools/perf/Makefile.perf	2022-08-26 13:28:38.301225328 +0200
+diff -up linux-6.0-rc1/tools/perf/Makefile.perf.27~ linux-6.0-rc1/tools/perf/Makefile.perf
+--- linux-6.0-rc1/tools/perf/Makefile.perf.27~	2022-08-15 00:50:18.000000000 +0200
++++ linux-6.0-rc1/tools/perf/Makefile.perf	2022-08-15 14:13:01.432464491 +0200
 @@ -444,6 +444,11 @@ arch_asm_uapi_dir := $(srctree)/tools/ar
  x86_arch_asm_uapi_dir := $(srctree)/tools/arch/x86/include/uapi/asm/
  x86_arch_asm_dir := $(srctree)/tools/arch/x86/include/asm/
