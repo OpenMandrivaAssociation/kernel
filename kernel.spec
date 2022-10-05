@@ -101,6 +101,9 @@
 %bcond_without bpftool
 %bcond_without build_x86_energy_perf_policy
 %bcond_without build_turbostat
+%ifarch %{ix86} %{x86_64} %{aarch64}
+%bcond_without hyperv
+%endif
 %ifarch %{ix86} %{x86_64}
 %bcond_without build_cpupower
 %else
@@ -722,6 +725,33 @@ Group:		System/Kernel and hardware
 
 %description -n turbostat
 Tool to report processor frequency and idle statistics.
+%endif
+
+%if %{with hyperv}
+%package -n hyperv-tools
+Summary:	Tools needed to communicate with a Hyper-V host
+Source7000:	https://src.fedoraproject.org/rpms/hyperv-daemons/raw/rawhide/f/hypervkvpd.service
+Source7001:	https://src.fedoraproject.org/rpms/hyperv-daemons/raw/rawhide/f/hypervkvp.rules
+Source7002:	https://src.fedoraproject.org/rpms/hyperv-daemons/raw/rawhide/f/hypervvssd.service
+Source7003:	https://src.fedoraproject.org/rpms/hyperv-daemons/raw/rawhide/f/hypervvss.rules
+Source7004:	https://src.fedoraproject.org/rpms/hyperv-daemons/raw/rawhide/f/hypervfcopyd.service
+Source7005:	https://src.fedoraproject.org/rpms/hyperv-daemons/raw/rawhide/f/hypervfcopy.rules
+
+%description -n hyperv-tools
+Tools needed to communicate with a Hyper-V host
+
+%files -n hyperv-tools
+%{_sbindir}/hv_kvp_daemon
+%{_unitdir}/hypervkvpd.service
+%{_udevrulesdir}/70-hypervkvp.rules
+%{_sbindir}/hv_vss_daemon
+%{_unitdir}/hypervvssd.service
+%{_udevrulesdir}/70-hypervvss.rules
+%{_sbindir}/hv_fcopy_daemon
+%{_unitdir}/hypervfcopyd.service
+%{_udevrulesdir}/70-hypervfcopy.rules
+%{_sbindir}/lsvmbus
+%{_libexecdir}/hypervkvpd
 %endif
 
 %if %{with bpftool}
@@ -1657,6 +1687,17 @@ mkdir -p %{temp_root}%{_bindir} %{temp_root}%{_mandir}/man8
 %make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} all man
 # Not SMP safe
 make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} install install-man
+%endif
+
+%if %{with hyperv}
+%make_build -C tools/hv -s CC=%{__cc} HOSTCC=%{__cc} prefix=%{_prefix} sbindir=%{_sbindir}
+%make_install -C tools/hv -s CC=%{__cc} HOSTCC=%{__cc} prefix=%{_prefix} sbindir=%{_sbindir}
+mkdir -p %{buildroot}%{_unitdir}
+install -c -m 644 %{S:7000} %{S:7002} %{S:7004} %{buildroot}%{_unitdir}/
+mkdir -p %{buildroot}%{_udevrulesdir}
+install -c -m 644 %{S:7001} %{buildroot}%{_udevrulesdir}/70-hypervkvp.rules
+install -c -m 644 %{S:7003} %{buildroot}%{_udevrulesdir}/70-hypervvss.rules
+install -c -m 644 %{S:7005} %{buildroot}%{_udevrulesdir}/70-hypervfcopy.rules
 %endif
 
 # We don't make to repeat the depend code at the install phase
