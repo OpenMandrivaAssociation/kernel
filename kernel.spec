@@ -1691,18 +1691,18 @@ make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd 
 
 %if %{with hyperv}
 %make_build -C tools/hv -s CC=%{__cc} HOSTCC=%{__cc} prefix=%{_prefix} sbindir=%{_sbindir}
-%make_install -C tools/hv -s CC=%{__cc} HOSTCC=%{__cc} prefix=%{_prefix} sbindir=%{_sbindir}
-mkdir -p %{buildroot}%{_unitdir}
-install -c -m 644 %{S:7000} %{S:7002} %{S:7004} %{buildroot}%{_unitdir}/
-mkdir -p %{buildroot}%{_udevrulesdir}
-install -c -m 644 %{S:7001} %{buildroot}%{_udevrulesdir}/70-hypervkvp.rules
-install -c -m 644 %{S:7003} %{buildroot}%{_udevrulesdir}/70-hypervvss.rules
-install -c -m 644 %{S:7005} %{buildroot}%{_udevrulesdir}/70-hypervfcopy.rules
+%make_install -C tools/hv -s CC=%{__cc} HOSTCC=%{__cc} prefix=%{_prefix} sbindir=%{_sbindir} DESTDIR=%{temp_root}
+mkdir -p %{temp_root}%{_unitdir}
+install -c -m 644 %{S:7000} %{S:7002} %{S:7004} %{temp_root}%{_unitdir}/
+mkdir -p %{temp_root}%{_udevrulesdir}
+install -c -m 644 %{S:7001} %{temp_root}%{_udevrulesdir}/70-hypervkvp.rules
+install -c -m 644 %{S:7003} %{temp_root}%{_udevrulesdir}/70-hypervvss.rules
+install -c -m 644 %{S:7005} %{temp_root}%{_udevrulesdir}/70-hypervfcopy.rules
 %endif
 
 # We don't make to repeat the depend code at the install phase
 %if %{with build_source}
-PrepareKernel "" %{buildrpmrel}custom
+PrepareKernel "" %{release}custom
 %make_build -s mrproper
 %endif
 
