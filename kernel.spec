@@ -273,58 +273,26 @@ Patch230:	linux-5.11-perf-compile.patch
 #Patch231:	ce71038e673ee8291c64631359e56c48c8616dc7.patch
 
 # (tpg) Armbian ARM Patches
-Patch240:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-5.11/board-rockpro64-fix-emmc.patch
-Patch241:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-5.11/board-rockpro64-fix-spi1-flash-speed.patch
-Patch242:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-5.11/board-rockpro64-work-led-heartbeat.patch
-Patch243:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-5.11/general-fix-mmc-signal-voltage-before-reboot.patch
-Patch245:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-5.11/rk3399-unlock-temperature.patch
-Patch246:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-5.11/general-increasing_DMA_block_memory_allocation_to_2048.patch
-Patch247:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-5.11/general-rk808-configurable-switch-voltage-steps.patch
-Patch248:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-5.11/rk3399-sd-drive-level-8ma.patch
-Patch249:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-5.11/rk3399-pci-rockchip-support-ep-gpio-undefined-case.patch
-Patch250:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-5.11/board-rockpi4-FixMMCFreq.patch
+Patch240:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch
+Patch241:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-spi1-flash-speed.patch
+Patch242:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-work-led-heartbeat.patch
+Patch243:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-mmc-signal-voltage-before-reboot.patch
+Patch244:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-inno-usb2-phy-init.patch
+Patch245:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-unlock-temperature.patch
+Patch246:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-increasing_DMA_block_memory_allocation_to_2048.patch
+Patch247:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-rk808-configurable-switch-voltage-steps.patch
+Patch248:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-sd-drive-level-8ma.patch
+Patch249:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-pci-rockchip-support-ep-gpio-undefined-case.patch
+Patch250:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
+Patch251:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/add-rockchip-iep-driver.patch
+Patch252:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng.patch
+Patch253:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-rp64-rng.patch
 
 # (tpg) Manjaro ARM Patches
-%if 0
-Patch260:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0001-arm64-dts-rockchip-Add-back-cdn_dp-to-Pinebook-Pro.patch
-Patch261:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0002-arm64-dts-allwinner-add-hdmi-sound-to-pine-devices.patch
-Patch262:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0003-arm64-dts-allwinner-add-ohci-ehci-to-h5-nanopi.patch
-Patch263:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0004-drm-bridge-analogix_dp-Add-enable_psr-param.patch
-Patch264:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0005-gpu-drm-add-new-display-resolution-2560x1440.patch
-Patch265:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0006-nuumio-panfrost-Silence-Panfrost-gem-shrinker-loggin.patch
-Patch266:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0007-arm64-dts-rockchip-Add-Firefly-Station-p1-support.patch
-Patch267:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0008-typec-displayport-some-devices-have-pin-assignments-reversed.patch
-Patch268:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0009-Add-megis-extcon-changes-to-fusb302.patch
-Patch269:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0010-usb-typec-Add-megis-typex-to-extcon-bridge-driver.patch
-Patch270:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0011-arm64-rockchip-add-DP-ALT-rockpro64.patch
-Patch271:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0012-ayufan-drm-rockchip-add-support-for-modeline-32MHz-e.patch
-Patch272:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0013-rk3399-rp64-pcie-Reimplement-rockchip-PCIe-bus-scan-delay.patch
-Patch273:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0014-arm64-dts-rockchip-add-typec-extcon-hack.patch
-Patch274:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0015-drm-meson-add-YUV422-output-support.patch
-Patch275:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0016-arm64-dts-meson-add-initial-Beelink-GT1-Ultimate-dev.patch
-Patch276:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0017-add-ugoos-device.patch
-Patch277:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0018-drm-panfrost-scheduler-fix.patch
-Patch278:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0019-arm64-dts-rockchip-Add-pcie-bus-scan-delay-to-rockpr.patch
-Patch279:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0020-drm-rockchip-support-gamma-control-on-RK3399.patch
-Patch280:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0021-media-rockchip-rga-do-proper-error-checking-in-probe.patch
-Patch281:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0022-arm-dts-rockchip-firefly-station-m2.patch
-Patch282:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0023-add-dts-rk3568-station-p2.patch
-Patch283:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0024-add-dts-rk3568-radxa-rock3a.patch
-Patch284:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0001-Bluetooth-Add-new-quirk-for-broken-local-ext-features.patch
-Patch285:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0002-Bluetooth-btrtl-add-support-for-the-RTL8723CS.patch
-Patch286:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0003-arm64-allwinner-a64-enable-Bluetooth-On-Pinebook.patch
-Patch287:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0004-arm64-dts-allwinner-enable-bluetooth-pinetab-pinepho.patch
-Patch288:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0005-staging-add-rtl8723cs-driver.patch
-Patch289:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0006-pinetab-accelerometer.patch
-Patch290:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0007-enable-jack-detection-pinetab.patch
-Patch292:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0002-arm64-dts-rockchip-enable-vop2-and-hdmi-tx-on-quartz64a.patch
-Patch293:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0003-add-GPU-for-RK356x-SoCs.patch
-Patch294:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0004-power-supply-Add-Support-for-RK817-Charger.patch
-Patch295:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0005-phy-rockchip-inno-usb2-support-rk356x-usb2phy.patch
-Patch296:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0006-HDMI-Audio-on-RK356x-Quartz64-Model-A.patch
-Patch297:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0007-phy-rockchip-add-naneng-combo-phy-for-RK3568.patch
-Patch298:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/0008-arm64-dts-rockchip-enable-sdmmc1-on-Quartz64-Model-A.patch
-%endif
+Patch260:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/1005-panfrost-Silence-Panfrost-gem-shrinker-loggin.patch
+
+# Other ARM64 patches
+Patch261:	https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/target/linux/rockchip/patches-5.15/992-rockchip-rk3399-overclock-to-2.2-1.8-GHz.patch
 
 # (tpg) patches taken from https://github.com/OpenMandrivaSoftware/os-image-builder/tree/master/device/rockchip/generic/kernel-patches
 Patch300:	add-board-orangepi-4.patch
@@ -333,10 +301,6 @@ Patch303:	rk3399-add-sclk-i2sout-src-clock.patch
 Patch305:	kernel-6.0-rc2-perf-x86-compile.patch
 
 Patch350:	rtla-5.17-fix-make-clean.patch
-
-# (tpg) patches taken from LibreELEC
-#Patch400:	https://raw.githubusercontent.com/LibreELEC/LibreELEC.tv/master/projects/Rockchip/patches/linux/default/linux-2000-v4l-wip-rkvdec-vp9.patch
-#Patch401:	https://raw.githubusercontent.com/LibreELEC/LibreELEC.tv/master/projects/Rockchip/patches/linux/default/linux-2001-v4l-wip-rkvdec-hevc.patch
 
 # Patches to external modules
 # Marked SourceXXX instead of PatchXXX because the modules
