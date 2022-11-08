@@ -122,7 +122,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}1
+Release:	%{?relc:0.rc%{relc}.}2
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -301,6 +301,10 @@ Patch303:	rk3399-add-sclk-i2sout-src-clock.patch
 Patch305:	kernel-6.0-rc2-perf-x86-compile.patch
 
 Patch350:	rtla-5.17-fix-make-clean.patch
+
+# https://gitlab.freedesktop.org/drm/amd/-/issues/2113
+Patch360:	https://gitlab.freedesktop.org/agd5f/linux/-/commit/7259d1c92f03d27d913f2c35968e70117e6fc98f.patch
+Patch361:	https://gitlab.freedesktop.org/agd5f/linux/-/commit/8a1a7d7445c925acc6aec4de163ff91616653aaa.patch
 
 # Patches to external modules
 # Marked SourceXXX instead of PatchXXX because the modules
