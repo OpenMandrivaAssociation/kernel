@@ -59,7 +59,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 0
-%define sublevel 8
+%define sublevel 9
 #define relc 1
 
 # Having different top level names for packges means that you have to remove
@@ -92,7 +92,7 @@
 %bcond_with lazy_developer
 %bcond_without build_debug
 %bcond_without clr
-%bcond_with vbox_orig_mods
+%bcond_without vbox_orig_mods
 # FIXME re-enable by default when the patches have been adapted to 5.8
 %bcond_with saa716x
 %bcond_with rtl8821ce
@@ -122,7 +122,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}2
+Release:	%{?relc:0.rc%{relc}.}1
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -305,7 +305,6 @@ Patch350:	rtla-5.17-fix-make-clean.patch
 # https://gitlab.freedesktop.org/drm/amd/-/issues/2113
 Patch360:	https://gitlab.freedesktop.org/agd5f/linux/-/commit/7259d1c92f03d27d913f2c35968e70117e6fc98f.patch
 Patch361:	https://gitlab.freedesktop.org/agd5f/linux/-/commit/8a1a7d7445c925acc6aec4de163ff91616653aaa.patch
-Patch362:	https://patchwork.freedesktop.org/patch/509532/raw/#/drm-amdgpu-workaround-for-TLB-seq-race.patch
 
 # Patches to external modules
 # Marked SourceXXX instead of PatchXXX because the modules
