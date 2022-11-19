@@ -9,10 +9,6 @@
 # but not making it to the debug file lists.
 # This should be fixed properly...
 %define _unpackaged_files_terminate_build 0
-
-# (tpg) use LLVM/polly for polyhedra optimization and automatic vector code generation
-%define pollyflags -mllvm -polly -mllvm -polly-position=early -mllvm -polly-parallel=true -fopenmp -fopenmp-version=50 -mllvm -polly-dependences-computeout=5000000 -mllvm -polly-detect-profitability-min-per-loop-insts=40 -mllvm -polly-tiling=true -mllvm -polly-prevect-width=256 -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-num-threads=0 -mllvm -polly-scheduling=dynamic -mllvm -polly-scheduling-chunksize=1 -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -mllvm -polly-enable-delicm=true -mllvm -extra-vectorizer-passes -mllvm -enable-cond-stores-vec -mllvm -slp-vectorize-hor-store -mllvm -enable-loopinterchange -mllvm -enable-loop-distribute -mllvm -enable-unroll-and-jam -mllvm -enable-loop-flatten -mllvm -interleave-small-loop-scalar-reduction -mllvm -unroll-runtime-multi-exit -mllvm -aggressive-ext-opt
-
 %endif
 
 ## STOP: Adding weird and unsupported upstream kernel C/LD flags of any sort
@@ -42,6 +38,7 @@
     [ "$RPM_BUILD_NCPUS" -gt 1 ] && echo "-P $RPM_BUILD_NCPUS")
 
 %define target_arch %(echo %{_arch} | sed -e 's/mips.*/mips/' -e 's/arm.*/arm/' -e 's/aarch64/arm64/' -e 's/x86_64/x86/' -e 's/i.86/x86/' -e 's/znver1/x86/' -e 's/riscv.*/riscv/' -e 's/ppc.*/powerpc/')
+
 
 # (tpg) define here per arch which kernel flavours you would like to build
 %ifarch %{aarch64}
@@ -1182,15 +1179,13 @@ BuildKernel() {
 	if echo $1 |grep -qv gcc; then
 		CC=clang
 		CXX=clang++
-		BUILD_EXT_CFLAGS="-O3 %{pollyflags}"
 		BUILD_LD="ld.lld --icf=none --no-gc-sections"
 		BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
 		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
 	else
 		CC=gcc
 		CXX=g++
-		BUILD_EXT_CFLAGS="-O3"
-# force ld.bfd, Kbuild logic issues when ld is linked to something else
+# force ld.bfd, Kbuild logic issues when ld is linked  to something else
 		BUILD_LD="%{_target_platform}-ld.bfd"
 		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
 		BUILD_TOOLS=""
@@ -1209,7 +1204,7 @@ BuildKernel() {
 	TARGETS="${IMAGE} modules"
 %endif
 %endif
-	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_CFLAGS="$BUILD_EXT_CFLAGS" KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $TARGETS
+	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $TARGETS
 
 # Start installing stuff
 	install -d %{temp_boot}
