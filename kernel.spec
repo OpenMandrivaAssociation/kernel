@@ -9,6 +9,10 @@
 # but not making it to the debug file lists.
 # This should be fixed properly...
 %define _unpackaged_files_terminate_build 0
+# (tpg) use LLVM/polly for polyhedra optimization and automatic vector code generation
+# based on https://lore.kernel.org/lkml/20210120174146.12287-1-lazerl0rd@thezest.dev/
+%define pollyflags %{nil}
+#-mllvm -polly -mllvm -polly-run-dce -mllvm -polly-run-inliner -mllvm -polly-reschedule=1 -mllvm -polly-loopfusion-greedy=1 -mllvm -polly-postopts=1 -mllvm -polly-ast-use-context -mllvm -polly-detect-keep-going -mllvm -polly-vectorizer=stripmine -mllvm -polly-invariant-load-hoisting
 %endif
 
 ## STOP: Adding weird and unsupported upstream kernel C/LD flags of any sort
@@ -1180,12 +1184,14 @@ BuildKernel() {
 	if echo $1 |grep -qv gcc; then
 		CC=clang
 		CXX=clang++
+		BUILD_OPT_CFLAGS="-O3 %{pollyflags}"
 		BUILD_LD="ld.lld --icf=none --no-gc-sections"
 		BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
 		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
 	else
 		CC=gcc
 		CXX=g++
+		BUILD_OPT_CFLAGS="-O3"
 # force ld.bfd, Kbuild logic issues when ld is linked  to something else
 		BUILD_LD="%{_target_platform}-ld.bfd"
 		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
@@ -1205,7 +1211,7 @@ BuildKernel() {
 	TARGETS="${IMAGE} modules"
 %endif
 %endif
-	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $TARGETS
+	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_CFLAGS="$BUILD_OPT_CFLAGS" KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $TARGETS
 
 # Start installing stuff
 	install -d %{temp_boot}
