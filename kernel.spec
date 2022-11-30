@@ -286,7 +286,8 @@ Patch249:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/ar
 Patch250:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
 Patch251:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/add-rockchip-iep-driver.patch
 Patch252:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng.patch
-Patch253:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-rp64-rng.patch
+Patch253:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng_5.10.patch
+Patch254:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-rp64-rng.patch
 
 # (tpg) Manjaro ARM Patches
 Patch260:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/1005-panfrost-Silence-Panfrost-gem-shrinker-loggin.patch
