@@ -13,6 +13,8 @@
 # based on https://lore.kernel.org/lkml/20210120174146.12287-1-lazerl0rd@thezest.dev/
 %define pollyflags %{nil}
 #-mllvm -polly -mllvm -polly-run-dce -mllvm -polly-run-inliner -mllvm -polly-reschedule=1 -mllvm -polly-loopfusion-greedy=1 -mllvm -polly-postopts=1 -mllvm -polly-ast-use-context -mllvm -polly-detect-keep-going -mllvm -polly-vectorizer=stripmine -mllvm -polly-invariant-load-hoisting
+%else
+%define pollyflags %{nil}
 %endif
 
 ## STOP: Adding weird and unsupported upstream kernel C/LD flags of any sort
@@ -62,8 +64,8 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 0
-%define sublevel 11
+%define patchlevel 1
+%define sublevel 0
 #define relc 1
 
 # Having different top level names for packges means that you have to remove
@@ -306,10 +308,6 @@ Patch303:	rk3399-add-sclk-i2sout-src-clock.patch
 Patch305:	kernel-6.0-rc2-perf-x86-compile.patch
 
 Patch350:	rtla-5.17-fix-make-clean.patch
-
-# https://gitlab.freedesktop.org/drm/amd/-/issues/2113
-Patch360:	https://gitlab.freedesktop.org/agd5f/linux/-/commit/7259d1c92f03d27d913f2c35968e70117e6fc98f.patch
-Patch361:	https://gitlab.freedesktop.org/agd5f/linux/-/commit/8a1a7d7445c925acc6aec4de163ff91616653aaa.patch
 
 # Patches to external modules
 # Marked SourceXXX instead of PatchXXX because the modules
@@ -763,7 +761,7 @@ Version:	%{version}
 Release:	%{release}
 Group:		System/Kernel and hardware
 Epoch:		1
-%if 0%{?relc:1}
+%if 0%{!?relc:1}
 # (tpg) fix bug https://issues.openmandriva.org/show_bug.cgi?id=1580
 Provides:	kernel-headers = 1:%{version}-%{release}
 Obsoletes:	kernel-headers < 1:%{version}-%{release}
@@ -1370,6 +1368,7 @@ $DevelRoot/kernel
 $DevelRoot/lib
 $DevelRoot/mm
 $DevelRoot/net
+$DevelRoot/rust
 $DevelRoot/samples
 $DevelRoot/scripts
 $DevelRoot/security
@@ -1847,13 +1846,15 @@ cd -
 %{_kerneldir}/lib
 %{_kerneldir}/mm
 %{_kerneldir}/net
-%{_kerneldir}/virt
+%{_kerneldir}/rust
+%{_kerneldir}/.rustfmt.toml
 %{_kerneldir}/samples
 %{_kerneldir}/scripts
 %{_kerneldir}/security
 %{_kerneldir}/sound
 %{_kerneldir}/tools
 %{_kerneldir}/usr
+%{_kerneldir}/virt
 %{_kerneldir}/COPYING
 %{_kerneldir}/CREDITS
 %{_kerneldir}/Kbuild
