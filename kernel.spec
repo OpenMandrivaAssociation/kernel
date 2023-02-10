@@ -20,11 +20,12 @@
 ## STOP: Adding weird and unsupported upstream kernel C/LD flags of any sort
 ## yes , including ftlo . O3 and whatever else
 
-# (crazy) , well that new way of doing buil-id symlinks
-# does not seems to work, see:
-# https://issues.openmandriva.org/show_bug.cgi?id=2400
-# let us try *old* way for kernel package(s)
-%global _build_id_links alldebug
+# Disable useless debug rpms as we generate our own debug package
+%define _enable_debug_packages %{nil}
+%define debug_package %{nil}
+%global __debug_package %{nil}
+%global __debug_install_post %{nil}
+%global _build_id_links none
 
 # Work around incomplete debug packages
 %global _empty_manifest_terminate_build 0
@@ -45,14 +46,9 @@
 
 %define target_arch %(echo %{_arch} | sed -e 's/mips.*/mips/' -e 's/arm.*/arm/' -e 's/aarch64/arm64/' -e 's/x86_64/x86/' -e 's/i.86/x86/' -e 's/znver1/x86/' -e 's/riscv.*/riscv/' -e 's/ppc.*/powerpc/')
 
-
 # (tpg) define here per arch which kernel flavours you would like to build
-%ifarch %{aarch64}
 %define kernel_flavours desktop server
-%else
-%define kernel_flavours desktop server
-# desktop-gcc server-gcc
-%endif
+# possible options are: desktop-gcc server-gcc
 
 # (tpg) package these kernel modules as subpackages
 %ifarch %{aarch64}
@@ -66,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 1
-%define sublevel 10
+%define sublevel 12
 #define relc 1
 
 # Having different top level names for packges means that you have to remove
@@ -97,7 +93,7 @@
 %bcond_without cross_headers
 
 %bcond_with lazy_developer
-%bcond_without build_debug
+%bcond_with build_debug
 %bcond_without clr
 %bcond_without vbox_orig_mods
 # FIXME re-enable by default when the patches have been adapted to 5.8
@@ -275,6 +271,12 @@ Patch226:	https://gitweb.frugalware.org/frugalware-current/raw/50690405717979871
 Patch230:	linux-5.11-perf-compile.patch
 #Patch231:	ce71038e673ee8291c64631359e56c48c8616dc7.patch
 
+# (tpg) F2FS is somehow corrupted https://bugzilla.kernel.org/show_bug.cgi?id=216050
+Patch231:	f2fs-fix-bug-216050.patch
+
+# (tpg) fix build bpftool with LLVM/clang
+Patch232:	bpftool-use-a-local-bpf_perf_event_value-to-fix-accessing-its-fields.patch
+
 # (tpg) Armbian ARM Patches
 Patch240:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch
 Patch241:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-spi1-flash-speed.patch
@@ -428,7 +430,9 @@ The kernel package contains the Linux kernel (vmlinuz), the core of your
 of the operating system: memory allocation, process allocation, device
 input and output, etc.
 
+#
 # (tpg) generate subpackages for kernel flavours
+#
 %(for flavour in %{kernel_flavours}; do
 	cat <<EOF
 %package -n %{name}-${flavour}
@@ -444,7 +448,7 @@ Provides:	kernel-release-${flavour}-clang
 Provides:	kernel-release-${flavour}-clang-%{version}-%{release}%{disttag} = %{version}-%{release}
 Provides:	kernel-release-${flavour}-clang%_isa = %{version}-%{release}
 %endif
-Requires(pre):	kmod >= 27-3
+Requires(posttrans):	kmod >= 27-3
 Recommends:	kernel-firmware
 Provides:	kernel = %{kernelversion}.%{patchlevel}
 Provides:	%{name} = %{version}-%{release}
@@ -488,8 +492,14 @@ Suggests:	microcode-intel
 
 %files -n %{name}-${flavour} -f kernel_files.${flavour}
 EOF
+done
+)
 
+#
+# kernel-devel
+#
 %if %{with build_devel}
+%(for flavour in %{kernel_flavours}; do
 	cat <<EOF
 %package -n %{name}-${flavour}-devel
 Summary:	The kernel-devel files for %{name}-${flavour}-%{version}-%{release}%{disttag}
@@ -529,9 +539,16 @@ If you want to build your own kernel, you need to install the full
 
 %files -n %{name}-${flavour}-devel -f kernel_devel_files.${flavour}
 EOF
-%endif # end build_devel
+done
+)
+# end build_devel
+%endif
 
+#
+# kernel-debuginfo
+#
 %if %{with build_debug}
+%(for flavour in %{kernel_flavours}; do
 	cat <<EOF
 %package -n %{name}-${flavour}-debuginfo
 Summary:	Files with debuginfo for %{name}-${flavour}-%{version}-%{release}%{disttag}
@@ -557,12 +574,15 @@ needs debugging info from the kernel, this package may help.
 
 %files -n %{name}-${flavour}-debuginfo -f kernel_debug_files.${flavour}
 EOF
-%endif  # end build_debug
 done
 )
+# end build_debug
+%endif
 
-%(
-for modules in %{modules_subpackages}; do
+#
+# kernel extra modules
+#
+%(for modules in %{modules_subpackages}; do
     for flavour in %{kernel_flavours}; do
 	cat <<EOF
 %package -n %{name}-${flavour}-modules-${modules}
@@ -572,9 +592,13 @@ Requires:	%{name}-${flavour} = %{version}-%{release}
 Provides:	installonlypkg(kernel-module)
 AutoReq:	no
 AutoProv:	yes
+Requires(posttrans,postun):	kmod
 
 %description -n %{name}-${flavour}-modules-${modules}
 %{modules} modules for kernel %{name}-${flavour} .
+
+%postun -n %{name}-${flavour}-modules-${modules}
+[ -x %{_bindir}/depmod ] && %{_bindir}/depmod -A %{version}-$kernel_flavour-%{release}%{disttag}
 
 %files -n %{name}-${flavour}-modules-${modules}
 %optional %{_modulesdir}/%{version}-${flavour}-%{release}%{disttag}/kernel/net/${modules}
@@ -713,7 +737,7 @@ Source7004:	https://src.fedoraproject.org/rpms/hyperv-daemons/raw/rawhide/f/hype
 Source7005:	https://src.fedoraproject.org/rpms/hyperv-daemons/raw/rawhide/f/hypervfcopy.rules
 
 %description -n hyperv-tools
-Tools needed to communicate with a Hyper-V host
+Tools needed to communicate with a Hyper-V host.
 
 %files -n hyperv-tools
 %{_sbindir}/hv_kvp_daemon
@@ -951,29 +975,23 @@ chmod 755 tools/objtool/sync-check.sh
 ### Functions definitions needed to build kernel
 ###
 
-CheckConfig() {
-
-    if [ ! -e $(pwd)/.config ]; then
-	printf '%s\n' "Kernel config in $(pwd) missing, killing the build."
-	exit 1
-    fi
-
-# (tpg) please add CONFIG that were carelessly enabled, while it is known these MUST be disabled
-    if grep -Fxq "CONFIG_RT_GROUP_SCHED=y" .config ; then
-	printf '%s\n' "Please stop enabling CONFIG_RT_GROUP_SCHED - this option is not recommended with systemd systemd/systemd#553, killing the build."
-	exit 1
-    fi
-# (tpg) kernel modules are compresed manually inside spec file
-    if ! grep -Fxq "CONFIG_MODULE_COMPRESS_NONE=y" .config ; then
-	printf '%s\n' "Please do not disable CONFIG_MODULE_COMPRESS_NONE=y or set any other module compression inside .config, as this will bloat main package instead of debuginfo subpackage, killing the build."
-	exit 1
-    fi
-# (tpg) stop enabling CONFIG_DEBUG_KERNEL
-    if grep -Fxq "CONFIG_DEBUG_KERNEL=y" .config ; then
-	printf '%s\n' "Please do not set CONFIG_DEBUG_KERNEL=y as this is relase build, and we are not developing kernel or its modules."
-	exit 1
-    fi
-}
+# (tpg) Please stop enabling CONFIG_RT_GROUP_SCHED - this option is not recommended with systemd systemd/systemd#553, killing the build."
+# (tpg) Please do not disable CONFIG_MODULE_COMPRESS_NONE=y or set any other module compression inside .config, as this will bloat main package instead of debuginfo subpackage, killing the build."
+# (tpg) Please do not set CONFIG_DEBUG_KERNEL=y as this is relase build, and we are not developing kernel or its modules."
+FIXED_CONFIGS=" --disable CONFIG_RT_GROUP_SCHED \
+%if %{without bpftool}
+	--disable CONFIG_DEBUG_INFO_BTF \
+	--disable CONFIG_DEBUG_INFO_BTF_MODULES \
+%endif
+%if %{with build_debug}
+	--disable CONFIG_DEBUG_INFO_NONE \
+	--enable CONFIG_DEBUG_INFO \
+%else
+	--enable CONFIG_DEBUG_INFO_NONE \
+	--disable CONFIG_DEBUG_INFO \
+%endif
+	--disable CONFIG_MODULE_COMPRESS_NONE \
+	--disable CONFIG_DEBUG_KERNEL "
 
 clangify() {
 	sed -i \
@@ -1051,7 +1069,7 @@ CreateConfig() {
 	rm -fv .config
 
 	printf '%s\n' "<-- Creating config for kernel type ${type} for ${arch}"
-	if echo $type |grep -qv gcc; then
+	if printf '%s\n' ${type} | grep -qv gcc; then
 		CC=clang
 		CXX=clang++
 		BUILD_LD="ld.lld --icf=none --no-gc-sections"
@@ -1073,8 +1091,8 @@ CreateConfig() {
 		desktop|desktop-gcc|server|server-gcc)
 			rm -f .config
 			cp -v ${config_dir}/i686-omv-defconfig .config
-			echo ${type} |grep -q gcc || clangify .config
-			echo ${type} |grep -q server && serverize .config
+			printf '%s\n' ${type} | grep -q gcc || clangify .config
+			printf '%s\n' ${type} | grep -q server && serverize .config
 			;;
 		*)
 			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
@@ -1088,8 +1106,8 @@ CreateConfig() {
 			rm -f .config
 			cp -v ${config_dir}/x86_64-omv-defconfig .config
 			[ "${arch}" = "znver1" ] && amdify .config
-			echo ${type} |grep -q gcc || clangify .config
-			echo ${type} |grep -q server && serverize .config
+			printf '%s\n' ${type} | grep -q gcc || clangify .config
+			printf '%s\n' ${type} | grep -q server && serverize .config
 			;;
 		*)
 			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
@@ -1102,8 +1120,8 @@ CreateConfig() {
 		desktop|desktop-gcc|server|server-gcc)
 			rm -f .config
 			cp -v ${config_dir}/armv7hnl-omv-defconfig .config
-			echo ${type} |grep -q gcc || clangify .config
-			echo ${type} |grep -q server && serverize .config
+			printf '%s\n' ${type} | grep -q gcc || clangify .config
+			printf '%s\n' ${type} | grep -q server && serverize .config
 			;;
 		*)
 			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
@@ -1116,8 +1134,8 @@ CreateConfig() {
 		desktop|desktop-gcc|server|server-gcc)
 			rm -f .config
 			cp -v ${config_dir}/aarch64-omv-defconfig .config
-			echo ${type} |grep -q gcc || clangify .config
-			echo ${type} |grep -q server && serverize .config
+			printf '%s\n' ${type} | grep -q gcc || clangify .config
+			printf '%s\n' ${type} | grep -q server && serverize .config
 			;;
 		*)
 			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
@@ -1149,7 +1167,7 @@ CreateConfig() {
 	cfgarch=$arch
 	if [ "$arch" = "znver1" ] || [ "$arch" = "x86_64" ]; then
 		arch=x86
-	elif echo $arch |grep -q ^ppc; then
+	elif printf '%s\n' ${arch} |grep -q ^ppc; then
 		arch=powerpc
 	fi
 
@@ -1157,21 +1175,29 @@ CreateConfig() {
 	if [[ -n "${CONFIGS}" ]]; then
 		make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 $CONFIGS
 	else
+
+	    if [ ! -e $(pwd)/.config ]; then
+		printf '%s\n' "Kernel config in $(pwd) missing, killing the build."
+		exit 1
+	    fi
+
+# (tpg) apply our dynamic configs
+	    scripts/config $FIXED_CONFIGS
+
 %if %{without lazy_developer}
 ## YES, intentionally, DIE on wrong config
-		echo "=== Configuring ${arch} ${type} kernel ==="
-		CheckConfig
-		make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 oldconfig
+	    printf '%s\n' "=== Configuring ${arch} ${type} kernel ==="
+	    make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 oldconfig
 %else
-		printf '%s\n' "Lazy developer option is enabled!!. Don't be lazy!."
+	    printf '%s\n' "Lazy developer option is enabled!!. Don't be lazy!."
 ## that takes kernel defaults on missing or changed things
 ## olddefconfig is similar to yes ... but not that verbose
-		CheckConfig
-		yes "" | make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
+	    yes "" | make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
 %endif
 	fi
 
 	scripts/config --set-val BUILD_SALT \"$(echo "$arch-$type-%{EVRD}"|sha1sum|awk '{ print $1; }')\"
+
 # " <--- workaround for vim syntax highlighting bug, ignore
 	cp .config kernel/configs/omv-${cfgarch}-${type}.config
 }
@@ -1195,7 +1221,7 @@ BuildKernel() {
 	KernelVer=$1
 	printf '%s\n' "<--- Building kernel $KernelVer"
 
-	if echo $1 |grep -qv gcc; then
+	if printf '%s\n' ${KernelVer} | grep -qv gcc; then
 		CC=clang
 		CXX=clang++
 		BUILD_OPT_CFLAGS="-O3 %{pollyflags}"
@@ -1214,19 +1240,17 @@ BuildKernel() {
 
 %ifarch %{arm}
 	IMAGE=zImage
-	TARGETS="${IMAGE} modules"
 %else
 %ifarch %{aarch64}
 # (tpg) when booting with UEFI then uboot-tools is looking for a vmlinuz in PE-COFF format
 	IMAGE=Image
-	TARGETS="${IMAGE} modules dtbs"
+	DTBS="dtbs"
 %else
 	IMAGE=bzImage
-	TARGETS="${IMAGE} modules"
 %endif
 %endif
-	# FIXME add KBUILD_CFLAGS="$BUILD_OPT_CFLAGS" once that actually works
-	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $TARGETS
+# FIXME add KBUILD_CFLAGS="$BUILD_OPT_CFLAGS" once that actually works
+	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE modules $DTBS
 
 # Start installing stuff
 	install -d %{temp_boot}
@@ -1253,6 +1277,23 @@ BuildKernel() {
 
 # remove /lib/firmware, we use a separate kernel-firmware
 	rm -rf %{temp_root}/lib/firmware
+
+# (tpg) strip modules out of debug bits
+	find %{temp_modules}/$KernelVer -name "*.ko" -type f > all_modules
+%if %{with build_debug}
+	cat all_modules | %kxargs -I '{}' objcopy --only-keep-debug '{}' '{}'.debug
+	cat all_modules | %kxargs -I '{}' sh -c 'cd $(dirname {}); objcopy --add-gnu-debuglink=$(basename {}).debug --strip-debug $(basename {})'
+%endif
+	cat all_modules | %kxargs -I '{}' strip --strip-debug {}
+
+# sign modules after stripping
+	cat all_modules | %kxargs -r -n16 sh -c "
+	    for mod; do
+		scripts/sign-file sha1 certs/signing_key.pem certs/signing_key.x509 \$mod
+		rm -f \$mod.sig \$mod.dig
+	    done
+	" DUMMYARG0
+	rm -rf all_modules
 }
 
 SaveDevel() {
@@ -1262,49 +1303,48 @@ SaveDevel() {
 	TempDevelRoot=%{temp_root}$DevelRoot
 
 	mkdir -p $TempDevelRoot
-	for i in $(find . -name 'Makefile*'); do cp -R --parents $i $TempDevelRoot;done
-	for i in $(find . -name 'Kconfig*' -o -name 'Kbuild*'); do cp -R --parents $i $TempDevelRoot;done
 	cp -fR include $TempDevelRoot
 	cp -fR scripts $TempDevelRoot
-	cp -fR kernel/time/timeconst.bc $TempDevelRoot/kernel/time/
-	cp -fR kernel/bounds.c $TempDevelRoot/kernel
-	cp -fR tools/include $TempDevelRoot/tools/
+	cp -fRu --parents $(find . -name 'Makefile*' -o -name 'Kconfig*' -o -name 'Kbuild*') $TempDevelRoot
+	cp -fRu kernel/time/timeconst.bc $TempDevelRoot/kernel/time/
+	cp -fRu kernel/bounds.c $TempDevelRoot/kernel
+	cp -fRu tools/include $TempDevelRoot/tools/
 %ifarch %{arm}
-	cp -fR arch/%{target_arch}/tools $TempDevelRoot/arch/%{target_arch}/
+	cp -fRu arch/%{target_arch}/tools $TempDevelRoot/arch/%{target_arch}/
 %endif
 
 %ifarch %{ix86} %{x86_64}
-	cp -fR arch/x86/kernel/asm-offsets.{c,s} $TempDevelRoot/arch/x86/kernel/
-	cp -fR arch/x86/kernel/asm-offsets_{32,64}.c $TempDevelRoot/arch/x86/kernel/
-	cp -fR arch/x86/purgatory/* $TempDevelRoot/arch/x86/purgatory/
-	cp -fR arch/x86/entry/syscalls/syscall* $TempDevelRoot/arch/x86/entry/syscalls/
-	cp -fR arch/x86/include $TempDevelRoot/arch/x86/
-	cp -fR arch/x86/tools $TempDevelRoot/arch/x86/
+	cp -fRu arch/x86/kernel/asm-offsets.{c,s} $TempDevelRoot/arch/x86/kernel/
+	cp -fRu arch/x86/kernel/asm-offsets_{32,64}.c $TempDevelRoot/arch/x86/kernel/
+	cp -fRu arch/x86/purgatory/* $TempDevelRoot/arch/x86/purgatory/
+	cp -fRu arch/x86/entry/syscalls/syscall* $TempDevelRoot/arch/x86/entry/syscalls/
+	cp -fRu arch/x86/include $TempDevelRoot/arch/x86/
+	cp -fRu arch/x86/tools $TempDevelRoot/arch/x86/
 %else
-	cp -fR arch/%{target_arch}/kernel/asm-offsets.{c,s} $TempDevelRoot/arch/%{target_arch}/kernel/
-	for f in $(find arch/%{target_arch} -name include); do cp -fR --parents $f $TempDevelRoot; done
+	cp -fRu arch/%{target_arch}/kernel/asm-offsets.{c,s} $TempDevelRoot/arch/%{target_arch}/kernel/
+	cp -fRu --parents $(find arch/%{target_arch} -name 'include') $TempDevelRoot;
 %endif
 
-	cp -fR .config Module.symvers $TempDevelRoot
+	cp -fRu .config Module.symvers $TempDevelRoot
 
 # Needed for truecrypt build (Danny)
-	cp -fR drivers/md/dm.h $TempDevelRoot/drivers/md/
+	cp -fRu drivers/md/dm.h $TempDevelRoot/drivers/md/
 
 # Needed for lirc_gpio (#39004)
-	cp -fR drivers/media/pci/bt8xx/bttv{,p}.h $TempDevelRoot/drivers/media/pci/bt8xx/
-	cp -fR drivers/media/pci/bt8xx/bt848.h $TempDevelRoot/drivers/media/pci/bt8xx/
-	cp -fR drivers/media/common/btcx-risc.h $TempDevelRoot/drivers/media/common/
+	cp -fRu drivers/media/pci/bt8xx/bttv{,p}.h $TempDevelRoot/drivers/media/pci/bt8xx/
+	cp -fRu drivers/media/pci/bt8xx/bt848.h $TempDevelRoot/drivers/media/pci/bt8xx/
+	cp -fRu drivers/media/common/btcx-risc.h $TempDevelRoot/drivers/media/common/
 
 # Needed for external dvb tree (#41418)
-	cp -fR drivers/media/dvb-frontends/lgdt330x.h $TempDevelRoot/drivers/media/dvb-frontends/
+	cp -fRu drivers/media/dvb-frontends/lgdt330x.h $TempDevelRoot/drivers/media/dvb-frontends/
 
 # orc unwinder needs theese
-	cp -fR tools/build/Build{,.include} $TempDevelRoot/tools/build
-	cp -fR tools/build/fixdep.c $TempDevelRoot/tools/build
-	cp -fR tools/lib/{str_error_r.c,string.c} $TempDevelRoot/tools/lib
-	cp -fR tools/lib/subcmd/* $TempDevelRoot/tools/lib/subcmd
-	cp -fR tools/objtool/* $TempDevelRoot/tools/objtool
-	cp -fR tools/scripts/utilities.mak $TempDevelRoot/tools/scripts
+	cp -fRu tools/build/Build{,.include} $TempDevelRoot/tools/build
+	cp -fRu tools/build/fixdep.c $TempDevelRoot/tools/build
+	cp -fRu tools/lib/{str_error_r.c,string.c} $TempDevelRoot/tools/lib
+	cp -fRu tools/lib/subcmd/* $TempDevelRoot/tools/lib/subcmd
+	cp -fRu tools/objtool/* $TempDevelRoot/tools/objtool
+	cp -fRu tools/scripts/utilities.mak $TempDevelRoot/tools/scripts
 
 # Make clean fails on the include statements in the Makefiles - and the drivers aren't relevant for -devel
 	rm -rf $TempDevelRoot/drivers/net/wireless/rtl8*
@@ -1410,7 +1450,6 @@ if [ -d %{_modulesdir}/%{version}-$devel_flavour-%{release}%{disttag} ]; then
 fi
 EOF
 
-
 ### Create -devel Preun script on the fly
 cat > $kernel_devel_files-preun <<EOF
 if [ -L %{_modulesdir}/%{version}-$devel_flavour-%{release}%{disttag}/build ]; then
@@ -1434,18 +1473,7 @@ SaveDebug() {
 	install -m 644 vmlinux %{temp_boot}/vmlinux-%{version}-$debug_flavour-%{release}%{disttag}
 	kernel_debug_files=kernel_debug_files.$debug_flavour
 	printf '%s\n' "%{_bootdir}/vmlinux-%{version}-$debug_flavour-%{release}%{disttag}" >> $kernel_debug_files
-
-	find %{temp_modules}/%{version}-$debug_flavour-%{release}%{disttag}/kernel -name "*.ko" -type f | %kxargs -I '{}' objcopy --only-keep-debug '{}' '{}'.debug
-	find %{temp_modules}/%{version}-$debug_flavour-%{release}%{disttag}/kernel -name "*.ko" -type f | %kxargs -I '{}' sh -c 'cd $(dirname {}); objcopy --add-gnu-debuglink=$(basename {}).debug --strip-debug $(basename {})'
-	find %{temp_modules}/%{version}-$debug_flavour-%{release}%{disttag}/kernel -name "*.ko" -type f -exec strip --strip-debug {} +
-	find %{temp_modules}/%{version}-$debug_flavour-%{release}%{disttag}/kernel -name "*.ko" -type f |while read r; do
-# sign modules after stripping
-		scripts/sign-file sha1 certs/signing_key.pem certs/signing_key.x509 $r
-	done
-
-	cd %{temp_modules}
-	    find %{version}-$debug_flavour-%{release}%{disttag}/kernel -name "*.ko.debug" -type f > debug_module_list
-	cd -
+	find %{temp_modules}/%{version}-$debug_flavour-%{release}%{disttag}/kernel -name "*.ko.debug" -type f > %{temp_modules}/debug_module_list
 	cat %{temp_modules}/debug_module_list | sed 's|\(.*\)|%{_modulesdir}/\1|' >> $kernel_debug_files
 	cat %{temp_modules}/debug_module_list | sed 's|\(.*\)|%exclude %{_modulesdir}/\1|' >> ../kernel_exclude_debug_files.$debug_flavour
 	rm -f %{temp_modules}/debug_module_list
@@ -1482,7 +1510,7 @@ CreateFiles() {
 EOF
 
 %if %{with build_debug}
-    cat ../kernel_exclude_debug_files.$kernel_flavour >> $kernel_files
+cat ../kernel_exclude_debug_files.$kernel_flavour >> $kernel_files
 %endif
 
 ### Create kernel Posttrans script
@@ -1647,42 +1675,41 @@ sed -ri "s|^(EXTRAVERSION =).*|\1 -%{release}|" Makefile
 %if %{with build_cpupower}
 # make sure version-gen.sh is executable.
 chmod +x tools/power/cpupower/utils/version-gen.sh
-%make_build -C tools/power/cpupower CPUFREQ_BENCH=false LDFLAGS="%{optflags}"
-%make_install -C tools/power/cpupower DESTDIR=%{temp_root} libdir=%{_libdir} mandir=%{_mandir} CPUFREQ_BENCH=false CC=%{__cc} LDFLAGS="%{optflags}"
+%make_build -C tools/power/cpupower CC=%{__cc} HOSTCC=%{__cc} LDFLAGS="%{optflags}" CPUFREQ_BENCH=false V=0 VERBOSE=0
+%make_install -C tools/power/cpupower CC=%{__cc} HOSTCC=%{__cc} LDFLAGS="%{optflags}" DESTDIR=%{temp_root} libdir=%{_libdir} mandir=%{_mandir} CPUFREQ_BENCH=false V=0 VERBOSE=0
 %endif
 
 %ifarch %{ix86} %{x86_64}
 %if %{with build_x86_energy_perf_policy}
-%make_build -C tools/power/x86/x86_energy_perf_policy CC=clang LDFLAGS="-Wl,--build-id=none"
+%make_build -C tools/power/x86/x86_energy_perf_policy CC=%{__cc} HOSTCC=%{__cc} LDFLAGS="-Wl,--build-id=none" V=0 VERBOSE=0
 mkdir -p %{temp_root}%{_bindir} %{temp_root}%{_mandir}/man8
-%make_install -C tools/power/x86/x86_energy_perf_policy DESTDIR="%{temp_root}"
+%make_install -C tools/power/x86/x86_energy_perf_policy DESTDIR="%{temp_root}" V=0 VERBOSE=0
 %endif
 
 %if %{with build_turbostat}
-%make_build -C tools/power/x86/turbostat CC=clang
+%make_build -C tools/power/x86/turbostat CC=%{__cc} HOSTCC=%{__cc} V=0 VERBOSE=0
 mkdir -p %{temp_root}%{_bindir} %{temp_root}%{_mandir}/man8
-%make_install -C tools/power/x86/turbostat DESTDIR="%{temp_root}"
+%make_install -C tools/power/x86/turbostat DESTDIR="%{temp_root}" V=0 VERBOSE=0
 %endif
 %endif
 
 %if %{with bpftool}
-# FIXME As of lld 12.0 and kernel 5.11, lld results in unresolved symbols, ld.bfd works
-%make_build -C tools/lib/bpf CC=clang LD=ld.bfd HOSTCC=clang HOSTLD=ld.bfd VMLINUX_BPF=%{temp_root}%{_bootdir}/vmlinuz-%{version}-desktop-%{release}%{disttag} libbpf.a libbpf.pc libbpf.so -j1
-%make_build -C tools/bpf/bpftool CC=clang LD=ld.bfd HOSTCC=clang HOSTLD=ld.bfd VMLINUX_BPF=%{temp_root}%{_bootdir}/vmlinuz-%{version}-desktop-%{release}%{disttag} bpftool -j1
-%make_install -C tools/lib/bpf install_headers DESTDIR=%{temp_root} prefix=%{_prefix} libdir=%{_libdir} CC=clang CXX=clang++ LD=ld.bfd HOSTLD=ld.bfd VMLINUX_BPF=%{temp_root}%{_bootdir}/vmlinuz-%{version}-desktop-%{release}%{disttag}
-%make_install -C tools/bpf/bpftool CC=clang CXX=clang++ LD=ld.bfd HOSTCC=clang HOSTLD=ld.bfd DESTDIR=%{temp_root} prefix=%{_prefix} bash_compdir=%{_sysconfdir}/bash_completion.d/ mandir=%{_mandir} VMLINUX_BPF=%{temp_root}%{_bootdir}/vmlinuz-%{version}-desktop-%{release}%{disttag}
+%make_build -C tools/bpf/bpftool CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd DESTDIR="%{temp_root}" V=0 VERBOSE=0
+%make_install -C tools/bpf/bpftool DESTDIR="%{temp_root}" prefix=%{_prefix} bash_compdir=%{_sysconfdir}/bash_completion.d/ mandir=%{_mandir} install V=0 VERBOSE=0
+%make_build -C tools/lib/bpf CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd V=0 VERBOSE=0
+%make_install -C tools/lib/bpf DESTDIR="%{temp_root}" prefix=%{_prefix} libdir=%{_libdir} install install_headers V=0 VERBOSE=0
 %endif
 
 %if %{with perf}
 [ -e %{_sysconfdir}/profile.d/90java.sh ] && . %{_sysconfdir}/profile.d/90java.sh
-%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} all man
+%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
 # Not SMP safe
-make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} install install-man
+make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
 %endif
 
 %if %{with hyperv}
-%make_build -C tools/hv -s CC=%{__cc} HOSTCC=%{__cc} prefix=%{_prefix} sbindir=%{_sbindir}
-%make_install -C tools/hv -s CC=%{__cc} HOSTCC=%{__cc} prefix=%{_prefix} sbindir=%{_sbindir} DESTDIR=%{temp_root}
+%make_build -C tools/hv -s CC=%{__cc} HOSTCC=%{__cc} prefix=%{_prefix} sbindir=%{_sbindir} V=0 VERBOSE=0
+%make_install -C tools/hv -s CC=%{__cc} HOSTCC=%{__cc} prefix=%{_prefix} sbindir=%{_sbindir} DESTDIR=%{temp_root} V=0 VERBOSE=0
 mkdir -p %{temp_root}%{_unitdir}
 install -c -m 644 %{S:7000} %{S:7002} %{S:7004} %{temp_root}%{_unitdir}/
 mkdir -p %{temp_root}%{_udevrulesdir}
@@ -1702,46 +1729,37 @@ PrepareKernel "" %{release}custom
 ###
 
 %install
-# Directories definition needed for installing
-%define target_source %{buildroot}%{_kerneldir}
-%define target_boot %{buildroot}%{_bootdir}
-%define target_modules %{buildroot}%{_modulesdir}
-
 # We want to be able to test several times the install part
 rm -rf %{buildroot}
 cp -a %{temp_root} %{buildroot}
 
 # We used to have a copy of PrepareKernel here
 # Now, we make sure that the thing in the linux dir is what we want it to be
-for i in %{target_modules}/*; do
+for i in %{buildroot}%{_modulesdir}/*; do
     rm -f $i/build $i/source
 done
 
 # binmerge
 %if "%{_bindir}" == "%{_sbindir}"
-mv %{buildroot}%{_prefix}/sbin/* %{buildroot}%{_bindir}/
-rmdir %{buildroot}%{_prefix}/sbin
+[ -d %{buildroot}%{_prefix}/sbin ] && mv %{buildroot}%{_prefix}/sbin/* %{buildroot}%{_bindir}/
+[ -d %{buildroot}%{_prefix}/sbin ] && rmdir %{buildroot}%{_prefix}/sbin
 %endif
 
 # (tpg) let's compress all modules
-find %{target_modules} -name "*.ko" -type f | %kxargs zstd --format=zstd --ultra -22 -T0 --rm -f -q
+find %{buildroot}%{_modulesdir} -name "*.ko" -type f | %kxargs zstd --format=zstd --ultra -22 -T0 --rm -f -q
 
 # sniff, if we compressed all the modules, we change the stamp :(
 # we really need the depmod -ae here
-pushd %{target_modules}
-for i in *; do
-    %{_bindir}/depmod -ae -b %{buildroot} -F %{target_modules}/"$i"/System.map "$i"
+for i in $(ls -d %{buildroot}%{_modulesdir}/* ); do
+    KernelVer=$(basename "$i")
+# (tpg) this is needed workaround to not get wrong depmod output
+# unless somebody place vmlinuz into modulesdir and the copy it to bootdir on install
+    [ -L %{buildroot}%{_modulesdir}/$KernelVer/vmlinuz ] && rm -rf %{buildroot}%{_modulesdir}/$KernelVer/vmlinuz && cp -a %{buildroot}%{_bootdir}/vmlinuz-$KernelVer %{buildroot}%{_modulesdir}/$KernelVer/vmlinuz
+    %{_bindir}/depmod -ae -b %{buildroot} -F %{buildroot}%{_modulesdir}/$KernelVer/System.map $KernelVer
     echo $?
+# (tpg) see above workaround
+    [ -f %{buildroot}%{_modulesdir}/$KernelVer/vmlinuz ] && rm -rf %{buildroot}%{_modulesdir}/$KernelVer/vmlinuz && ln -sr %{_bootdir}/vmlinuz-$KernelVer %{buildroot}%{_modulesdir}/$KernelVer/vmlinuz
 done
-
-for i in *; do
-    pushd $i
-	printf '%s\n' "Creating modules.description for $i"
-	modules=$(find . -name "*.ko.[gxz]*[z|st]" -type f)
-	echo $modules | %kxargs %{_bindir}/modinfo | perl -lne 'print "$name\t$1" if $name && /^description:\s*(.*)/; $name = $1 if m!^filename:\s*(.*)\.k?o!; $name =~ s!.*/!!' > modules.description
-    popd
-done
-popd
 
 # need to set extraversion to match srpm again to avoid rebuild
 sed -ri "s|^(EXTRAVERSION =).*|\1 -%{release}|" Makefile
@@ -1757,42 +1775,52 @@ install -m644 %{SOURCE31} %{buildroot}%{_sysconfdir}/sysconfig/cpupower
 
 # Create directories infastructure
 %if %{with build_source}
-install -d %{target_source}
+install -d %{buildroot}%{_kerneldir}
 
 # Package what remains
-tar cf - . | tar xf - -C %{target_source}
-chmod -R a+rX %{target_source}
+tar cf - . | tar xf - -C %{buildroot}%{_kerneldir}
+chmod -R a+rX %{buildroot}%{_kerneldir}
 
-rm -f %{target_source}/*.lang
+rm -f %{buildroot}%{_kerneldir}/*.lang
 
 # File lists aren't needed
-rm -f %{target_source}/*_files.* %{target_source}/README.kernel-sources
+rm -f %{buildroot}%{_kerneldir}/*_files.* %{buildroot}%{_kerneldir}/README.kernel-sources
 
 # we remove all the source files that we don't ship
 # first architecture files
 for i in alpha arc avr32 blackfin c6x cris csky frv h8300 hexagon ia64 loongarch m32r m68k m68knommu metag microblaze \
 	mips nds32 nios2 openrisc parisc s390 score sh sh64 sparc tile unicore32 v850 xtensa mn10300; do
-    rm -rf %{target_source}/arch/$i
-    rm -rf %{target_source}/scripts/dtc/include-prefixes/$i
-    rm -rf %{target_source}/tools/arch/$i
-    rm -rf %{target_source}/tools/testing/selftests/$i
+    rm -rf %{buildroot}%{_kerneldir}/arch/$i
+    rm -rf %{buildroot}%{_kerneldir}/scripts/dtc/include-prefixes/$i
+    rm -rf %{buildroot}%{_kerneldir}/tools/arch/$i
+    rm -rf %{buildroot}%{_kerneldir}/tools/testing/selftests/$i
 done
 
+%ifnarch %{armx}
+    rm -rf %{buildroot}%{_kerneldir}/include/kvm/arm*
+    rm -rf %{buildroot}%{_kerneldir}/scripts/dtc/include-prefixes/arm*
+    rm -rf %{buildroot}%{_kerneldir}/tools/arch/arm*
+%endif
+
 # other misc files
-rm -f %{target_source}/{.config.old,.config.cmd,.gitignore,.lst,.mailmap,.gitattributes,.get_maintainer.ignore}
-rm -f %{target_source}/{.missing-syscalls.d,arch/.gitignore,firmware/.gitignore,.gitattributes}
-rm -rf %{target_source}/.tmp_depmod/
+rm -f %{buildroot}%{_kerneldir}/{.config.old,.config.cmd,.gitignore,.lst,.mailmap,.gitattributes,.get_maintainer.ignore}
+rm -f %{buildroot}%{_kerneldir}/{.missing-syscalls.d,arch/.gitignore,firmware/.gitignore,.gitattributes}
+rm -rf %{buildroot}%{_kerneldir}/.tmp_depmod/
 rm -rf %{buildroot}/usr/src/linux-*/uksm.txt
 
 # more cleaning
-rm -f %{target_source}/arch/x86_64/boot/bzImage
-cd %{target_source}
+rm -f %{buildroot}%{_kerneldir}/arch/x86_64/boot/bzImage
+cd %{buildroot}%{_kerneldir}
 # lots of gitignore files
 find -iname ".gitignore" -delete
 # clean tools tree
 %make_build -C tools clean -j1 V=0 VERBOSE=0
 %make_build -C tools/build clean -j1 V=0 VERBOSE=0
 %make_build -C tools/build/feature clean -j1 V=0 VERBOSE=0
+# dont ship generated vdso.so*
+%ifarch %{aarch64}
+rm -f arch/arm64/kernel/vdso/vdso.so*
+%endif
 rm -f .cache.mk
 
 # Drop script binaries that can be rebuilt
@@ -1803,7 +1831,7 @@ find tools scripts -executable |while read r; do
 done
 cd -
 
-#endif %{with build_source}
+# build_source
 %endif
 
 %if %{with build_source}
@@ -1956,6 +1984,7 @@ cd -
 
 %files -n %{libbpfdevel}
 %{_libdir}/libbpf.so
+%{_libdir}/libbpf.a
 %{_libdir}/pkgconfig/*.pc
 %dir %{_includedir}/bpf
 %{_includedir}/bpf/*.h
