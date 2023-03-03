@@ -1,8 +1,9 @@
-diff -Naur a/arch/arm64/boot/dts/rockchip/rk3308.dtsi b/arch/arm64/boot/dts/rockchip/rk3308.dtsi
---- a/arch/arm64/boot/dts/rockchip/rk3308.dtsi	2022-10-02 21:09:07.000000000 +0000
-+++ b/arch/arm64/boot/dts/rockchip/rk3308.dtsi	2022-10-29 14:18:29.652921824 +0000
-@@ -694,6 +694,21 @@
- 		status = "disabled";
+diff --git a/arch/arm64/boot/dts/rockchip/rk3308.dtsi b/arch/arm64/boot/dts/rockchip/rk3308.dtsi
+index fd8685d7c..5d4b1316b 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3308.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3308.dtsi
+@@ -653,6 +653,21 @@ logic_thermal: logic-thermal {
+ 		};
  	};
  
 +	rng: rng@ff2f0000 {
@@ -11,22 +12,23 @@ diff -Naur a/arch/arm64/boot/dts/rockchip/rk3308.dtsi b/arch/arm64/boot/dts/rock
 +		clocks = <&cru SCLK_CRYPTO>, <&cru SCLK_CRYPTO_APK>,
 +			<&cru ACLK_CRYPTO>, <&cru HCLK_CRYPTO>;
 +		clock-names = "clk_crypto", "clk_crypto_apk",
-+			"aclk_crypto", "hclk_crypto";
++				"aclk_crypto", "hclk_crypto";
 +		assigned-clocks = <&cru SCLK_CRYPTO>, <&cru SCLK_CRYPTO_APK>,
-+			<&cru ACLK_CRYPTO>, <&cru HCLK_CRYPTO>;
++					<&cru ACLK_CRYPTO>, <&cru HCLK_CRYPTO>;
 +		assigned-clock-rates = <150000000>, <150000000>,
-+			<200000000>, <100000000>;
++					<200000000>, <100000000>;
 +		resets = <&cru SRST_CRYPTO>;
 +		reset-names = "reset";
 +	};
 +
- 	nfc: nand-controller@ff4b0000 {
- 		compatible = "rockchip,rk3308-nfc",
- 			     "rockchip,rv1108-nfc";
-diff -Naur a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
---- a/drivers/char/hw_random/Kconfig	2022-10-02 21:09:07.000000000 +0000
-+++ b/drivers/char/hw_random/Kconfig	2022-10-29 14:19:22.232641789 +0000
-@@ -372,6 +372,19 @@
+ 	tsadc: tsadc@ff1f0000 {
+ 		compatible = "rockchip,rk3308-tsadc";
+ 		reg = <0x0 0xff1f0000 0x0 0x100>;
+diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
+index b3f2d55dc..90a974257 100644
+--- a/drivers/char/hw_random/Kconfig
++++ b/drivers/char/hw_random/Kconfig
+@@ -372,6 +372,19 @@ config HW_RANDOM_STM32
  
  	  If unsure, say N.
  
@@ -46,10 +48,11 @@ diff -Naur a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
  config HW_RANDOM_PIC32
  	tristate "Microchip PIC32 Random Number Generator support"
  	depends on HW_RANDOM && MACH_PIC32
-diff -Naur a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
---- a/drivers/char/hw_random/Makefile	2022-10-02 21:09:07.000000000 +0000
-+++ b/drivers/char/hw_random/Makefile	2022-10-29 14:19:22.232641789 +0000
-@@ -34,6 +34,7 @@
+diff --git a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
+index 3e948cf04..852fb42e2 100644
+--- a/drivers/char/hw_random/Makefile
++++ b/drivers/char/hw_random/Makefile
+@@ -34,6 +34,7 @@ obj-$(CONFIG_HW_RANDOM_IPROC_RNG200) += iproc-rng200.o
  obj-$(CONFIG_HW_RANDOM_ST) += st-rng.o
  obj-$(CONFIG_HW_RANDOM_XGENE) += xgene-rng.o
  obj-$(CONFIG_HW_RANDOM_STM32) += stm32-rng.o
@@ -57,9 +60,11 @@ diff -Naur a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
  obj-$(CONFIG_HW_RANDOM_PIC32) += pic32-rng.o
  obj-$(CONFIG_HW_RANDOM_MESON) += meson-rng.o
  obj-$(CONFIG_HW_RANDOM_CAVIUM) += cavium-rng.o cavium-rng-vf.o
-diff -Naur a/drivers/char/hw_random/rockchip-rng.c b/drivers/char/hw_random/rockchip-rng.c
---- a/drivers/char/hw_random/rockchip-rng.c	1970-01-01 00:00:00.000000000 +0000
-+++ b/drivers/char/hw_random/rockchip-rng.c	2022-10-29 14:19:22.242641736 +0000
+diff --git a/drivers/char/hw_random/rockchip-rng.c b/drivers/char/hw_random/rockchip-rng.c
+new file mode 100644
+index 000000000..c0121f1f5
+--- /dev/null
++++ b/drivers/char/hw_random/rockchip-rng.c
 @@ -0,0 +1,330 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
