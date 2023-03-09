@@ -277,21 +277,25 @@ Patch231:	f2fs-fix-bug-216050.patch
 Patch232:	bpftool-use-a-local-bpf_perf_event_value-to-fix-accessing-its-fields.patch
 
 # (tpg) Armbian ARM Patches
-Patch240:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch
-Patch241:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-spi1-flash-speed.patch
-Patch242:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-work-led-heartbeat.patch
-Patch243:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-mmc-signal-voltage-before-reboot.patch
-Patch244:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-inno-usb2-phy-init.patch
-Patch245:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-unlock-temperature.patch
-Patch246:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-increasing_DMA_block_memory_allocation_to_2048.patch
-Patch247:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-rk808-configurable-switch-voltage-steps.patch
-Patch248:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-sd-drive-level-8ma.patch
-Patch249:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-pci-rockchip-support-ep-gpio-undefined-case.patch
-Patch250:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
-Patch251:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/add-rockchip-iep-driver.patch
-Patch252:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng.patch
-Patch253:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng_5.10.patch
-Patch254:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-rp64-rng.patch
+Patch240:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.1/board-rockpro64-change-rx_delay-for-gmac.patch
+Patch241:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch
+Patch242:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-spi1-flash-speed.patch
+Patch243:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/board-rockpro64-work-led-heartbeat.patch
+Patch244:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.1/general-add-pll-hdmi-timings.patch
+Patch245:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.1/general-disable-mtu-validation.patch
+Patch246:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-fix-inno-usb2-phy-init.patch
+Patch247:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-fix-mmc-signal-voltage-before-reboot.patch
+Patch248:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-increasing_DMA_block_memory_allocation_to_2048.patch
+Patch249:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/rk3399-unlock-temperature.patch
+Patch250:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-rk808-configurable-switch-voltage-steps.patch
+Patch251:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/rk3399-sd-drive-level-8ma.patch
+Patch252:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/rk3399-pci-rockchip-support-ep-gpio-undefined-case.patch
+Patch253:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
+Patch254:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/add-rockchip-iep-driver.patch
+Patch255:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng.patch
+Patch256:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng_5.10.patch
+Patch257:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/rk3399-rp64-rng.patch
+Patch258:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.1/rk3399-dmc-polling-rate.patch
 
 # (tpg) Manjaro ARM Patches
 Patch260:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/1005-panfrost-Silence-Panfrost-gem-shrinker-loggin.patch
