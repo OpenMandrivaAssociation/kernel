@@ -1921,6 +1921,7 @@ cd -
 %if %{with perf}
 %files -n perf
 %{_bindir}/perf
+%optional %{_bindir}/perf-read-vdso32
 %{_bindir}/trace
 %dir %{_prefix}/libexec/perf-core
 %{_prefix}/libexec/perf-core/*
