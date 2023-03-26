@@ -1075,8 +1075,11 @@ CreateConfig() {
 	if printf '%s\n' ${type} | grep -qv gcc; then
 		CC=clang
 		CXX=clang++
-		BUILD_LD="ld.lld --icf=none --no-gc-sections"
-		BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
+		# Workaround for BTF generation issue with LLD 16
+		#BUILD_LD="ld.lld --icf=none --no-gc-sections"
+		#BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
+		BUILD_LD="ld.bfd"
+		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
 		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
 	else
 		CC=gcc
@@ -1228,8 +1231,11 @@ BuildKernel() {
 		CC=clang
 		CXX=clang++
 		BUILD_OPT_CFLAGS="-O3 %{pollyflags}"
-		BUILD_LD="ld.lld --icf=none --no-gc-sections"
-		BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
+		# Workaround for BTF generation issue with LLD 16
+		#BUILD_LD="ld.lld --icf=none --no-gc-sections"
+		#BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
+		BUILD_LD="ld.bfd"
+		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
 		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
 	else
 		CC=gcc
