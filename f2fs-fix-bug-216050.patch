@@ -1,11 +1,12 @@
-diff -up linux-6.2/fs/f2fs/data.c.32~ linux-6.2/fs/f2fs/data.c
---- linux-6.2/fs/f2fs/data.c.32~	2023-02-22 01:09:55.198235398 +0100
-+++ linux-6.2/fs/f2fs/data.c	2023-02-22 01:12:12.355374370 +0100
-@@ -1338,18 +1338,13 @@ struct page *f2fs_get_lock_data_page(str
+diff -up linux-6.3-rc2/fs/f2fs/data.c.32~ linux-6.3-rc2/fs/f2fs/data.c
+--- linux-6.3-rc2/fs/f2fs/data.c.32~	2023-03-14 03:15:59.849529893 +0100
++++ linux-6.3-rc2/fs/f2fs/data.c	2023-03-14 03:18:19.298730014 +0100
+@@ -1329,18 +1329,14 @@ struct page *f2fs_get_lock_data_page(str
  {
  	struct address_space *mapping = inode->i_mapping;
  	struct page *page;
 -repeat:
++
  	page = f2fs_get_read_data_page(inode, index, 0, for_write, NULL);
  	if (IS_ERR(page))
  		return page;

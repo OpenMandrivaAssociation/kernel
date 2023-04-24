@@ -61,9 +61,9 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 2
-%define sublevel 11
-#define relc 1
+%define patchlevel 3
+%define sublevel 0
+#define relc 0
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -95,7 +95,7 @@
 %bcond_with lazy_developer
 %bcond_with build_debug
 %bcond_without clr
-%bcond_without vbox_orig_mods
+%bcond_with vbox_orig_mods
 # FIXME re-enable by default when the patches have been adapted to 5.8
 %bcond_with saa716x
 %bcond_with rtl8821ce
@@ -231,6 +231,7 @@ Source1003:	saa716x-driver.tar.xz
 Patch200:	0023-tda18212-Added-2-extra-options.-Based-on-CrazyCat-re.patch
 Patch201:	0075-cx24117-Use-a-pointer-to-config-instead-of-storing-i.patch
 Patch202:	0076-cx24117-Add-LNB-power-down-callback.-TBS6984-uses-pc.patch
+#Patch203:	0124-Extend-FEC-enum.patch
 Patch204:	saa716x-driver-integration.patch
 Patch205:	saa716x-4.15.patch
 Patch206:	saa716x-linux-4.19.patch
@@ -249,7 +250,9 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 # because they need to be applied after stuff from the
 # virtualbox-kernel-module-sources package is copied around
 Source1005:	vbox-6.1-fix-build-on-znver1-hosts.patch
+Source1006:	vbox-kernel-6.3.patch
 Source1007:	vboxnet-clang.patch
+Source1008:	vboxvideo-kernel-6.3.patch
 
 # Assorted fixes
 
@@ -277,28 +280,24 @@ Patch231:	f2fs-fix-bug-216050.patch
 Patch232:	bpftool-use-a-local-bpf_perf_event_value-to-fix-accessing-its-fields.patch
 
 # (tpg) Armbian ARM Patches
-Patch240:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.1/board-rockpro64-change-rx_delay-for-gmac.patch
-Patch241:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch
-Patch242:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-spi1-flash-speed.patch
-Patch243:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/board-rockpro64-work-led-heartbeat.patch
-Patch244:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.1/general-add-pll-hdmi-timings.patch
-Patch245:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.1/general-disable-mtu-validation.patch
-Patch246:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-fix-inno-usb2-phy-init.patch
-Patch247:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-fix-mmc-signal-voltage-before-reboot.patch
-Patch248:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-increasing_DMA_block_memory_allocation_to_2048.patch
-Patch249:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/rk3399-unlock-temperature.patch
-Patch250:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-rk808-configurable-switch-voltage-steps.patch
-Patch251:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/rk3399-sd-drive-level-8ma.patch
-Patch252:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/rk3399-pci-rockchip-support-ep-gpio-undefined-case.patch
-Patch253:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
-Patch254:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/add-rockchip-iep-driver.patch
-Patch255:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng.patch
-Patch256:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng_5.10.patch
-Patch257:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.0/rk3399-rp64-rng.patch
-Patch258:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.1/rk3399-dmc-polling-rate.patch
+Patch240:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch
+Patch241:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-spi1-flash-speed.patch
+Patch242:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-work-led-heartbeat.patch
+Patch243:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-mmc-signal-voltage-before-reboot.patch
+Patch244:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-inno-usb2-phy-init.patch
+Patch245:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-unlock-temperature.patch
+Patch246:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-increasing_DMA_block_memory_allocation_to_2048.patch
+Patch247:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-rk808-configurable-switch-voltage-steps.patch
+Patch248:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-sd-drive-level-8ma.patch
+Patch249:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-pci-rockchip-support-ep-gpio-undefined-case.patch
+Patch250:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
+Patch251:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/add-rockchip-iep-driver.patch
+Patch252:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng.patch
+Patch253:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng_5.10.patch
+Patch254:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-rp64-rng.patch
 
 # (tpg) Manjaro ARM Patches
-Patch260:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/1005-panfrost-Silence-Panfrost-gem-shrinker-loggin.patch
+#Patch260:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/1005-panfrost-Silence-Panfrost-gem-shrinker-loggin.patch
 
 # Other ARM64 patches
 Patch261:	https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/target/linux/rockchip/patches-5.15/992-rockchip-rk3399-overclock-to-2.2-1.8-GHz.patch
@@ -757,10 +756,6 @@ Tools needed to communicate with a Hyper-V host.
 %endif
 
 %if %{with bpftool}
-%define bpf_major 1
-%define libbpf %mklibname bpf %{bpf_major}
-%define libbpfdevel %mklibname bpf -d
-
 %package -n bpftool
 Summary:	Inspection and simple manipulation of eBPF programs and maps
 Group:		System/Kernel and hardware
@@ -768,22 +763,6 @@ Group:		System/Kernel and hardware
 %description -n bpftool
 This package contains the bpftool, which allows inspection and simple
 manipulation of eBPF programs and maps.
-
-%package -n %{libbpf}
-Summary:	The bpf library from kernel source
-Group:		System/Libraries
-
-%description -n %{libbpf}
-This package contains the kernel source bpf library.
-
-%package -n %{libbpfdevel}
-Summary:	Developement files for the bpf library from kernel source
-Group:		Development/Kernel
-Requires:	%{libbpf} = %{EVRD}
-
-%description -n %{libbpfdevel}
-This package includes libraries and header files needed for development
-of applications which use bpf library from kernel sour
 %endif
 
 %package headers
@@ -859,6 +838,13 @@ rm -rf .git
 %endif
 %autopatch -p1
 
+# Apparently, vm_clean was added in tools/Makefile before tools/vm was added
+if [ -d tools/vm ]; then
+	echo "Remove the vm_clean workaround, it should work now"
+	exit 1
+fi
+sed -i -e 's,vm_clean ,,' tools/Makefile
+
 %if %{with saa716x}
 # merge SAA716x DVB driver from extra tarball
 sed -i -e '/saa7164/isource "drivers/media/pci/saa716x/Kconfig"' drivers/media/pci/Kconfig
@@ -908,6 +894,7 @@ config DRM_VBOXVIDEO
 EOF
 sed -i -e 's,\$(KBUILD_EXTMOD),drivers/gpu/drm/vboxvideo,g' drivers/gpu/drm/vboxvideo/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/gpu/drm/vboxvideo/Makefile*
+patch -p1 -z .1008~ -b <%{S:1008}
 %endif
 
 # 800x600 is too small to be useful -- even calamares doesn't
@@ -944,6 +931,7 @@ sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/pci/vboxpci/Makefile*
 echo 'obj-m += vboxpci/' >>drivers/pci/Makefile
 %endif
 patch -p1 -z .1005~ -b <%{S:1005}
+patch -p1 -z .1006~ -b <%{S:1006}
 patch -p1 -z .1007~ -b <%{S:1007}
 %endif
 
@@ -1075,11 +1063,11 @@ CreateConfig() {
 	if printf '%s\n' ${type} | grep -qv gcc; then
 		CC=clang
 		CXX=clang++
-		# Workaround for BTF generation issue with LLD 16
+		# Workaround for LLD 16 BTF generation problem
+		BUILD_LD=ld.bfd
+		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
 		#BUILD_LD="ld.lld --icf=none --no-gc-sections"
 		#BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
-		BUILD_LD="ld.bfd"
-		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
 		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
 	else
 		CC=gcc
@@ -1231,11 +1219,11 @@ BuildKernel() {
 		CC=clang
 		CXX=clang++
 		BUILD_OPT_CFLAGS="-O3 %{pollyflags}"
-		# Workaround for BTF generation issue with LLD 16
+		# Workaround for LLD 16 BTF generation problem
+		BUILD_LD=ld.bfd
+		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
 		#BUILD_LD="ld.lld --icf=none --no-gc-sections"
 		#BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
-		BUILD_LD="ld.bfd"
-		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
 		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
 	else
 		CC=gcc
@@ -1705,8 +1693,6 @@ mkdir -p %{temp_root}%{_bindir} %{temp_root}%{_mandir}/man8
 %if %{with bpftool}
 %make_build -C tools/bpf/bpftool CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd DESTDIR="%{temp_root}" V=0 VERBOSE=0
 %make_install -C tools/bpf/bpftool DESTDIR="%{temp_root}" prefix=%{_prefix} bash_compdir=%{_sysconfdir}/bash_completion.d/ mandir=%{_mandir} install V=0 VERBOSE=0
-%make_build -C tools/lib/bpf CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd V=0 VERBOSE=0
-%make_install -C tools/lib/bpf DESTDIR="%{temp_root}" prefix=%{_prefix} libdir=%{_libdir} install install_headers V=0 VERBOSE=0
 %endif
 
 %if %{with perf}
@@ -1976,13 +1962,4 @@ cd -
 %files -n bpftool
 %{_bindir}/bpftool
 %{_sysconfdir}/bash_completion.d/bpftool
-
-%files -n %{libbpf}
-%{_libdir}/libbpf.so.%{bpf_major}*
-
-%files -n %{libbpfdevel}
-%{_libdir}/libbpf.so
-%{_libdir}/pkgconfig/*.pc
-%dir %{_includedir}/bpf
-%{_includedir}/bpf/*.h
 %endif

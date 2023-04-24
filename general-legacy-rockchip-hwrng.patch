@@ -1,11 +1,10 @@
-diff -up linux-6.2/arch/arm64/boot/dts/rockchip/rk3308.dtsi.49~ linux-6.2/arch/arm64/boot/dts/rockchip/rk3308.dtsi
---- linux-6.2/arch/arm64/boot/dts/rockchip/rk3308.dtsi.49~	2023-03-11 15:54:06.342312319 +0100
-+++ linux-6.2/arch/arm64/boot/dts/rockchip/rk3308.dtsi	2023-03-11 15:57:44.414921454 +0100
-@@ -1879,4 +1879,19 @@
- 			};
- 		};
+diff -up linux-6.3-rc2/arch/arm64/boot/dts/rockchip/rk3308.dtsi.46~ linux-6.3-rc2/arch/arm64/boot/dts/rockchip/rk3308.dtsi
+--- linux-6.3-rc2/arch/arm64/boot/dts/rockchip/rk3308.dtsi.46~	2023-03-14 03:26:02.331692780 +0100
++++ linux-6.3-rc2/arch/arm64/boot/dts/rockchip/rk3308.dtsi	2023-03-14 03:28:03.974730306 +0100
+@@ -530,6 +530,21 @@
+ 		status = "disabled";
  	};
-+
+ 
 +	rng: rng@ff2f0000 {
 +		compatible = "rockchip,cryptov2-rng";
 +		reg = <0x0 0xff2f0000 0x0 0x4000>;
@@ -14,16 +13,19 @@ diff -up linux-6.2/arch/arm64/boot/dts/rockchip/rk3308.dtsi.49~ linux-6.2/arch/a
 +		clock-names = "clk_crypto", "clk_crypto_apk",
 +				"aclk_crypto", "hclk_crypto";
 +		assigned-clocks = <&cru SCLK_CRYPTO>, <&cru SCLK_CRYPTO_APK>,
-+				 <&cru ACLK_CRYPTO>, <&cru HCLK_CRYPTO>;
++					<&cru ACLK_CRYPTO>, <&cru HCLK_CRYPTO>;
 +		assigned-clock-rates = <150000000>, <150000000>,
 +					<200000000>, <100000000>;
 +		resets = <&cru SRST_CRYPTO>;
 +		reset-names = "reset";
 +	};
- };
-diff -up linux-6.2/drivers/char/hw_random/Kconfig.49~ linux-6.2/drivers/char/hw_random/Kconfig
---- linux-6.2/drivers/char/hw_random/Kconfig.49~	2023-02-19 23:24:22.000000000 +0100
-+++ linux-6.2/drivers/char/hw_random/Kconfig	2023-03-11 15:54:06.342312319 +0100
++
+ 	rktimer: rktimer@ff1a0000 {
+ 		compatible = "rockchip,rk3288-timer";
+ 		reg = <0x0 0xff1a0000 0x0 0x20>;
+diff -up linux-6.3-rc2/drivers/char/hw_random/Kconfig.46~ linux-6.3-rc2/drivers/char/hw_random/Kconfig
+--- linux-6.3-rc2/drivers/char/hw_random/Kconfig.46~	2023-03-13 00:36:44.000000000 +0100
++++ linux-6.3-rc2/drivers/char/hw_random/Kconfig	2023-03-14 03:26:02.331692780 +0100
 @@ -372,6 +372,19 @@ config HW_RANDOM_STM32
  
  	  If unsure, say N.
@@ -44,9 +46,9 @@ diff -up linux-6.2/drivers/char/hw_random/Kconfig.49~ linux-6.2/drivers/char/hw_
  config HW_RANDOM_PIC32
  	tristate "Microchip PIC32 Random Number Generator support"
  	depends on HW_RANDOM && MACH_PIC32
-diff -up linux-6.2/drivers/char/hw_random/Makefile.49~ linux-6.2/drivers/char/hw_random/Makefile
---- linux-6.2/drivers/char/hw_random/Makefile.49~	2023-02-19 23:24:22.000000000 +0100
-+++ linux-6.2/drivers/char/hw_random/Makefile	2023-03-11 15:54:06.342312319 +0100
+diff -up linux-6.3-rc2/drivers/char/hw_random/Makefile.46~ linux-6.3-rc2/drivers/char/hw_random/Makefile
+--- linux-6.3-rc2/drivers/char/hw_random/Makefile.46~	2023-03-13 00:36:44.000000000 +0100
++++ linux-6.3-rc2/drivers/char/hw_random/Makefile	2023-03-14 03:26:02.331692780 +0100
 @@ -34,6 +34,7 @@ obj-$(CONFIG_HW_RANDOM_IPROC_RNG200) +=
  obj-$(CONFIG_HW_RANDOM_ST) += st-rng.o
  obj-$(CONFIG_HW_RANDOM_XGENE) += xgene-rng.o
@@ -55,9 +57,9 @@ diff -up linux-6.2/drivers/char/hw_random/Makefile.49~ linux-6.2/drivers/char/hw
  obj-$(CONFIG_HW_RANDOM_PIC32) += pic32-rng.o
  obj-$(CONFIG_HW_RANDOM_MESON) += meson-rng.o
  obj-$(CONFIG_HW_RANDOM_CAVIUM) += cavium-rng.o cavium-rng-vf.o
-diff -up linux-6.2/drivers/char/hw_random/rockchip-rng.c.49~ linux-6.2/drivers/char/hw_random/rockchip-rng.c
---- linux-6.2/drivers/char/hw_random/rockchip-rng.c.49~	2023-03-11 15:54:06.342312319 +0100
-+++ linux-6.2/drivers/char/hw_random/rockchip-rng.c	2023-03-11 15:54:06.342312319 +0100
+diff -up linux-6.3-rc2/drivers/char/hw_random/rockchip-rng.c.46~ linux-6.3-rc2/drivers/char/hw_random/rockchip-rng.c
+--- linux-6.3-rc2/drivers/char/hw_random/rockchip-rng.c.46~	2023-03-14 03:26:02.331692780 +0100
++++ linux-6.3-rc2/drivers/char/hw_random/rockchip-rng.c	2023-03-14 03:26:02.331692780 +0100
 @@ -0,0 +1,330 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
