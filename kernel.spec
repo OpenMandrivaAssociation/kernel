@@ -1058,22 +1058,30 @@ CreateConfig() {
 	rm -fv .config
 
 	printf '%s\n' "<-- Creating config for kernel type ${type} for ${arch}"
-	if printf '%s\n' ${type} | grep -qv gcc; then
-		CC=clang
-		CXX=clang++
-		# Workaround for LLD 16 BTF generation problem
-		BUILD_LD=ld.bfd
-		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
-		#BUILD_LD="ld.lld --icf=none --no-gc-sections"
-		#BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
-		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
-	else
+	if printf '%s' ${type} | grep -q gcc; then
 		CC=gcc
 		CXX=g++
 		# force ld.bfd, Kbuild logic issues when ld is linked to something else
 		BUILD_LD="%{_target_platform}-ld.bfd"
 		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
 		BUILD_TOOLS=""
+	else
+		CC=clang
+		CXX=clang++
+		# Workaround for LLD 16 BTF generation problem
+		#BUILD_LD=ld.bfd
+		#BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
+		BUILD_LD="ld.lld --icf=none --no-gc-sections"
+		BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
+%ifarch %{aarch64}
+		# Using objcopy rather than llvm-objcopy is a workaround for a BTF
+		# generation problem on aarch64
+		BUILD_TOOLS='LLVM=1 LLVM_IAS=1 OBJCOPY=objcopy'
+%else
+		# Using objcopy rather than llvm-objcopy is a workaround for a BTF
+		# generation problem on aarch64
+		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
+%endif
 	fi
 
 # (crazy) do not use %{S:X} to copy, if someone messes up we end up with broken stuff again
@@ -1083,8 +1091,8 @@ CreateConfig() {
 		desktop|desktop-gcc|server|server-gcc)
 			rm -f .config
 			cp -v ${config_dir}/i686-omv-defconfig .config
-			printf '%s\n' ${type} | grep -q gcc || clangify .config
-			printf '%s\n' ${type} | grep -q server && serverize .config
+			printf '%s' ${type} | grep -q gcc || clangify .config
+			printf '%s' ${type} | grep -q server && serverize .config
 			;;
 		*)
 			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
@@ -1098,8 +1106,8 @@ CreateConfig() {
 			rm -f .config
 			cp -v ${config_dir}/x86_64-omv-defconfig .config
 			[ "${arch}" = "znver1" ] && amdify .config
-			printf '%s\n' ${type} | grep -q gcc || clangify .config
-			printf '%s\n' ${type} | grep -q server && serverize .config
+			printf '%s' ${type} | grep -q gcc || clangify .config
+			printf '%s' ${type} | grep -q server && serverize .config
 			;;
 		*)
 			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
@@ -1112,8 +1120,8 @@ CreateConfig() {
 		desktop|desktop-gcc|server|server-gcc)
 			rm -f .config
 			cp -v ${config_dir}/armv7hnl-omv-defconfig .config
-			printf '%s\n' ${type} | grep -q gcc || clangify .config
-			printf '%s\n' ${type} | grep -q server && serverize .config
+			printf '%s' ${type} | grep -q gcc || clangify .config
+			printf '%s' ${type} | grep -q server && serverize .config
 			;;
 		*)
 			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
@@ -1126,8 +1134,8 @@ CreateConfig() {
 		desktop|desktop-gcc|server|server-gcc)
 			rm -f .config
 			cp -v ${config_dir}/aarch64-omv-defconfig .config
-			printf '%s\n' ${type} | grep -q gcc || clangify .config
-			printf '%s\n' ${type} | grep -q server && serverize .config
+			printf '%s' ${type} | grep -q gcc || clangify .config
+			printf '%s' ${type} | grep -q server && serverize .config
 			;;
 		*)
 			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
@@ -1213,17 +1221,7 @@ BuildKernel() {
 	KernelVer=$1
 	printf '%s\n' "<--- Building kernel $KernelVer"
 
-	if printf '%s\n' ${KernelVer} | grep -qv gcc; then
-		CC=clang
-		CXX=clang++
-		BUILD_OPT_CFLAGS="-O3 %{pollyflags}"
-		# Workaround for LLD 16 BTF generation problem
-		BUILD_LD=ld.bfd
-		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
-		#BUILD_LD="ld.lld --icf=none --no-gc-sections"
-		#BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
-		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
-	else
+	if printf '%s' ${KernelVer} | grep -q gcc; then
 		CC=gcc
 		CXX=g++
 		BUILD_OPT_CFLAGS="-O3"
@@ -1231,6 +1229,22 @@ BuildKernel() {
 		BUILD_LD="%{_target_platform}-ld.bfd"
 		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
 		BUILD_TOOLS=""
+	else
+		CC=clang
+		CXX=clang++
+		BUILD_OPT_CFLAGS="-O3 %{pollyflags}"
+		# Workaround for LLD 16 BTF generation problem
+		#BUILD_LD=ld.bfd
+		#BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
+		BUILD_LD="ld.lld --icf=none --no-gc-sections"
+		BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
+%ifarch %{aarch64}
+		# Using objcopy rather than llvm-objcopy is a workaround for a BTF
+		# generation problem on aarch64
+		BUILD_TOOLS='LLVM=1 LLVM_IAS=1 OBJCOPY=objcopy'
+%else
+		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
+%endif
 	fi
 
 %ifarch %{arm}
