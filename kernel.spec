@@ -44,7 +44,7 @@
 %ifarch %{aarch64}
 %define kernel_flavours desktop server
 %else
-%define kernel_flavours desktop server desktop-gcc server-gcc
+%define kernel_flavours desktop server
 %endif
 
 # (tpg) package these kernel modules as subpackages
@@ -1030,7 +1030,7 @@ CreateConfig() {
 		CXX=clang++
 		BUILD_LD="ld.lld --icf=none --no-gc-sections"
 		BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
-		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
+		BUILD_TOOLS='LLVM=1 LLVM_IAS=1 OBJCOPY=objcopy'
 	else
 		CC=gcc
 		CXX=g++
@@ -1190,7 +1190,7 @@ BuildKernel() {
 		CXX=clang++
 		BUILD_LD="ld.lld --icf=none --no-gc-sections"
 		BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
-		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
+		BUILD_TOOLS='LLVM=1 LLVM_IAS=1 OBJCOPY=objcopy'
 	else
 		CC=gcc
 		CXX=g++
