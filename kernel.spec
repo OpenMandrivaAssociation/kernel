@@ -125,7 +125,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}2
+Release:	%{?relc:0.rc%{relc}.}3
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -177,7 +177,7 @@ Source1000:	https://cdn.kernel.org/pub/linux/kernel/v%(echo %{version}|cut -d. -
 
 # FIXME git bisect shows upstream commit
 # 7a8b64d17e35810dc3176fe61208b45c15d25402 breaks
-# booting SynQuacer from USB flash drives.
+# booting SynQuacer from USB flash drives on old firmware
 # 9d55bebd9816903b821a403a69a94190442ac043 builds on
 # 7a8b64d17e35810dc3176fe61208b45c15d25402.
 Source1001:	revert-7a8b64d17e35810dc3176fe61208b45c15d25402.patch
@@ -263,6 +263,9 @@ Patch213:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/d
 
 Patch215:	linux-5.19-prefer-amdgpu-over-radeon.patch
 Patch217:	acpi-chipset-workarounds-shouldnt-be-necessary-on-non-x86.patch
+
+# https://www.opennet.ru/opennews/art.shtml?num=59204
+Patch220:	https://github.com/torvalds/linux/commit/9419092fb2630c30e4ffeb9ef61007ef0c61827a.patch
 
 # Fix CPU frequency governor mess caused by recent Intel patches
 Patch225:	https://gitweb.frugalware.org/frugalware-current/raw/50690405717979871bb17b8e6b553799a203c6ae/source/base/kernel/0001-Revert-cpufreq-Avoid-configuring-old-governors-as-de.patch
