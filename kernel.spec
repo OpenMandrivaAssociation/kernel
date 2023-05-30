@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 3
-%define sublevel 4
+%define sublevel 5
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -263,9 +263,6 @@ Patch213:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/d
 
 Patch215:	linux-5.19-prefer-amdgpu-over-radeon.patch
 Patch217:	acpi-chipset-workarounds-shouldnt-be-necessary-on-non-x86.patch
-
-# https://www.opennet.ru/opennews/art.shtml?num=59204
-Patch220:	https://github.com/torvalds/linux/commit/9419092fb2630c30e4ffeb9ef61007ef0c61827a.patch
 
 # Fix CPU frequency governor mess caused by recent Intel patches
 Patch225:	https://gitweb.frugalware.org/frugalware-current/raw/50690405717979871bb17b8e6b553799a203c6ae/source/base/kernel/0001-Revert-cpufreq-Avoid-configuring-old-governors-as-de.patch
