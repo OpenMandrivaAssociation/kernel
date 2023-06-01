@@ -100,8 +100,13 @@
 %bcond_with saa716x
 %bcond_with rtl8821ce
 # build perf and cpupower tools
-%bcond_without perf
+%if %{cross_compiling}
+%bcond_with bpftool
+%bcond_with perf
+%else
 %bcond_without bpftool
+%bcond_without perf
+%endif
 %bcond_without build_x86_energy_perf_policy
 %bcond_without build_turbostat
 %ifarch %{ix86} %{x86_64} %{aarch64}
@@ -1250,7 +1255,7 @@ BuildKernel() {
 %ifarch %{arm}
 	IMAGE=zImage
 %else
-%ifarch %{aarch64}
+%ifarch %{aarch64} %{riscv}
 # (tpg) when booting with UEFI then uboot-tools is looking for a vmlinuz in PE-COFF format
 	IMAGE=Image
 	DTBS="dtbs"
@@ -1703,8 +1708,8 @@ mkdir -p %{temp_root}%{_bindir} %{temp_root}%{_mandir}/man8
 %endif
 
 %if %{with bpftool}
-%make_build -C tools/bpf/bpftool CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd DESTDIR="%{temp_root}" V=0 VERBOSE=0
-%make_install -C tools/bpf/bpftool DESTDIR="%{temp_root}" prefix=%{_prefix} bash_compdir=%{_sysconfdir}/bash_completion.d/ mandir=%{_mandir} install V=0 VERBOSE=0
+%make_build -C tools/bpf/bpftool CC=%{__cc} HOSTCC=%{__cc} ARCH=%{target_arch} LLVM=1 DESTDIR="%{temp_root}" V=0 VERBOSE=0
+%make_install -C tools/bpf/bpftool DESTDIR="%{temp_root}" prefix=%{_prefix} bash_compdir=%{_sysconfdir}/bash_completion.d/ mandir=%{_mandir} ARCH=%{target_arch} LLVM=1 install V=0 VERBOSE=0
 %endif
 
 %if %{with perf}
