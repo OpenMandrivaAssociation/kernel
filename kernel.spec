@@ -281,7 +281,7 @@ Patch230:	linux-5.11-perf-compile.patch
 Patch231:	f2fs-fix-bug-216050.patch
 
 # (tpg) fix build bpftool with LLVM/clang
-Patch232:	bpftool-use-a-local-bpf_perf_event_value-to-fix-accessing-its-fields.patch
+#Patch232:	bpftool-use-a-local-bpf_perf_event_value-to-fix-accessing-its-fields.patch
 
 # (tpg) Armbian ARM Patches
 Patch240:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch

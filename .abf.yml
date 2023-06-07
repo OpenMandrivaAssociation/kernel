@@ -1,5 +1,6 @@
 sources:
   extra-wifi-drivers-20200301.tar.zst: 3390c738c7d91250714ce0f88d26371e93bc40b8
-  saa716x-driver.tar.xz: f9b6ef1cd6f1f71f53d9a8aadfba2cf6b5c3d7b6
+  linux-6.3.tar.sign: 60015c7b15898c99b5074bdc7e47a5a078366a3e
   linux-6.3.tar.xz: 50b826a1553af9c436139bbdf73b01a8bdc96034
   patch-6.3.6.xz: 222bc2108365f95f955541df8d00d4879ccc908c
+  saa716x-driver.tar.xz: f9b6ef1cd6f1f71f53d9a8aadfba2cf6b5c3d7b6
