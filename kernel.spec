@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 3
-%define sublevel 7
+%define sublevel 8
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -314,6 +314,9 @@ Patch305:	kernel-6.0-rc2-perf-x86-compile.patch
 #Patch306:	linux-6.1-binutils-2.40.patch
 
 Patch350:	rtla-5.17-fix-make-clean.patch
+
+# Fix https://gitlab.freedesktop.org/drm/nouveau/-/issues/213
+Patch360:	https://gitlab.freedesktop.org/drm/nouveau/uploads/150dc8a040dc18aee72fa12d7c506bc3/0001-nouveau-fix-client-work-fence-deletion-race.patch
 
 # V4L2 loopback
 # https://github.com/umlaeute/v4l2loopback
