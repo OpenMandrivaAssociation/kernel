@@ -61,8 +61,8 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 3
-%define sublevel 9
+%define patchlevel 4
+%define sublevel 0
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -1347,7 +1347,7 @@ SaveDevel() {
 # Needed for lirc_gpio (#39004)
 	cp -fRu drivers/media/pci/bt8xx/bttv{,p}.h $TempDevelRoot/drivers/media/pci/bt8xx/
 	cp -fRu drivers/media/pci/bt8xx/bt848.h $TempDevelRoot/drivers/media/pci/bt8xx/
-	cp -fRu drivers/media/common/btcx-risc.h $TempDevelRoot/drivers/media/common/
+	cp -fRu drivers/media/pci/bt8xx/btcx-risc.h $TempDevelRoot/drivers/media/common/
 
 # Needed for external dvb tree (#41418)
 	cp -fRu drivers/media/dvb-frontends/lgdt330x.h $TempDevelRoot/drivers/media/dvb-frontends/
@@ -1714,9 +1714,9 @@ mkdir -p %{temp_root}%{_bindir} %{temp_root}%{_mandir}/man8
 
 %if %{with perf}
 [ -e %{_sysconfdir}/profile.d/90java.sh ] && . %{_sysconfdir}/profile.d/90java.sh
-%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
+%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
 # Not SMP safe
-make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
+make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
 %endif
 
 %if %{with hyperv}
