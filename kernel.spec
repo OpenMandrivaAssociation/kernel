@@ -413,6 +413,7 @@ BuildRequires:	pkgconfig(babeltrace2)
 BuildRequires:	jdk-current
 BuildRequires:	perl-devel
 BuildRequires:	perl(ExtUtils::Embed)
+BuildRequires:	%mklibname pfm
 %endif
 
 %ifarch %{arm}
@@ -1714,9 +1715,9 @@ mkdir -p %{temp_root}%{_bindir} %{temp_root}%{_mandir}/man8
 
 %if %{with perf}
 [ -e %{_sysconfdir}/profile.d/90java.sh ] && . %{_sysconfdir}/profile.d/90java.sh
-%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
+%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
 # Not SMP safe
-make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.bfd HOSTLD=ld.bfd WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
+make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
 %endif
 
 %if %{with hyperv}
