@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 4
-%define sublevel 2
+%define sublevel 3
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -130,7 +130,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}1
+Release:	%{?relc:0.rc%{relc}.}2
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -1000,6 +1000,10 @@ clangify() {
 		-e '/^CONFIG_LD_IS_BFD=/d' \
 		-e '/^CONFIG_GCC_PLUGINS=/d' \
 		"$1"
+	# FIXME: CONFIG_CFI_CLANG and friends are turned off on x86_64
+	# because as of kernel 6.4.3 and VirtualBox 7.0, enabling any
+	# form of CFI breaks starting a VM in VirtualBox.
+	# If this ever gets fixed, CFI should be reenabled.
 	cat >>"$1" <<'EOF'
 CONFIG_CC_IS_CLANG=y
 CONFIG_CC_HAS_ASM_GOTO_OUTPUT=y
@@ -1012,9 +1016,15 @@ CONFIG_INIT_STACK_NONE=y
 # CONFIG_LTO_NONE is not set
 # CONFIG_LTO_CLANG_FULL is not set
 CONFIG_LTO_CLANG_THIN=y
+%ifarch %{x86_64}
+# CONFIG_CFI_CLANG is not set
+# CONFIG_CFI_CLANG_SHADOW is not set
+# CONFIG_CFI_PERMISSIVE is not set
+%else
 CONFIG_CFI_CLANG=y
 CONFIG_CFI_CLANG_SHADOW=y
 CONFIG_CFI_PERMISSIVE=y
+%endif
 CONFIG_RELR=y
 EOF
 }
