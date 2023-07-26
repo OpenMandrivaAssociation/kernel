@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 4
-%define sublevel 5
+%define sublevel 6
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -340,6 +340,9 @@ Patch513:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142855.11
 Patch514:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142913.112440-1-sarah.walker@imgtec.com/raw/#/imagination-drm-15.patch
 Patch515:	https://patchwork.kernel.org/project/dri-devel/patch/20230714143015.112562-1-sarah.walker@imgtec.com/raw/#/imagination-drm-16.patch
 Patch516:	https://patchwork.kernel.org/project/dri-devel/patch/20230714143033.112624-1-sarah.walker@imgtec.com/raw/#/imagination-drm-17.patch
+# PanCSF DRM driver
+# https://lore.kernel.org/dri-devel/20230201084832.1708866-1-boris.brezillon@collabora.com
+Patch520:	https://gitlab.freedesktop.org/panfrost/linux/-/commit/4f986599d8a2a91c086d85408c520a3489157bbb.patch
 
 # Patches to external modules
 # Marked SourceXXX instead of PatchXXX because the modules
