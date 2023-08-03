@@ -130,7 +130,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}1
+Release:	%{?relc:0.rc%{relc}.}2
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -282,6 +282,9 @@ Patch231:	f2fs-fix-bug-216050.patch
 
 # (tpg) fix build bpftool with LLVM/clang
 Patch232:	bpftool-use-a-local-bpf_perf_event_value-to-fix-accessing-its-fields.patch
+
+# https://www.spinics.net/lists/linux-input/msg86170.html
+Patch235:	linux-6.4-GameSir-T4.patch
 
 # (tpg) Armbian ARM Patches
 Patch240:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch
