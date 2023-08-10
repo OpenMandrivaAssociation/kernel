@@ -303,7 +303,7 @@ Patch252:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/arch
 Patch253:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/rk3399-rp64-rng.patch
 
 # (tpg) Manjaro ARM Patches
-#Patch260:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/1005-panfrost-Silence-Panfrost-gem-shrinker-loggin.patch
+Patch260:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/6c64aa18076a7dc75bfd854b27906467f5d95336/1003-panfrost-Silence-Panfrost-gem-shrinker-loggin.patch
 
 # Other ARM64 patches
 Patch261:	https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/target/linux/rockchip/patches-5.15/992-rockchip-rk3399-overclock-to-2.2-1.8-GHz.patch
