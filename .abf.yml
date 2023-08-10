@@ -2,5 +2,5 @@ sources:
   extra-wifi-drivers-20200301.tar.zst: 3390c738c7d91250714ce0f88d26371e93bc40b8
   linux-6.4.tar.sign: 94713173bdfa471726afc73e74f84cd3a462b184
   linux-6.4.tar.xz: 481820f42b0f094ddc1da1a126b46c2367425d1f
-  patch-6.4.8.xz: 2a85be17a883d3e20f91648b300f84f2de2ebf83
   saa716x-driver.tar.xz: f9b6ef1cd6f1f71f53d9a8aadfba2cf6b5c3d7b6
+  patch-6.4.9.xz: ccea6ecb76753e93ed7db46de37507358143499d
