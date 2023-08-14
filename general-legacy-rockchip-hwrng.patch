@@ -1,43 +1,7 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: brentr <brent@mbari.org>
-Date: Sat, 15 Oct 2022 10:46:04 +0200
-Subject: [ARCHEOLOGY] Restored Hardware Random Number Generator from legacy
- (4.4) kernel (#4286)
-
-> X-Git-Archeology: > recovered message: > so boot no longer starves for entropy, delaying for up to 15 seconds
-> X-Git-Archeology: > recovered message: > Advances kernel to v5.19.15
-> X-Git-Archeology: - Revision f6f3f1b8b034bf7c1f069e831fc42a46940d2239: https://github.com/armbian/build/commit/f6f3f1b8b034bf7c1f069e831fc42a46940d2239
-> X-Git-Archeology:   Date: Sat, 15 Oct 2022 10:46:04 +0200
-> X-Git-Archeology:   From: brentr <brent@mbari.org>
-> X-Git-Archeology:   Subject: Restored Hardware Random Number Generator from legacy (4.4) kernel (#4286)
-> X-Git-Archeology:
-> X-Git-Archeology: - Revision 6765f734cc4a22aeaa9f99a3ad28c8c322de26f6: https://github.com/armbian/build/commit/6765f734cc4a22aeaa9f99a3ad28c8c322de26f6
-> X-Git-Archeology:   Date: Tue, 25 Oct 2022 11:26:51 +0200
-> X-Git-Archeology:   From: Igor Pecovnik <igorpecovnik@users.noreply.github.com>
-> X-Git-Archeology:   Subject: Bump rockchip64 edge to 6.0.y (#4337)
-> X-Git-Archeology:
-> X-Git-Archeology: - Revision 92f1a22d76b987afa7ba555d5b509adc51d689e7: https://github.com/armbian/build/commit/92f1a22d76b987afa7ba555d5b509adc51d689e7
-> X-Git-Archeology:   Date: Fri, 16 Dec 2022 13:38:13 +0100
-> X-Git-Archeology:   From: Igor Pecovnik <igorpecovnik@users.noreply.github.com>
-> X-Git-Archeology:   Subject: Re-add rockchip64 6.0 patches (#4575)
-> X-Git-Archeology:
-> X-Git-Archeology: - Revision 34ae84fac5d0b66a1ab2d1e51534b7beb13ef245: https://github.com/armbian/build/commit/34ae84fac5d0b66a1ab2d1e51534b7beb13ef245
-> X-Git-Archeology:   Date: Fri, 05 May 2023 14:22:00 +0200
-> X-Git-Archeology:   From: amazingfate <liujianfeng1994@gmail.com>
-> X-Git-Archeology:   Subject: bump rockchip64 edge to v6.3
-> X-Git-Archeology:
----
- arch/arm64/boot/dts/rockchip/rk3308.dtsi |  15 +
- drivers/char/hw_random/Kconfig           |  13 +
- drivers/char/hw_random/Makefile          |   1 +
- drivers/char/hw_random/rockchip-rng.c    | 330 ++++++++++
- 4 files changed, 359 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/rockchip/rk3308.dtsi b/arch/arm64/boot/dts/rockchip/rk3308.dtsi
-index acb5f7304065..4ff96497888a 100644
---- a/arch/arm64/boot/dts/rockchip/rk3308.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3308.dtsi
-@@ -654,6 +654,21 @@ logic_thermal: logic-thermal {
+diff -up linux-6.4/arch/arm64/boot/dts/rockchip/rk3308.dtsi.46~ linux-6.4/arch/arm64/boot/dts/rockchip/rk3308.dtsi
+--- linux-6.4/arch/arm64/boot/dts/rockchip/rk3308.dtsi.46~	2023-08-14 22:14:33.449484400 +0200
++++ linux-6.4/arch/arm64/boot/dts/rockchip/rk3308.dtsi	2023-08-14 23:02:40.190673023 +0200
+@@ -786,6 +786,21 @@
  		};
  	};
  
@@ -56,13 +20,12 @@ index acb5f7304065..4ff96497888a 100644
 +		reset-names = "reset";
 +	};
 +
- 	tsadc: tsadc@ff1f0000 {
- 		compatible = "rockchip,rk3308-tsadc";
- 		reg = <0x0 0xff1f0000 0x0 0x100>;
-diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
-index 4fdf07ae3c54..78b15a30d9d4 100644
---- a/drivers/char/hw_random/Kconfig
-+++ b/drivers/char/hw_random/Kconfig
+ 	pinctrl: pinctrl {
+ 		compatible = "rockchip,rk3308-pinctrl";
+ 		rockchip,grf = <&grf>;
+diff -up linux-6.4/drivers/char/hw_random/Kconfig.46~ linux-6.4/drivers/char/hw_random/Kconfig
+--- linux-6.4/drivers/char/hw_random/Kconfig.46~	2023-06-26 01:29:58.000000000 +0200
++++ linux-6.4/drivers/char/hw_random/Kconfig	2023-08-14 22:14:33.449484400 +0200
 @@ -372,6 +372,19 @@ config HW_RANDOM_STM32
  
  	  If unsure, say N.
@@ -83,11 +46,10 @@ index 4fdf07ae3c54..78b15a30d9d4 100644
  config HW_RANDOM_PIC32
  	tristate "Microchip PIC32 Random Number Generator support"
  	depends on HW_RANDOM && MACH_PIC32
-diff --git a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
-index 09bde4a0f971..1aa2d1892d21 100644
---- a/drivers/char/hw_random/Makefile
-+++ b/drivers/char/hw_random/Makefile
-@@ -34,6 +34,7 @@ obj-$(CONFIG_HW_RANDOM_IPROC_RNG200) += iproc-rng200.o
+diff -up linux-6.4/drivers/char/hw_random/Makefile.46~ linux-6.4/drivers/char/hw_random/Makefile
+--- linux-6.4/drivers/char/hw_random/Makefile.46~	2023-06-26 01:29:58.000000000 +0200
++++ linux-6.4/drivers/char/hw_random/Makefile	2023-08-14 22:14:33.449484400 +0200
+@@ -34,6 +34,7 @@ obj-$(CONFIG_HW_RANDOM_IPROC_RNG200) +=
  obj-$(CONFIG_HW_RANDOM_ST) += st-rng.o
  obj-$(CONFIG_HW_RANDOM_XGENE) += xgene-rng.o
  obj-$(CONFIG_HW_RANDOM_STM32) += stm32-rng.o
@@ -95,11 +57,9 @@ index 09bde4a0f971..1aa2d1892d21 100644
  obj-$(CONFIG_HW_RANDOM_PIC32) += pic32-rng.o
  obj-$(CONFIG_HW_RANDOM_MESON) += meson-rng.o
  obj-$(CONFIG_HW_RANDOM_CAVIUM) += cavium-rng.o cavium-rng-vf.o
-diff --git a/drivers/char/hw_random/rockchip-rng.c b/drivers/char/hw_random/rockchip-rng.c
-new file mode 100644
-index 000000000000..c0121f1f542e
---- /dev/null
-+++ b/drivers/char/hw_random/rockchip-rng.c
+diff -up linux-6.4/drivers/char/hw_random/rockchip-rng.c.46~ linux-6.4/drivers/char/hw_random/rockchip-rng.c
+--- linux-6.4/drivers/char/hw_random/rockchip-rng.c.46~	2023-08-14 22:14:33.449484400 +0200
++++ linux-6.4/drivers/char/hw_random/rockchip-rng.c	2023-08-14 22:14:33.449484400 +0200
 @@ -0,0 +1,330 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
@@ -431,6 +391,3 @@ index 000000000000..c0121f1f542e
 +MODULE_DESCRIPTION("ROCKCHIP H/W Random Number Generator driver");
 +MODULE_AUTHOR("Lin Jinhan <troy.lin@rock-chips.com>");
 +MODULE_LICENSE("GPL v2");
--- 
-Armbian
-
