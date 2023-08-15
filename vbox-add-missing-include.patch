@@ -1,0 +1,11 @@
+diff -up linux-6.4/drivers/net/vboxnetflt/linux/VBoxNetFlt-linux.c.omv~ linux-6.4/drivers/net/vboxnetflt/linux/VBoxNetFlt-linux.c
+--- linux-6.4/drivers/net/vboxnetflt/linux/VBoxNetFlt-linux.c.omv~	2023-08-15 20:59:44.528460740 +0200
++++ linux-6.4/drivers/net/vboxnetflt/linux/VBoxNetFlt-linux.c	2023-08-15 20:59:51.690536832 +0200
+@@ -67,6 +67,7 @@
+ #include <net/ipv6.h>
+ #include <net/if_inet6.h>
+ #include <net/addrconf.h>
++#include <net/gso.h>
+ 
+ #include <VBox/log.h>
+ #include <VBox/err.h>
