@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 4
-%define sublevel 11
+%define sublevel 12
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -346,8 +346,6 @@ Patch516:	https://patchwork.kernel.org/project/dri-devel/patch/20230714143033.11
 # PanCSF DRM driver
 # https://lore.kernel.org/dri-devel/20230201084832.1708866-1-boris.brezillon@collabora.com
 Patch520:	https://gitlab.freedesktop.org/panfrost/linux/-/commit/4f986599d8a2a91c086d85408c520a3489157bbb.patch
-
-Patch551:	https://github.com/ClangBuiltLinux/linux/commit/150c42407f87463c27a2459e06845965291d9973.patch
 
 # Patches to external modules
 # Marked SourceXXX instead of PatchXXX because the modules
