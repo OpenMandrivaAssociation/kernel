@@ -61,9 +61,9 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 4
-%define sublevel 12
-#define relc 0
+%define patchlevel 5
+%define sublevel 0
+#define relc 7
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -255,7 +255,6 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 # because they need to be applied after stuff from the
 # virtualbox-kernel-module-sources package is copied around
 Source1005:	vbox-6.1-fix-build-on-znver1-hosts.patch
-Source1006:	vbox-add-missing-include.patch
 Source1007:	vboxnet-clang.patch
 Source1008:	vboxvideo-kernel-6.3.patch
 
@@ -288,23 +287,24 @@ Patch232:	bpftool-use-a-local-bpf_perf_event_value-to-fix-accessing-its-fields.p
 Patch235:	linux-6.4-GameSir-T4.patch
 
 # (tpg) Armbian ARM Patches
-Patch240:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/board-rockpro64-fix-emmc.patch
-Patch241:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/board-rockpro64-fix-spi1-flash-speed.patch
-Patch242:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/board-rockpro64-work-led-heartbeat.patch
-Patch243:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/general-fix-mmc-signal-voltage-before-reboot.patch
-Patch244:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/general-fix-inno-usb2-phy-init.patch
-Patch245:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/rk3399-unlock-temperature.patch
-Patch246:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/general-increasing_DMA_block_memory_allocation_to_2048.patch
-Patch247:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/general-rk808-configurable-switch-voltage-steps.patch
-Patch248:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/rk3399-sd-drive-level-8ma.patch
-Patch249:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
-Patch250:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/add-rockchip-iep-driver.patch
-Patch251:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/general-legacy-rockchip-hwrng.patch
-Patch252:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/general-legacy-rockchip-hwrng_5.10.patch
-Patch253:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.4/rk3399-rp64-rng.patch
+Patch240:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch
+Patch241:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-spi1-flash-speed.patch
+Patch242:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-work-led-heartbeat.patch
+Patch243:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-mmc-signal-voltage-before-reboot.patch
+Patch244:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-inno-usb2-phy-init.patch
+Patch245:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-unlock-temperature.patch
+Patch246:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-increasing_DMA_block_memory_allocation_to_2048.patch
+Patch247:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-rk808-configurable-switch-voltage-steps.patch
+Patch248:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-sd-drive-level-8ma.patch
+Patch249:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-pci-rockchip-support-ep-gpio-undefined-case.patch
+Patch250:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
+Patch251:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/add-rockchip-iep-driver.patch
+Patch252:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng.patch
+Patch253:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng_5.10.patch
+Patch254:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-rp64-rng.patch
 
 # (tpg) Manjaro ARM Patches
-Patch260:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/6c64aa18076a7dc75bfd854b27906467f5d95336/1003-panfrost-Silence-Panfrost-gem-shrinker-loggin.patch
+#Patch260:	https://gitlab.manjaro.org/manjaro-arm/packages/core/linux/-/raw/master/1005-panfrost-Silence-Panfrost-gem-shrinker-loggin.patch
 
 # Other ARM64 patches
 Patch261:	https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/target/linux/rockchip/patches-5.15/992-rockchip-rk3399-overclock-to-2.2-1.8-GHz.patch
@@ -343,9 +343,6 @@ Patch513:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142855.11
 Patch514:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142913.112440-1-sarah.walker@imgtec.com/raw/#/imagination-drm-15.patch
 Patch515:	https://patchwork.kernel.org/project/dri-devel/patch/20230714143015.112562-1-sarah.walker@imgtec.com/raw/#/imagination-drm-16.patch
 Patch516:	https://patchwork.kernel.org/project/dri-devel/patch/20230714143033.112624-1-sarah.walker@imgtec.com/raw/#/imagination-drm-17.patch
-# PanCSF DRM driver
-# https://lore.kernel.org/dri-devel/20230201084832.1708866-1-boris.brezillon@collabora.com
-Patch520:	https://gitlab.freedesktop.org/panfrost/linux/-/commit/4f986599d8a2a91c086d85408c520a3489157bbb.patch
 
 # Patches to external modules
 # Marked SourceXXX instead of PatchXXX because the modules
@@ -357,7 +354,6 @@ Patch520:	https://gitlab.freedesktop.org/panfrost/linux/-/commit/4f986599d8a2a91
 # https://github.com/clearlinux-pkgs/linux/
 Patch900:	0101-i8042-decrease-debug-message-level-to-info.patch
 Patch901:	0102-increase-the-ext4-default-commit-age.patch
-Patch902:	0103-silence-rapl.patch
 Patch903:	0104-pci-pme-wakeups.patch
 Patch904:	0105-ksm-wakeups.patch
 #Patch905:	0106-intel_idle-tweak-cpuidle-cstates.patch
@@ -962,7 +958,6 @@ sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/pci/vboxpci/Makefile*
 echo 'obj-m += vboxpci/' >>drivers/pci/Makefile
 %endif
 patch -p1 -z .1005~ -b <%{S:1005}
-patch -p1 -z .1006~ -b <%{S:1006}
 patch -p1 -z .1007~ -b <%{S:1007}
 %endif
 
@@ -1864,6 +1859,8 @@ cd %{buildroot}%{_kerneldir}
 # lots of gitignore files
 find -iname ".gitignore" -delete
 # clean tools tree
+# (mkdir below is just so "make clean" can remove it again without erroring out)
+mkdir -p tools/counter/include/linux
 %make_build -C tools clean -j1 V=0 VERBOSE=0
 %make_build -C tools/build clean -j1 V=0 VERBOSE=0
 %make_build -C tools/build/feature clean -j1 V=0 VERBOSE=0
