@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 5
-%define sublevel 2
+%define sublevel 3
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -279,9 +279,6 @@ Patch230:	linux-5.11-perf-compile.patch
 
 # (tpg) F2FS is somehow corrupted https://bugzilla.kernel.org/show_bug.cgi?id=216050
 Patch231:	f2fs-fix-bug-216050.patch
-
-# (tpg) fix build bpftool with LLVM/clang
-Patch232:	bpftool-use-a-local-bpf_perf_event_value-to-fix-accessing-its-fields.patch
 
 # https://www.spinics.net/lists/linux-input/msg86170.html
 Patch235:	linux-6.4-GameSir-T4.patch
