@@ -54,7 +54,7 @@
 %ifarch %{aarch64}
 %define modules_subpackages appletalk decnet fddi can
 %else
-%define modules_subpackages appletalk arcnet infiniband isdn can
+%define modules_subpackages appletalk arcnet comedi infiniband isdn can
 %endif
 
 # IMPORTANT
@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 5
-%define sublevel 3
+%define sublevel 5
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -276,9 +276,6 @@ Patch226:	https://gitweb.frugalware.org/frugalware-current/raw/50690405717979871
 # Fix perf
 Patch230:	linux-5.11-perf-compile.patch
 #Patch231:	ce71038e673ee8291c64631359e56c48c8616dc7.patch
-
-# (tpg) F2FS is somehow corrupted https://bugzilla.kernel.org/show_bug.cgi?id=216050
-Patch231:	f2fs-fix-bug-216050.patch
 
 # https://www.spinics.net/lists/linux-input/msg86170.html
 Patch235:	linux-6.4-GameSir-T4.patch
@@ -1540,6 +1537,7 @@ CreateFiles() {
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/appletalk
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/can
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/decnet
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/comedi
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/infiniband
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/isdn
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/net/arcnet
