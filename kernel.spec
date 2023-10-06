@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 5
-%define sublevel 5
+%define sublevel 6
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -188,6 +188,7 @@ Source1000:	https://cdn.kernel.org/pub/linux/kernel/v%(echo %{version}|cut -d. -
 Source1001:	revert-7a8b64d17e35810dc3176fe61208b45c15d25402.patch
 Source1002:	revert-9d55bebd9816903b821a403a69a94190442ac043.patch
 
+Patch30:	https://gitweb.gentoo.org/proj/linux-patches.git/plain/5010_enable-cpu-optimizations-universal.patch?h=6.5#/cpu-optimizations.patch
 Patch31:	die-floppy-die.patch
 Patch32:	0001-Add-support-for-Acer-Predator-macro-keys.patch
 Patch34:	kernel-5.6-kvm-gcc10.patch
@@ -257,6 +258,12 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 Source1005:	vbox-6.1-fix-build-on-znver1-hosts.patch
 Source1007:	vboxnet-clang.patch
 Source1008:	vboxvideo-kernel-6.3.patch
+
+# EVDI Extensible Virtual Display Interface
+# Needed by DisplayLink cruft
+%define evdi_version 1.14.1
+Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
+Source1011:	evdi-kernel-6.6.patch
 
 # Assorted fixes
 
@@ -851,7 +858,7 @@ done
 #
 %prep
 
-%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 1003 -a 1004
+%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 1003 -a 1004 -a 1010
 %if 0%{?sublevel:%{sublevel}}
 [ -e .git ] || git init
 xzcat %{SOURCE1000} |git apply - || git apply %{SOURCE1000}
@@ -872,6 +879,19 @@ sed -i -e '/saa7164/isource "drivers/media/pci/saa716x/Kconfig"' drivers/media/p
 sed -i -e '/saa7164/iobj-$(CONFIG_SAA716X_CORE) += saa716x/' drivers/media/pci/Makefile
 find drivers/media/tuners drivers/media/dvb-frontends -name "*.c" -o -name "*.h" -type f | xargs sed -i -e 's,"dvb_frontend.h",<media/dvb_frontend.h>,g'
 %endif
+
+# Merge EVDI
+mv evdi-%{evdi_version}/module drivers/gpu/drm/evdi
+rm -rf evdi-%{evdi_version}
+sed -i -e '/imagination/isource "drivers/gpu/drm/evdi/Kconfig"' drivers/gpu/drm/Kconfig
+# The dkms makefile is not really useful for a proper in-tree build
+cat >drivers/gpu/drm/evdi/Makefile <<'EOF'
+evdi-y := evdi_platform_drv.o evdi_platform_dev.o evdi_sysfs.o evdi_modeset.o evdi_connector.o evdi_encoder.o evdi_drm_drv.o evdi_fb.o evdi_gem.o evdi_painter.o evdi_params.o evdi_cursor.o evdi_debug.o evdi_i2c.o
+evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
+obj-$(CONFIG_DRM_EVDI) := evdi.o
+EOF
+echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
+patch -p1 -b -z .1011~ <%{S:1011}
 
 %if %{with rtl8821ce}
 # Merge RTL8723DE and RTL8821CE drivers
