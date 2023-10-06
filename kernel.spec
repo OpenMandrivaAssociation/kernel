@@ -395,6 +395,8 @@ BuildRequires:	pkgconfig(numa)
 # for cpupower
 %if %{with build_cpupower}
 BuildRequires:	pkgconfig(libpci)
+# As of 6.5.6, FR translation of cpupower is ISO-8859-1
+BuildRequires:	locales-extra-charsets
 %endif
 
 %if %{with build_turbostat}
