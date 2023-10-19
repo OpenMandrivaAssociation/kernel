@@ -47,8 +47,8 @@
 %define target_arch %(echo %{_arch} | sed -e 's/mips.*/mips/' -e 's/arm.*/arm/' -e 's/aarch64/arm64/' -e 's/x86_64/x86/' -e 's/i.86/x86/' -e 's/znver1/x86/' -e 's/riscv.*/riscv/' -e 's/ppc.*/powerpc/')
 
 # (tpg) define here per arch which kernel flavours you would like to build
-%define kernel_flavours desktop server
-# possible options are: desktop-gcc server-gcc
+%define kernel_flavours desktop server desktop-gcc server-gcc
+# possible options are: desktop server desktop-gcc server-gcc
 
 # (tpg) package these kernel modules as subpackages
 %ifarch %{aarch64}
