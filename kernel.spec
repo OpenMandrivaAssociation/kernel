@@ -130,7 +130,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}2
+Release:	%{?relc:0.rc%{relc}.}3
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -515,6 +515,20 @@ Conflicts:	arch(znver1)
 # might be useful too:
 Suggests:	microcode-intel
 %endif
+EOF
+
+	# Get rid of kernels from OMLx 4.3
+	if echo ${flavour} |grep -q gcc; then
+		cat <<EOF
+Obsoletes:	kernel-release-${flavour/-gcc/} < 5.16.8-1
+EOF
+	else
+		cat <<EOF
+Obsoletes:	kernel-release-${flavour}-clang < 5.16.8-1
+EOF
+	fi
+
+	cat <<EOF
 
 %description -n %{name}-${flavour}
 %summary .
@@ -625,7 +639,20 @@ Provides:	installonlypkg(kernel-module)
 AutoReq:	no
 AutoProv:	yes
 Requires(posttrans,postun):	kmod
+EOF
 
+	# Get rid of kernels from OMLx 4.3
+	if echo $flavour |grep -q gcc; then
+		cat <<EOF
+Obsoletes:	kernel-release-${flavour/-gcc/}-modules-${modules} < 5.16.8-1
+EOF
+	else
+		cat <<EOF
+Obsoletes:	kernel-release-${flavour}-clang-modules-${modules} < 5.16.8-1
+EOF
+	fi
+
+	cat <<EOF
 %description -n %{name}-${flavour}-modules-${modules}
 %{modules} modules for kernel %{name}-${flavour} .
 
