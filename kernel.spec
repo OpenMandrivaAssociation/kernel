@@ -61,8 +61,8 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 5
-%define sublevel 9
+%define patchlevel 6
+%define sublevel 0
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -130,7 +130,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}3
+Release:	%{?relc:0.rc%{relc}.}1
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -155,13 +155,20 @@ NoSource:	0
 Source3:	README.kernel-sources
 Source4:	%{name}.rpmlintrc
 ## all in one configs for each kernel
-Source10:	x86_64-omv-defconfig
-Source11:	i686-omv-defconfig
-Source12:	armv7hnl-omv-defconfig
-Source13:	aarch64-omv-defconfig
+Source10:	x86-omv-defconfig
+Source11:	i386-omv-defconfig
+Source12:	arm-omv-defconfig
+Source13:	arm64-omv-defconfig
+Source14:	riscv-omv-defconfig
+Source15:	powerpc-omv-defconfig
+# Fragments to be used with all/multiple kernel types
+Source20:	filesystems.fragment
+Source21:	gcc-plugins.fragment
+# Overrides (highest priority) for configs
+Source30:	znver1.overrides
 # config and systemd service file from fedora
-Source30:	cpupower.service
-Source31:	cpupower.config
+Source300:	cpupower.service
+Source301:	cpupower.config
 
 # Patches
 # Numbers 0 to 9 are reserved for upstream patches
@@ -284,9 +291,6 @@ Patch226:	https://gitweb.frugalware.org/frugalware-current/raw/50690405717979871
 Patch230:	linux-5.11-perf-compile.patch
 #Patch231:	ce71038e673ee8291c64631359e56c48c8616dc7.patch
 
-# https://www.spinics.net/lists/linux-input/msg86170.html
-Patch235:	linux-6.4-GameSir-T4.patch
-
 # (tpg) Armbian ARM Patches
 Patch240:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch
 Patch241:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-spi1-flash-speed.patch
@@ -295,7 +299,7 @@ Patch243:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/ar
 Patch244:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-inno-usb2-phy-init.patch
 Patch245:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-unlock-temperature.patch
 Patch246:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-increasing_DMA_block_memory_allocation_to_2048.patch
-Patch247:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-rk808-configurable-switch-voltage-steps.patch
+Patch247:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.5/general-rk808-configurable-switch-voltage-steps.patch
 Patch248:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-sd-drive-level-8ma.patch
 Patch249:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-pci-rockchip-support-ep-gpio-undefined-case.patch
 Patch250:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
@@ -326,6 +330,7 @@ Source401:	https://raw.githubusercontent.com/umlaeute/v4l2loopback/main/v4l2loop
 Source402:	https://raw.githubusercontent.com/umlaeute/v4l2loopback/main/v4l2loopback_formats.h
 
 # Imagination DRM driver
+# https://developer.imaginationtech.com/open-source-gpu-driver/
 # https://patchwork.kernel.org/project/dri-devel/list/?series=765738
 Patch500:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142424.111465-1-sarah.walker@imgtec.com/raw/#/imagination-drm-1.patch
 Patch501:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142526.111569-1-sarah.walker@imgtec.com/raw/#/imagination-drm-2.patch
@@ -394,9 +399,9 @@ BuildRequires:	pkgconfig(numa)
 
 # for cpupower
 %if %{with build_cpupower}
-BuildRequires:	pkgconfig(libpci)
-# As of 6.5.6, FR translation of cpupower is ISO-8859-1
+# As of 6.6-rc5, cpupower's FR translation uses iso-8859-1
 BuildRequires:	locales-extra-charsets
+BuildRequires:	pkgconfig(libpci)
 %endif
 
 %if %{with build_turbostat}
@@ -515,20 +520,6 @@ Conflicts:	arch(znver1)
 # might be useful too:
 Suggests:	microcode-intel
 %endif
-EOF
-
-	# Get rid of kernels from OMLx 4.3
-	if echo ${flavour} |grep -q gcc; then
-		cat <<EOF
-Obsoletes:	kernel-release-${flavour/-gcc/} < 5.16.8-1
-EOF
-	else
-		cat <<EOF
-Obsoletes:	kernel-release-${flavour}-clang < 5.16.8-1
-EOF
-	fi
-
-	cat <<EOF
 
 %description -n %{name}-${flavour}
 %summary .
@@ -639,20 +630,7 @@ Provides:	installonlypkg(kernel-module)
 AutoReq:	no
 AutoProv:	yes
 Requires(posttrans,postun):	kmod
-EOF
 
-	# Get rid of kernels from OMLx 4.3
-	if echo $flavour |grep -q gcc; then
-		cat <<EOF
-Obsoletes:	kernel-release-${flavour/-gcc/}-modules-${modules} < 5.16.8-1
-EOF
-	else
-		cat <<EOF
-Obsoletes:	kernel-release-${flavour}-clang-modules-${modules} < 5.16.8-1
-EOF
-	fi
-
-	cat <<EOF
 %description -n %{name}-${flavour}-modules-${modules}
 %{modules} modules for kernel %{name}-${flavour} .
 
@@ -1094,33 +1072,6 @@ CONFIG_RELR=y
 EOF
 }
 
-amdify() {
-	# Yes, it is intentional that CONFIG_AMD_NUMA gets disabled
-	# for the AMD kernel -- AMD_NUMA is only for pre-ACPI systems
-	# such as initial Opterons. Not useful for current AMD boxes.
-	sed -i -E \
-		-e 's/^CONFIG_GENERIC_CPU=y/# CONFIG_GENERIC_CPU is not set/' \
-		-e 's/^# CONFIG_MZEN is not set/CONFIG_MZEN=y/' \
-		-e '/CONFIG_HAVE_INTEL_TXT/d' \
-		-e 's/^CONFIG_X86_INTEL_LPSS=y/# CONFIG_X86_INTEL_LPSS is not set/' \
-		-e 's/^CONFIG_CPU_SUP_(INTEL|CENTAUR|ZHAOXIN)=y/# CONFIG_CPU_SUP_\1 is not set/' \
-		-e 's/^CONFIG_X86_MCE_INTEL=y/# CONFIG_X86_MCE_INTEL is not set/' \
-		-e 's/^CONFIG_MICROCODE_INTEL=y/# CONFIG_MICROCODE_INTEL is not set/' \
-		-e 's/^CONFIG_X86_INTEL_PSTATE=y/# CONFIG_X86_INTEL_PSTATE is not set/' \
-		-e 's/^CONFIG_INTEL_IDLE=y/# CONFIG_INTEL_IDLE is not set/' \
-		-e 's/^CONFIG_INTEL_WMI(.*)=(y|m)/# CONFIG_INTEL_WMI\1 is not set/' \
-		-e 's,^CONFIG_SND_SOC_INTEL(.*)=.*,# CONFIG_SND_SOC_INTEL\1 is not set,' \
-		-e 's,^CONFIG_SND_SOC_SOF_INTEL(.*)=.*,# CONFIG_SND_SOC_SOF_INTEL\1 is not set,' \
-		-e 's,^CONFIG_AMD_NUMA=y,# CONFIG_AMD_NUMA is not set,' \
-		-e 's,^CONFIG_KVM_INTEL=m,# CONFIG_KVM_INTEL is not set,' \
-		-e 's,^CONFIG_INTEL_SOC(.*)=(y|m),# CONFIG_INTEL_SOC\1 is not set,' \
-		-e 's,^CONFIG_AGP_(INTEL|SIS|VIA)=(y|m),# CONFIG_AGP_\1 is not set,' \
-		-e 's,^CONFIG_PECI=(y|m),# CONFIG_PECI is not set,' \
-		-e 's,^CONFIG_INTEL_TDX_GUEST=(y|m),# CONFIG_INTEL_TDX_GUEST is not set,' \
-		-e 's,^CONFIG_INTEL_IFS=(y|m),# CONFIG_INTEL_IFS is not set,' \
-		"$1"
-}
-
 serverize() {
 	sed -i -E \
 		-e 's/^CONFIG_PREEMPT=y/# CONFIG_PREEMPT is not set/' \
@@ -1135,7 +1086,6 @@ CreateConfig() {
 	arch="$1"
 	type="$2"
 	config_dir=%{_sourcedir}
-	CONFIGS=""
 	rm -fv .config
 
 	printf '%s\n' "<-- Creating config for kernel type ${type} for ${arch}"
@@ -1166,116 +1116,55 @@ CreateConfig() {
 	fi
 
 # (crazy) do not use %{S:X} to copy, if someone messes up we end up with broken stuff again
-	case ${arch} in
+	EXTRAFRAGMENTS=""
+	cfgarch="${arch}"
+	case "${cfgarch}" in
+	x86_64|znver1)
+		arch=x86
+		;;
+	ppc*)
+		arch=powerpc
+		if echo %{_target_cpu} |grep -q le; then
+			EXTRAFRAGMENTS=arch/powerpc/configs/le.config
+		fi
+		;;
 	i?86)
-		case ${type} in
-		desktop|desktop-gcc|server|server-gcc)
-			rm -f .config
-			cp -v ${config_dir}/i686-omv-defconfig .config
-			printf '%s' ${type} | grep -q gcc || clangify .config
-			printf '%s' ${type} | grep -q server && serverize .config
-			;;
-		*)
-			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
-			exit 1
-			;;
-		esac
-		;;
-	x86_64|x86|znver1)
-		case ${type} in
-		desktop|desktop-gcc|server|server-gcc)
-			rm -f .config
-			cp -v ${config_dir}/x86_64-omv-defconfig .config
-			[ "${arch}" = "znver1" ] && amdify .config
-			printf '%s' ${type} | grep -q gcc || clangify .config
-			printf '%s' ${type} | grep -q server && serverize .config
-			;;
-		*)
-			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
-			exit 1
-			;;
-		esac
-		;;
-	arm)
-		case ${type} in
-		desktop|desktop-gcc|server|server-gcc)
-			rm -f .config
-			cp -v ${config_dir}/armv7hnl-omv-defconfig .config
-			printf '%s' ${type} | grep -q gcc || clangify .config
-			printf '%s' ${type} | grep -q server && serverize .config
-			;;
-		*)
-			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
-			exit 1
-			;;
-		esac
-		;;
-	arm64)
-		case ${type} in
-		desktop|desktop-gcc|server|server-gcc)
-			rm -f .config
-			cp -v ${config_dir}/aarch64-omv-defconfig .config
-			printf '%s' ${type} | grep -q gcc || clangify .config
-			printf '%s' ${type} | grep -q server && serverize .config
-			;;
-		*)
-			printf '%s\n' "ERROR: no such type ${type} for ${arch}"
-			exit 1
-			;;
-		esac
-		;;
-	ppc64)
-		CONFIGS=pseries_defconfig
-		;;
-	ppc64le)
-		CONFIGS="pseries_defconfig arch/powerpc/configs/le.config"
-		;;
-	*)
-		CONFIGS=defconfig
+		arch=i386
 		;;
 	esac
+	BASECONFIG=${config_dir}/${arch}-omv-defconfig
 
-# ( crazy) remove along with the old configs once ARM* and ppc* is finished
-	if [[ -n "${CONFIGS}" ]]; then
-		for i in common common-${type}; do
-			[ -e kernel/configs/$i.config ] && CONFIGS="$CONFIGS $i.config"
-		done
-		for i in ${arch}-common ${arch}-${type}; do
-			[ -e kernel/configs/$i.config ] && CONFIGS="$CONFIGS $i.config"
-		done
+	if [ ! -e ${BASECONFIG} ]; then
+		echo "======= No defconfig for ${arch} found! Generating it, please edit and \"git add\" it! ======="
+		sleep 10m
+		make ARCH=${arch} defconfig
+		cp .config ${config_dir}/${arch}-omv-defconfig
 	fi
+	[ -e ${config_dir}/${arch}.overrides ] && EXTRAFRAGMENTS="$EXTRAFRAGMENTS ${config_dir}/${arch}.overrides"
+	[ -e ${config_dir}/${cfgarch}.overrides ] && EXTRAFRAGMENTS="$EXTRAFRAGMENTS ${config_dir}/${cfgarch}.overrides"
+	rm -f .config
+	scripts/kconfig/merge_config.sh -m ${BASECONFIG} %{_sourcedir}/*.fragment $EXTRAFRAGMENTS
+	printf '%s' ${type} | grep -q gcc || clangify .config
+	printf '%s' ${type} | grep -q server && serverize .config
 
-	cfgarch=$arch
-	if [ "$arch" = "znver1" ] || [ "$arch" = "x86_64" ]; then
-		arch=x86
-	elif printf '%s\n' ${arch} |grep -q ^ppc; then
-		arch=powerpc
-	fi
-
-# ( crazy) remove along with the old configs once ARM* and ppc* is finished
-	if [[ -n "${CONFIGS}" ]]; then
-		make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 $CONFIGS
-	else
-
-	    if [ ! -e $(pwd)/.config ]; then
+	if [ ! -e $(pwd)/.config ]; then
 		printf '%s\n' "Kernel config in $(pwd) missing, killing the build."
 		exit 1
-	    fi
+	fi
 
 # (tpg) apply our dynamic configs
-	    scripts/config $FIXED_CONFIGS
+	scripts/config $FIXED_CONFIGS
 
 %if %{without lazy_developer}
 ## YES, intentionally, DIE on wrong config
-	    printf '%s\n' "=== Configuring ${arch} ${type} kernel ==="
-	    make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 oldconfig
+	printf '%s\n' "=== Configuring ${arch} ${type} kernel ==="
+	make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 oldconfig
 %else
-	    printf '%s\n' "Lazy developer option is enabled!!. Don't be lazy!."
+	printf '%s\n' "Lazy developer option is enabled!!. Don't be lazy!."
 ## that takes kernel defaults on missing or changed things
 ## olddefconfig is similar to yes ... but not that verbose
-	    yes "" | make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
+	yes "" | make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
 %endif
-	fi
 
 	scripts/config --set-val BUILD_SALT \"$(echo "$arch-$type-%{EVRD}"|sha1sum|awk '{ print $1; }')\"
 
@@ -1858,8 +1747,8 @@ rm -f %{buildroot}%{_libdir}/*.{a,la}
 %find_lang cpupower
 chmod 0755 %{buildroot}%{_libdir}/libcpupower.so*
 mkdir -p %{buildroot}%{_unitdir} %{buildroot}%{_sysconfdir}/sysconfig
-install -m644 %{SOURCE30} %{buildroot}%{_unitdir}/cpupower.service
-install -m644 %{SOURCE31} %{buildroot}%{_sysconfdir}/sysconfig/cpupower
+install -m644 %{S:300} %{buildroot}%{_unitdir}/cpupower.service
+install -m644 %{S:301} %{buildroot}%{_sysconfdir}/sysconfig/cpupower
 %endif
 
 # Create directories infastructure
@@ -2015,7 +1904,6 @@ cd -
 %{_prefix}/libexec/perf-core/*
 %doc %{_mandir}/man[1-8]/perf*
 %{_sysconfdir}/bash_completion.d/perf
-%{_prefix}/lib/perf
 %ifarch %{x86_64}
 %{_libdir}/libperf-jvmti.so
 %else
@@ -2028,7 +1916,7 @@ cd -
 %if %{with build_cpupower}
 %files -n cpupower -f cpupower.lang
 %{_bindir}/cpupower
-%{_libdir}/libcpupower.so.0
+%{_libdir}/libcpupower.so.1
 %{_libdir}/libcpupower.so.0.0.1
 %{_unitdir}/cpupower.service
 %doc %{_mandir}/man[1-8]/cpupower*
