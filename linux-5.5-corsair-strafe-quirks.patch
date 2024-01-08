@@ -1,6 +1,6 @@
-diff -up linux-6.6/drivers/hid/hid-ids.h.13~ linux-6.6/drivers/hid/hid-ids.h
---- linux-6.6/drivers/hid/hid-ids.h.13~	2023-11-30 01:57:11.677488890 +0100
-+++ linux-6.6/drivers/hid/hid-ids.h	2023-11-30 01:57:12.090493108 +0100
+diff -up linux-6.7-rc1/drivers/hid/hid-ids.h.12~ linux-6.7-rc1/drivers/hid/hid-ids.h
+--- linux-6.7-rc1/drivers/hid/hid-ids.h.12~	2023-11-13 01:19:07.000000000 +0100
++++ linux-6.7-rc1/drivers/hid/hid-ids.h	2023-11-13 02:08:19.372320145 +0100
 @@ -326,6 +326,7 @@
  #define USB_DEVICE_ID_CORSAIR_K70RGB_RAPIDFIRE  0x1b38
  #define USB_DEVICE_ID_CORSAIR_K65RGB_RAPIDFIRE  0x1b39
@@ -9,9 +9,9 @@ diff -up linux-6.6/drivers/hid/hid-ids.h.13~ linux-6.6/drivers/hid/hid-ids.h
  
  #define USB_VENDOR_ID_CREATIVELABS	0x041e
  #define USB_DEVICE_ID_CREATIVE_SB_OMNI_SURROUND_51	0x322c
-diff -up linux-6.6/drivers/hid/hid-quirks.c.13~ linux-6.6/drivers/hid/hid-quirks.c
---- linux-6.6/drivers/hid/hid-quirks.c.13~	2023-11-30 01:57:12.094493149 +0100
-+++ linux-6.6/drivers/hid/hid-quirks.c	2023-11-30 01:58:08.935073575 +0100
+diff -up linux-6.7-rc1/drivers/hid/hid-quirks.c.12~ linux-6.7-rc1/drivers/hid/hid-quirks.c
+--- linux-6.7-rc1/drivers/hid/hid-quirks.c.12~	2023-11-13 02:08:19.372320145 +0100
++++ linux-6.7-rc1/drivers/hid/hid-quirks.c	2023-11-13 02:09:09.127748719 +0100
 @@ -64,6 +64,7 @@ static const struct hid_device_id hid_qu
  	{ HID_USB_DEVICE(USB_VENDOR_ID_CORSAIR, USB_DEVICE_ID_CORSAIR_GLAIVE_RGB), HID_QUIRK_NO_INIT_REPORTS | HID_QUIRK_ALWAYS_POLL },
  	{ HID_USB_DEVICE(USB_VENDOR_ID_CORSAIR, USB_DEVICE_ID_CORSAIR_SCIMITAR_PRO_RGB), HID_QUIRK_NO_INIT_REPORTS | HID_QUIRK_ALWAYS_POLL },
