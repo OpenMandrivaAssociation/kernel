@@ -1026,6 +1026,9 @@ FIXED_CONFIGS=" --disable CONFIG_RT_GROUP_SCHED \
 	--enable CONFIG_DEBUG_INFO_NONE \
 	--disable CONFIG_DEBUG_INFO \
 %endif
+%ifarch %{riscv}
+	--enable RISCV_ISA_V \
+%endif
 	--disable CONFIG_MODULE_COMPRESS_NONE \
 	--disable CONFIG_DEBUG_KERNEL "
 
@@ -1088,8 +1091,15 @@ CreateConfig() {
 
 	printf '%s\n' "<-- Creating config for kernel type ${type} for ${arch}"
 	if printf '%s' ${type} | grep -q gcc; then
+		HOSTCC=gcc
+		HOSTCXX=g++
+%if %{cross_compiling}
+		CC=%{_target_platform}-gcc
+		CXX=%{_target_platform}-g++
+%else
 		CC=gcc
 		CXX=g++
+%endif
 		# force ld.bfd, Kbuild logic issues when ld is linked to something else
 		BUILD_LD="%{_target_platform}-ld.bfd"
 		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
@@ -1097,6 +1107,8 @@ CreateConfig() {
 	else
 		CC=clang
 		CXX=clang++
+		HOSTCC=clang
+		HOSTCXX=clang++
 		# Workaround for LLD 16 BTF generation problem
 		#BUILD_LD=ld.bfd
 		#BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
@@ -1156,16 +1168,15 @@ CreateConfig() {
 %if %{without lazy_developer}
 ## YES, intentionally, DIE on wrong config
 	printf '%s\n' "=== Configuring ${arch} ${type} kernel ==="
-	make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 oldconfig
+	make ARCH="${arch}" CC="$CC" HOSTCC="$HOSTCC" CXX="$CXX" HOSTCXX="$HOSTCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
 %else
 	printf '%s\n' "Lazy developer option is enabled!!. Don't be lazy!."
 ## that takes kernel defaults on missing or changed things
 ## olddefconfig is similar to yes ... but not that verbose
-	yes "" | make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
+	yes "" | make ARCH="${arch}" CC="$CC" HOSTCC="$HOSTCC" CXX="$CXX" HOSTCXX="$HOSTCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
 %endif
 
 	scripts/config --set-val BUILD_SALT \"$(echo "$arch-$type-%{EVRD}"|sha1sum|awk '{ print $1; }')\"
-
 # " <--- workaround for vim syntax highlighting bug, ignore
 	cp .config kernel/configs/omv-${cfgarch}-${type}.config
 }
@@ -1190,8 +1201,15 @@ BuildKernel() {
 	printf '%s\n' "<--- Building kernel $KernelVer"
 
 	if printf '%s' ${KernelVer} | grep -q gcc; then
+%if %{cross_compiling}
+		CC=%{_target_platform}-gcc
+		CXX=%{_target_platform}-g++
+%else
 		CC=gcc
 		CXX=g++
+%endif
+		HOSTCC=gcc
+		HOSTCXX=g++
 		BUILD_OPT_CFLAGS="-O3"
 # force ld.bfd, Kbuild logic issues when ld is linked  to something else
 		BUILD_LD="%{_target_platform}-ld.bfd"
@@ -1200,6 +1218,8 @@ BuildKernel() {
 	else
 		CC=clang
 		CXX=clang++
+		HOSTCC=clang
+		HOSTCXX=clang++
 		BUILD_OPT_CFLAGS="-O3 %{pollyflags}"
 		# Workaround for LLD 16 BTF generation problem
 		#BUILD_LD=ld.bfd
@@ -1227,7 +1247,7 @@ BuildKernel() {
 %endif
 %endif
 # FIXME add KBUILD_CFLAGS="$BUILD_OPT_CFLAGS" once that actually works
-	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE modules $DTBS
+	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HOSTCC" CXX="$CXX" HOSTCXX="$HOSTCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" CROSS_COMPILE=%{_target_platform}- $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE modules $DTBS
 
 # Start installing stuff
 	install -d %{temp_boot}
@@ -1336,7 +1356,7 @@ SaveDevel() {
 # Clean the scripts tree, and make sure everything is ok (sanity check)
 # running prepare+scripts (tree was already "prepared" in build)
 	cd $TempDevelRoot >/dev/null
-	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} clean
+	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="%{__cc}" clean
 	cd - >/dev/null
 
 	rm -f $TempDevelRoot/.config.old
