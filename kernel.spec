@@ -373,6 +373,7 @@ BuildRequires:	zstd
 BuildRequires:	findutils
 BuildRequires:	bc
 BuildRequires:	flex
+BuildRequires:	gettext
 BuildRequires:	bison
 BuildRequires:	binutils
 BuildRequires:	hostname
