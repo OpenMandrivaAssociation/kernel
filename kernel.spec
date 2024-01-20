@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 7
-%define sublevel 0
+%define sublevel 1
 #define relc 8
 
 # Having different top level names for packges means that you have to remove
@@ -1693,15 +1693,25 @@ mkdir -p %{temp_root}%{_bindir} %{temp_root}%{_mandir}/man8
 %endif
 
 %if %{with bpftool}
-%make_build -C tools/bpf/bpftool CC=%{__cc} HOSTCC=%{__cc} ARCH=%{target_arch} LLVM=1 DESTDIR="%{temp_root}" V=0 VERBOSE=0
+%if %{cross_compiling}
+%make_build -C tools/bpf/bpftool CC="%{__cc}" HOSTCC=clang ARCH=%{target_arch} LLVM=1 DESTDIR="%{temp_root}" V=0 VERBOSE=0
+%else
+%make_build -C tools/bpf/bpftool CC="%{__cc}" HOSTCC="%{__cc}" ARCH=%{target_arch} LLVM=1 DESTDIR="%{temp_root}" V=0 VERBOSE=0
+%endif
 %make_install -C tools/bpf/bpftool DESTDIR="%{temp_root}" prefix=%{_prefix} bash_compdir=%{_sysconfdir}/bash_completion.d/ mandir=%{_mandir} ARCH=%{target_arch} LLVM=1 install V=0 VERBOSE=0
 %endif
 
 %if %{with perf}
 [ -e %{_sysconfdir}/profile.d/90java.sh ] && . %{_sysconfdir}/profile.d/90java.sh
-%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
+%if %{cross_compiling}
+%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC=clang LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
 # Not SMP safe
-make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
+make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC=clang LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
+%else
+%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC="%{__cc}" LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
+# Not SMP safe
+make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC="%{__cc}" LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
+%endif
 %endif
 
 %if %{with hyperv}
