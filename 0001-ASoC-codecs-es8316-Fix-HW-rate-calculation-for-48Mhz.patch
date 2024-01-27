@@ -1,0 +1,44 @@
+From 13fac356db4d4df8fa3147147156d596468502c3 Mon Sep 17 00:00:00 2001
+From: Marian Postevca <posteuca@mutex.one>
+Date: Sun, 14 Jan 2024 19:29:59 +0200
+Subject: [PATCH] ASoC: codecs: es8316: Fix HW rate calculation for 48Mhz MCLK
+
+For 48Mhz MCLK systems the calculation of the HW rate is broken,
+and will not produce even one sane rate. Since es83xx supports
+the option to halve MCLK, calculate also rates with MCLK/2.
+
+Signed-off-by: Marian Postevca <posteuca@mutex.one>
+---
+ sound/soc/codecs/es8316.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/sound/soc/codecs/es8316.c b/sound/soc/codecs/es8316.c
+index e53b2856d625..f858cbf14c64 100644
+--- a/sound/soc/codecs/es8316.c
++++ b/sound/soc/codecs/es8316.c
+@@ -39,7 +39,7 @@ struct es8316_priv {
+ 	struct snd_soc_jack *jack;
+ 	int irq;
+ 	unsigned int sysclk;
+-	unsigned int allowed_rates[ARRAY_SIZE(supported_mclk_lrck_ratios)];
++	unsigned int allowed_rates[ARRAY_SIZE(supported_mclk_lrck_ratios) * 2];
+ 	struct snd_pcm_hw_constraint_list sysclk_constraints;
+ 	bool jd_inverted;
+ };
+@@ -384,8 +384,12 @@ static int es8316_set_dai_sysclk(struct snd_soc_dai *codec_dai,
+ 	for (i = 0; i < ARRAY_SIZE(supported_mclk_lrck_ratios); i++) {
+ 		const unsigned int ratio = supported_mclk_lrck_ratios[i];
+ 
+-		if (freq % ratio == 0)
++		if (freq % ratio == 0) {
+ 			es8316->allowed_rates[count++] = freq / ratio;
++			if ((freq / ratio) % 2 == 0) {
++				es8316->allowed_rates[count++] = freq / ratio / 2;
++			}
++		}
+ 	}
+ 
+ 	if (count) {
+-- 
+2.41.0
+
