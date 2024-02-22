@@ -1711,13 +1711,13 @@ mkdir -p %{temp_root}%{_bindir} %{temp_root}%{_mandir}/man8
 %if %{with perf}
 [ -e %{_sysconfdir}/profile.d/90java.sh ] && . %{_sysconfdir}/profile.d/90java.sh
 %if %{cross_compiling}
-%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC=clang LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
 # Not SMP safe
-make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC=clang LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
+make -C tools/perf -s LLVM=1 HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC=clang LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
+make -C tools/perf -s LLVM=1 HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC=clang LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
 %else
-%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC="%{__cc}" LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
 # Not SMP safe
-make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC="%{__cc}" LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
+make -C tools/perf -s LLVM=1 HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC="%{__cc}" LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
+make -C tools/perf -s LLVM=1 HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC="%{__cc}" LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
 %endif
 %endif
 
