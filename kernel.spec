@@ -1007,6 +1007,11 @@ find . -name '*~' -o -name '*.orig' -o -name '*.append' -o -name '*.g*ignore' | 
 # fix missing exec flag on file introduced in 4.14.10-rc1
 chmod 755 tools/objtool/sync-check.sh
 
+%ifarch znver1 znver2 znver3
+# Workaround for https://github.com/llvm/llvm-project/issues/82431
+echo 'CFLAGS_ip6_input.o += -march=x86-64-v3' >>net/ipv6/Makefile
+%endif
+
 %build
 %set_build_flags
 
