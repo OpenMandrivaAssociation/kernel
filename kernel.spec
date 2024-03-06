@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 7
-%define sublevel 8
+%define sublevel 9
 #define relc 8
 
 # Having different top level names for packges means that you have to remove
@@ -268,9 +268,8 @@ Source1008:	vboxvideo-kernel-6.3.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
-%define evdi_version 1.14.1
+%define evdi_version 1.14.2
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
-Source1011:	evdi-kernel-6.6.patch
 
 # Assorted fixes
 
@@ -899,7 +898,6 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
-patch -p1 -b -z .1011~ <%{S:1011}
 
 %if %{with rtl8821ce}
 # Merge RTL8723DE and RTL8821CE drivers
