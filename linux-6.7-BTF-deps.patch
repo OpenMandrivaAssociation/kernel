@@ -1,0 +1,11 @@
+diff -up linux-6.7/lib/Kconfig.debug.omv~ linux-6.7/lib/Kconfig.debug
+--- linux-6.7/lib/Kconfig.debug.omv~	2024-03-09 01:58:01.973116125 +0100
++++ linux-6.7/lib/Kconfig.debug	2024-03-09 01:58:31.389360454 +0100
+@@ -375,7 +375,6 @@ config DEBUG_INFO_SPLIT
+ config DEBUG_INFO_BTF
+ 	bool "Generate BTF typeinfo"
+ 	depends on !DEBUG_INFO_SPLIT && !DEBUG_INFO_REDUCED
+-	depends on !GCC_PLUGIN_RANDSTRUCT || COMPILE_TEST
+ 	depends on BPF_SYSCALL
+ 	depends on !DEBUG_INFO_DWARF5 || PAHOLE_VERSION >= 121
+ 	help

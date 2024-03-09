@@ -163,6 +163,7 @@ Source14:	riscv-omv-defconfig
 Source15:	powerpc-omv-defconfig
 # Fragments to be used with all/multiple kernel types
 Source20:	filesystems.fragment
+Source21:	debug.fragment
 # Overrides (highest priority) for configs
 Source30:	znver1.overrides
 # config and systemd service file from fedora
@@ -200,6 +201,7 @@ Patch32:	0001-Add-support-for-Acer-Predator-macro-keys.patch
 # https://github.com/codepayne/linux-sound-huawei/issues/28
 Patch33:	0001-ASoC-codecs-es8316-Fix-HW-rate-calculation-for-48Mhz.patch
 Patch34:	kernel-5.6-kvm-gcc10.patch
+Patch35:	linux-6.7-BTF-deps.patch
 # Work around rpm dependency generator screaming about
 # error: Illegal char ']' (0x5d) in: 1.2.1[50983]_custom
 # caused by aacraid versioning ("1.2.1[50983]-custom")
@@ -1827,7 +1829,7 @@ find -iname ".gitignore" -delete
 # clean tools tree
 # (mkdir below is just so "make clean" can remove it again without erroring out)
 mkdir -p tools/counter/include/linux
-%make_build -C tools clean -j1 V=0 VERBOSE=0
+%make_build -C tools clean -j1 V=0 VERBOSE=0 || :
 %make_build -C tools/build clean -j1 V=0 VERBOSE=0
 %make_build -C tools/build/feature clean -j1 V=0 VERBOSE=0
 # dont ship generated vdso.so*
