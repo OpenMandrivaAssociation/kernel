@@ -61,9 +61,9 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 7
-%define sublevel 9
-#define relc 8
+%define patchlevel 8
+%define sublevel 0
+#define relc 7
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -130,12 +130,12 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}1
+Release:	%{?relc:0.rc%{relc}.}3
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
 ExclusiveOS:	Linux
-URL:		https://www.kernel.org
+URL:		http://www.kernel.org
 
 ####################################################################
 #
@@ -145,8 +145,8 @@ URL:		https://www.kernel.org
 %if 0%{?relc:1}
 Source0:	https://git.kernel.org/torvalds/t/linux-%{kernelversion}.%{patchlevel}-rc%{relc}.tar.gz
 %else
-Source0:	https://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.xz
-Source1:	https://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.sign
+Source0:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.xz
+Source1:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.sign
 %endif
 ### This is for stripped SRC RPM
 %if %{with build_nosrc}
@@ -163,7 +163,8 @@ Source14:	riscv-omv-defconfig
 Source15:	powerpc-omv-defconfig
 # Fragments to be used with all/multiple kernel types
 Source20:	filesystems.fragment
-Source21:	debug.fragment
+Source21:	framer.fragment
+Source22:	debug.fragment
 # Overrides (highest priority) for configs
 Source30:	znver1.overrides
 # config and systemd service file from fedora
@@ -198,8 +199,6 @@ Source1002:	revert-9d55bebd9816903b821a403a69a94190442ac043.patch
 Patch30:	https://gitweb.gentoo.org/proj/linux-patches.git/plain/5010_enable-cpu-optimizations-universal.patch?h=6.7#/cpu-optimizations.patch
 Patch31:	die-floppy-die.patch
 Patch32:	0001-Add-support-for-Acer-Predator-macro-keys.patch
-# https://github.com/codepayne/linux-sound-huawei/issues/28
-Patch33:	0001-ASoC-codecs-es8316-Fix-HW-rate-calculation-for-48Mhz.patch
 Patch34:	kernel-5.6-kvm-gcc10.patch
 Patch35:	linux-6.7-BTF-deps.patch
 # Work around rpm dependency generator screaming about
@@ -283,6 +282,11 @@ Patch213:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/d
 
 Patch215:	linux-5.19-prefer-amdgpu-over-radeon.patch
 Patch217:	acpi-chipset-workarounds-shouldnt-be-necessary-on-non-x86.patch
+# Revert minimum power limit lock on amdgpu. If you bought a GPU, it means you own it at every level. That a power of Free Software,
+# AMD cannot limit the right to own and prohibit people under volting/under power when they need it or when AMD cards are poorly designed to the point that they heat up, restart and cause very noisy operation.
+Patch218:	amdgpu-ignore-min-pcap.patch
+# Imported from Nobara. Enable full AMD GPU controls like fan speed etc (needed for corectrl and others)
+Patch219:	https://raw.githubusercontent.com/Nobara-Project/rpm-sources/main/baseos/kernel/6.7.6/0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
 
 # Fix CPU frequency governor mess caused by recent Intel patches
 Patch225:	https://gitweb.frugalware.org/frugalware-current/raw/50690405717979871bb17b8e6b553799a203c6ae/source/base/kernel/0001-Revert-cpufreq-Avoid-configuring-old-governors-as-de.patch
@@ -330,27 +334,6 @@ Source400:	https://raw.githubusercontent.com/umlaeute/v4l2loopback/main/v4l2loop
 Source401:	https://raw.githubusercontent.com/umlaeute/v4l2loopback/main/v4l2loopback.h
 Source402:	https://raw.githubusercontent.com/umlaeute/v4l2loopback/main/v4l2loopback_formats.h
 
-# Imagination DRM driver
-# https://developer.imaginationtech.com/open-source-gpu-driver/
-# https://patchwork.kernel.org/project/dri-devel/list/?series=765738
-Patch500:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142424.111465-1-sarah.walker@imgtec.com/raw/#/imagination-drm-1.patch
-Patch501:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142526.111569-1-sarah.walker@imgtec.com/raw/#/imagination-drm-2.patch
-Patch502:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142543.111625-1-sarah.walker@imgtec.com/raw/#/imagination-drm-3.patch
-Patch503:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142602.111681-1-sarah.walker@imgtec.com/raw/#/imagination-drm-4.patch
-Patch504:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142618.111746-1-sarah.walker@imgtec.com/raw/#/imagination-drm-5.patch
-Patch505:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142645.111844-1-sarah.walker@imgtec.com/raw/#/imagination-drm-6.patch
-Patch506:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142700.111897-1-sarah.walker@imgtec.com/raw/#/imagination-drm-7.patch
-Patch507:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142717.111957-1-sarah.walker@imgtec.com/raw/#/imagination-drm-8.patch
-Patch508:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142734.112014-1-sarah.walker@imgtec.com/raw/#/imagination-drm-9.patch
-Patch509:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142750.112108-1-sarah.walker@imgtec.com/raw/#/imagination-drm-10.patch
-Patch510:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142806.112191-1-sarah.walker@imgtec.com/raw/#/imagination-drm-11.patch
-Patch511:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142823.112255-1-sarah.walker@imgtec.com/raw/#/imagination-drm-12.patch
-Patch512:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142839.112307-1-sarah.walker@imgtec.com/raw/#/imagination-drm-13.patch
-Patch513:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142855.112362-1-sarah.walker@imgtec.com/raw/#/imagination-drm-14.patch
-Patch514:	https://patchwork.kernel.org/project/dri-devel/patch/20230714142913.112440-1-sarah.walker@imgtec.com/raw/#/imagination-drm-15.patch
-Patch515:	https://patchwork.kernel.org/project/dri-devel/patch/20230714143015.112562-1-sarah.walker@imgtec.com/raw/#/imagination-drm-16.patch
-Patch516:	https://patchwork.kernel.org/project/dri-devel/patch/20230714143033.112624-1-sarah.walker@imgtec.com/raw/#/imagination-drm-17.patch
-
 # Patches to external modules
 # Marked SourceXXX instead of PatchXXX because the modules
 # being touched aren't in the tree at the time %%autopatch -p1
@@ -376,7 +359,6 @@ BuildRequires:	zstd
 BuildRequires:	findutils
 BuildRequires:	bc
 BuildRequires:	flex
-BuildRequires:	gettext
 BuildRequires:	bison
 BuildRequires:	binutils
 BuildRequires:	hostname
@@ -405,6 +387,8 @@ BuildRequires:	pkgconfig(numa)
 BuildRequires:	locales-extra-charsets
 BuildRequires:	pkgconfig(libpci)
 %endif
+# (Unconditional because it's small and may also be used by other tools)
+BuildRequires:	gettext
 
 %if %{with build_turbostat}
 BuildRequires:	pkgconfig(libpcap)
@@ -1034,9 +1018,6 @@ FIXED_CONFIGS=" --disable CONFIG_RT_GROUP_SCHED \
 	--enable CONFIG_DEBUG_INFO_NONE \
 	--disable CONFIG_DEBUG_INFO \
 %endif
-%ifarch %{riscv}
-	--enable RISCV_ISA_V \
-%endif
 	--disable CONFIG_MODULE_COMPRESS_NONE \
 	--disable CONFIG_DEBUG_KERNEL "
 
@@ -1065,9 +1046,9 @@ CONFIG_INIT_STACK_NONE=y
 # CONFIG_INIT_STACK_ALL_ZERO is not set
 # CONFIG_KCSAN is not set
 # CONFIG_SHADOW_CALL_STACK is not set
-CONFIG_LTO_NONE=y
+# CONFIG_LTO_NONE is not set
 # CONFIG_LTO_CLANG_FULL is not set
-# CONFIG_LTO_CLANG_THIN is not set
+CONFIG_LTO_CLANG_THIN=y
 %ifarch %{x86_64}
 # CONFIG_CFI_CLANG is not set
 # CONFIG_CFI_CLANG_SHADOW is not set
@@ -1099,15 +1080,8 @@ CreateConfig() {
 
 	printf '%s\n' "<-- Creating config for kernel type ${type} for ${arch}"
 	if printf '%s' ${type} | grep -q gcc; then
-		HOSTCC=gcc
-		HOSTCXX=g++
-%if %{cross_compiling}
-		CC=%{_target_platform}-gcc
-		CXX=%{_target_platform}-g++
-%else
 		CC=gcc
 		CXX=g++
-%endif
 		# force ld.bfd, Kbuild logic issues when ld is linked to something else
 		BUILD_LD="%{_target_platform}-ld.bfd"
 		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
@@ -1115,8 +1089,6 @@ CreateConfig() {
 	else
 		CC=clang
 		CXX=clang++
-		HOSTCC=clang
-		HOSTCXX=clang++
 		# Workaround for LLD 16 BTF generation problem
 		#BUILD_LD=ld.bfd
 		#BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
@@ -1176,15 +1148,16 @@ CreateConfig() {
 %if %{without lazy_developer}
 ## YES, intentionally, DIE on wrong config
 	printf '%s\n' "=== Configuring ${arch} ${type} kernel ==="
-	make ARCH="${arch}" CC="$CC" HOSTCC="$HOSTCC" CXX="$CXX" HOSTCXX="$HOSTCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
+	make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 oldconfig
 %else
 	printf '%s\n' "Lazy developer option is enabled!!. Don't be lazy!."
 ## that takes kernel defaults on missing or changed things
 ## olddefconfig is similar to yes ... but not that verbose
-	yes "" | make ARCH="${arch}" CC="$CC" HOSTCC="$HOSTCC" CXX="$CXX" HOSTCXX="$HOSTCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
+	yes "" | make ARCH="${arch}" CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
 %endif
 
 	scripts/config --set-val BUILD_SALT \"$(echo "$arch-$type-%{EVRD}"|sha1sum|awk '{ print $1; }')\"
+
 # " <--- workaround for vim syntax highlighting bug, ignore
 	cp .config kernel/configs/omv-${cfgarch}-${type}.config
 }
@@ -1209,15 +1182,8 @@ BuildKernel() {
 	printf '%s\n' "<--- Building kernel $KernelVer"
 
 	if printf '%s' ${KernelVer} | grep -q gcc; then
-%if %{cross_compiling}
-		CC=%{_target_platform}-gcc
-		CXX=%{_target_platform}-g++
-%else
 		CC=gcc
 		CXX=g++
-%endif
-		HOSTCC=gcc
-		HOSTCXX=g++
 		BUILD_OPT_CFLAGS="-O3"
 # force ld.bfd, Kbuild logic issues when ld is linked  to something else
 		BUILD_LD="%{_target_platform}-ld.bfd"
@@ -1226,8 +1192,6 @@ BuildKernel() {
 	else
 		CC=clang
 		CXX=clang++
-		HOSTCC=clang
-		HOSTCXX=clang++
 		BUILD_OPT_CFLAGS="-O3 %{pollyflags}"
 		# Workaround for LLD 16 BTF generation problem
 		#BUILD_LD=ld.bfd
@@ -1255,7 +1219,7 @@ BuildKernel() {
 %endif
 %endif
 # FIXME add KBUILD_CFLAGS="$BUILD_OPT_CFLAGS" once that actually works
-	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HOSTCC" CXX="$CXX" HOSTCXX="$HOSTCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" CROSS_COMPILE=%{_target_platform}- $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE modules $DTBS
+	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$CC" CXX="$CXX" HOSTCXX="$CXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE modules $DTBS
 
 # Start installing stuff
 	install -d %{temp_boot}
@@ -1364,7 +1328,7 @@ SaveDevel() {
 # Clean the scripts tree, and make sure everything is ok (sanity check)
 # running prepare+scripts (tree was already "prepared" in build)
 	cd $TempDevelRoot >/dev/null
-	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="%{__cc}" clean
+	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} clean
 	cd - >/dev/null
 
 	rm -f $TempDevelRoot/.config.old
@@ -1700,25 +1664,15 @@ mkdir -p %{temp_root}%{_bindir} %{temp_root}%{_mandir}/man8
 %endif
 
 %if %{with bpftool}
-%if %{cross_compiling}
-%make_build -C tools/bpf/bpftool CC="%{__cc}" HOSTCC=clang ARCH=%{target_arch} LLVM=1 DESTDIR="%{temp_root}" V=0 VERBOSE=0
-%else
-%make_build -C tools/bpf/bpftool CC="%{__cc}" HOSTCC="%{__cc}" ARCH=%{target_arch} LLVM=1 DESTDIR="%{temp_root}" V=0 VERBOSE=0
-%endif
+%make_build -C tools/bpf/bpftool CC=%{__cc} HOSTCC=%{__cc} ARCH=%{target_arch} LLVM=1 DESTDIR="%{temp_root}" V=0 VERBOSE=0
 %make_install -C tools/bpf/bpftool DESTDIR="%{temp_root}" prefix=%{_prefix} bash_compdir=%{_sysconfdir}/bash_completion.d/ mandir=%{_mandir} ARCH=%{target_arch} LLVM=1 install V=0 VERBOSE=0
 %endif
 
 %if %{with perf}
 [ -e %{_sysconfdir}/profile.d/90java.sh ] && . %{_sysconfdir}/profile.d/90java.sh
-%if %{cross_compiling}
+%make_build -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
 # Not SMP safe
-make -C tools/perf -s LLVM=1 HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC=clang LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
-make -C tools/perf -s LLVM=1 HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC=clang LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
-%else
-# Not SMP safe
-make -C tools/perf -s LLVM=1 HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC="%{__cc}" LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} V=0 VERBOSE=0 all man
-make -C tools/perf -s LLVM=1 HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC="%{__cc}" HOSTCC="%{__cc}" LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
-%endif
+make -C tools/perf -s HAVE_CPLUS_DEMANGLE=1 NO_LIBTRACEEVENT=1 CC=%{__cc} HOSTCC=%{__cc} LD=ld.lld HOSTLD=ld.lld WERROR=0 prefix=%{_prefix} DESTDIR_SQ=%{temp_root} DESTDIR=%{temp_root} V=0 VERBOSE=0 install install-man
 %endif
 
 %if %{with hyperv}
@@ -1857,6 +1811,7 @@ cd -
 %dir %{_kerneldir}/certs
 %{_kerneldir}/.clang-format
 %{_kerneldir}/.cocciconfig
+%{_kerneldir}/.editorconfig
 %{_kerneldir}/Documentation
 %{_kerneldir}/arch/Kconfig
 %{_kerneldir}/arch/arm
