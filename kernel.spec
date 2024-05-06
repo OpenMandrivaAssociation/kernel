@@ -130,7 +130,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}1
+Release:	%{?relc:0.rc%{relc}.}2
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -326,6 +326,8 @@ Patch303:	rk3399-add-sclk-i2sout-src-clock.patch
 #Patch304:	rtl8723cs-compile.patch
 Patch305:	kernel-6.0-rc2-perf-x86-compile.patch
 #Patch306:	linux-6.1-binutils-2.40.patch
+# https://gitlab.freedesktop.org/drm/amd/-/issues/3343
+Patch307:	https://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git/plain/queue-6.8/drm-amdgpu-fix-doorbell-regression.patch
 
 Patch350:	rtla-5.17-fix-make-clean.patch
 
