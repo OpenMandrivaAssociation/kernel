@@ -1,6 +1,6 @@
-diff -up linux-6.8/drivers/platform/x86/acer-wmi.c.3~ linux-6.8/drivers/platform/x86/acer-wmi.c
---- linux-6.8/drivers/platform/x86/acer-wmi.c.3~	2024-04-14 14:17:16.163586818 +0200
-+++ linux-6.8/drivers/platform/x86/acer-wmi.c	2024-04-14 14:22:42.310756978 +0200
+diff -up linux-6.9-rc1/drivers/platform/x86/acer-wmi.c.3~ linux-6.9-rc1/drivers/platform/x86/acer-wmi.c
+--- linux-6.9-rc1/drivers/platform/x86/acer-wmi.c.3~	2024-03-24 22:10:05.000000000 +0100
++++ linux-6.9-rc1/drivers/platform/x86/acer-wmi.c	2024-03-25 10:52:42.435851128 +0100
 @@ -7,6 +7,9 @@
   *  Based on acer_acpi:
   *    Copyright (C) 2005-2007	E.M. Smith

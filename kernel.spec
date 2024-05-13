@@ -61,8 +61,8 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 8
-%define sublevel 9
+%define patchlevel 9
+%define sublevel 0
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -166,6 +166,7 @@ Source16:	loongarch-omv-defconfig
 Source20:	filesystems.fragment
 Source21:	framer.fragment
 Source22:	debug.fragment
+Source23:	networking.fragment
 # Overrides (highest priority) for configs
 Source30:	znver1.overrides
 # config and systemd service file from fedora
@@ -282,6 +283,7 @@ Patch211:	revert-721412ed3d819e767cac2b06646bf03aa158aaec.patch
 Patch212:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/debian/android-enable-building-ashmem-and-binder-as-modules.patch
 Patch213:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/debian/export-symbols-needed-by-android-drivers.patch
 
+Patch214:	ras-fix-build-without-debugfs.patch
 Patch215:	linux-5.19-prefer-amdgpu-over-radeon.patch
 Patch217:	acpi-chipset-workarounds-shouldnt-be-necessary-on-non-x86.patch
 # Revert minimum power limit lock on amdgpu. If you bought a GPU, it means you own it at every level. That a power of Free Software,
@@ -327,11 +329,6 @@ Patch303:	rk3399-add-sclk-i2sout-src-clock.patch
 #Patch304:	rtl8723cs-compile.patch
 Patch305:	kernel-6.0-rc2-perf-x86-compile.patch
 #Patch306:	linux-6.1-binutils-2.40.patch
-# https://gitlab.freedesktop.org/drm/amd/-/issues/3343
-Patch307:	https://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git/plain/queue-6.8/drm-amdgpu-fix-doorbell-regression.patch
-Patch308:	https://gitlab.freedesktop.org/drm/amd/uploads/5c1819cbc498fb75de7d4be7159cd5ca/0001-drm-amdgpu-fix-off-by-one-in-amdgpu_res_cpu_visible.patch
-
-Patch350:	rtla-5.17-fix-make-clean.patch
 
 # V4L2 loopback
 # https://github.com/umlaeute/v4l2loopback
@@ -1088,14 +1085,12 @@ CreateConfig() {
 %if %{cross_compiling}
 		CC=%{_target_platform}-gcc
 		CXX=%{_target_platform}-g++
-		HCC=gcc
-		HCXX=g++
 %else
 		CC=gcc
 		CXX=g++
+%endif
 		HCC=gcc
 		HCXX=g++
-%endif
 		# force ld.bfd, Kbuild logic issues when ld is linked to something else
 		BUILD_LD="%{_target_platform}-ld.bfd"
 		BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
@@ -1104,7 +1099,7 @@ CreateConfig() {
 		CC=clang
 		CXX=clang++
 		HCC=clang
-		HCXX=g++
+		HCXX=clang++
 		# Workaround for LLD 16 BTF generation problem
 		#BUILD_LD=ld.bfd
 		#BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
