@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 9
-%define sublevel 1
+%define sublevel 2
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -148,6 +148,7 @@ Source0:	https://git.kernel.org/torvalds/t/linux-%{kernelversion}.%{patchlevel}-
 Source0:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.xz
 Source1:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.sign
 %endif
+Source2:	https://github.com/Kimplul/hid-tmff2/archive/refs/heads/master.tar.gz#/hid-tmff2-20240526.tar.gz
 ### This is for stripped SRC RPM
 %if %{with build_nosrc}
 NoSource:	0
@@ -853,7 +854,7 @@ done
 #
 %prep
 
-%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 1003 -a 1004 -a 1010
+%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 2 -a 1003 -a 1004 -a 1010
 %if 0%{?sublevel:%{sublevel}}
 [ -e .git ] || git init
 xzcat %{SOURCE1000} |git apply - || git apply %{SOURCE1000}
@@ -886,6 +887,26 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
+
+# Merge TMFF2
+mv hid-tmff2-* drivers/hid/tmff-new
+cat >drivers/hid/tmff-new/Kconfig <<'EOF'
+config HID_TMFF_NEW
+	tristate "Thrustmaster T300RS, T248, TX, TS-XV wheel support"
+	help
+	  A Linux kernel module for Thrustmaster T300RS, T248, and
+	  (experimental support) TX and TS-XV wheels.
+EOF
+cat >drivers/hid/tmff-new/Makefile <<'EOF'
+hid-tmff-new-y := src/hid-tmff2.o src/tmt300rs/hid-tmt300rs.o src/tmt248/hid-tmt248.o src/tmtx/hid-tmtx.o src/tmtsxw/hid-tmtsxw.o
+obj-$(HID_TMFF_NEW) += hid-tmff-new.o
+EOF
+cat >>drivers/hid/Kconfig <<'EOF'
+source "drivers/hid/tmff-new/Kconfig"
+EOF
+cat >>drivers/hid/Makefile <<'EOF'
+obj-$(HID_TMFF_NEW) += tmff-new/
+EOF
 
 %if %{with rtl8821ce}
 # Merge RTL8723DE and RTL8821CE drivers
