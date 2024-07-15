@@ -61,9 +61,9 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 9
-%define sublevel 9
-#define relc 7
+%define patchlevel 10
+%define sublevel 0
+#define relc 0
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -105,7 +105,7 @@
 %bcond_with perf
 %else
 %bcond_without bpftool
-%bcond_without perf
+%bcond_with perf
 %endif
 %bcond_without build_x86_energy_perf_policy
 %bcond_without build_turbostat
@@ -168,6 +168,9 @@ Source20:	filesystems.fragment
 Source21:	framer.fragment
 Source22:	debug.fragment
 Source23:	networking.fragment
+Source24:	bluetooth.fragment
+Source25:	sensors.fragment
+Source26:	hid.fragment
 # Overrides (highest priority) for configs
 Source30:	znver1.overrides
 # config and systemd service file from fedora
@@ -273,8 +276,9 @@ Source1008:	vboxvideo-kernel-6.3.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
-%define evdi_version 1.14.2
+%define evdi_version 1.14.4
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
+Source1011:	evdi-kernel-6.10.patch
 
 # Assorted fixes
 
@@ -772,7 +776,9 @@ Tools needed to communicate with a Hyper-V host.
 %{_sbindir}/hv_vss_daemon
 %{_unitdir}/hypervvssd.service
 %{_udevrulesdir}/70-hypervvss.rules
-%{_sbindir}/hv_fcopy_daemon
+%ifarch %{x86_64}
+%{_sbindir}/hv_fcopy_uio_daemon
+%endif
 %{_unitdir}/hypervfcopyd.service
 %{_udevrulesdir}/70-hypervfcopy.rules
 %{_sbindir}/lsvmbus
@@ -887,6 +893,7 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
+patch -p1 -b -z .evdi610~ <%{S:1011}
 
 # Merge TMFF2
 mv hid-tmff2-* drivers/hid/tmff-new
