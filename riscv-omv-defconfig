@@ -241,6 +241,10 @@ CONFIG_PERF_EVENTS=y
 # end of Kernel Performance Events And Counters
 
 CONFIG_PROFILING=y
+CONFIG_RUST=y
+# CONFIG_RUST_DEBUG_ASSERTIONS is not set
+# CONFIG_RUST_OVERFLOW_CHECKS is not set
+# CONFIG_RUST_BUILD_ASSERT_ALLOW is not set
 
 #
 # Kexec and crash features

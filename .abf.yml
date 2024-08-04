@@ -3,5 +3,5 @@ sources:
   hid-tmff2-20240526.tar.gz: 6b2699c0a98e1bba0b259acb000097a003df682f
   saa716x-driver.tar.xz: f9b6ef1cd6f1f71f53d9a8aadfba2cf6b5c3d7b6
   linux-6.10.tar.xz: 1e9cb1c45e24c18128f4529cc4b93cf3b36d06be
-  patch-6.10.2.xz: 22e188e499c255a8232f01064d7af15a6fe612fd
   v1.14.5.tar.gz: 70006c748642534203733407dfba99ae8ecb6038
+  patch-6.10.3.xz: 19fd7a1b0ad8e7e087fa3ba7d16b902059db065a
