@@ -272,7 +272,6 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 # virtualbox-kernel-module-sources package is copied around
 Source1007:	vboxnet-clang.patch
 Source1008:	vboxvideo-kernel-6.3.patch
-Source1009:	vbox-7.1-znver1.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
@@ -993,7 +992,6 @@ sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/pci/vboxpci/Makefile*
 echo 'obj-m += vboxpci/' >>drivers/pci/Makefile
 %endif
 patch -p1 -z .1007~ -b <%{S:1007}
-patch -p1 -z .1009~ -b <%{S:1009}
 %endif
 
 # V4L2 loopback support
