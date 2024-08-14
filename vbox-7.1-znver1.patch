@@ -1,0 +1,36 @@
+diff -up linux-6.10/drivers/net/vboxnetadp/Makefile-header.gmk.omv~ linux-6.10/drivers/net/vboxnetadp/Makefile-header.gmk
+--- linux-6.10/drivers/net/vboxnetadp/Makefile-header.gmk.omv~	2024-08-14 21:08:42.152057299 +0200
++++ linux-6.10/drivers/net/vboxnetadp/Makefile-header.gmk	2024-08-14 21:09:01.812344232 +0200
+@@ -60,7 +60,7 @@
+ #
+ 
+ # VBOX_KBUILD_TARGET_ARCH = amd64|x86
+-ifeq ($(filter-out x86_64 amd64 AMD64,$(shell rpm --eval %_target_cpu)),)
++ifeq ($(filter-out x86_64 amd64 AMD64 znver1,$(shell rpm --eval %_target_cpu)),)
+  VBOX_KBUILD_TARGET_ARCH_DEFAULT := amd64
+ else
+  VBOX_KBUILD_TARGET_ARCH_DEFAULT := x86
+diff -up linux-6.10/drivers/net/vboxnetflt/Makefile-header.gmk.omv~ linux-6.10/drivers/net/vboxnetflt/Makefile-header.gmk
+--- linux-6.10/drivers/net/vboxnetflt/Makefile-header.gmk.omv~	2024-08-14 21:09:11.524484759 +0200
++++ linux-6.10/drivers/net/vboxnetflt/Makefile-header.gmk	2024-08-14 21:09:19.688602280 +0200
+@@ -60,7 +60,7 @@
+ #
+ 
+ # VBOX_KBUILD_TARGET_ARCH = amd64|x86
+-ifeq ($(filter-out x86_64 amd64 AMD64,$(shell rpm --eval %_target_cpu)),)
++ifeq ($(filter-out x86_64 amd64 AMD64 znver1,$(shell rpm --eval %_target_cpu)),)
+  VBOX_KBUILD_TARGET_ARCH_DEFAULT := amd64
+ else
+  VBOX_KBUILD_TARGET_ARCH_DEFAULT := x86
+diff -up linux-6.10/drivers/virt/vboxdrv/Makefile-header.gmk.omv~ linux-6.10/drivers/virt/vboxdrv/Makefile-header.gmk
+--- linux-6.10/drivers/virt/vboxdrv/Makefile-header.gmk.omv~	2024-08-14 21:08:03.911489324 +0200
++++ linux-6.10/drivers/virt/vboxdrv/Makefile-header.gmk	2024-08-14 21:08:32.491915073 +0200
+@@ -60,7 +60,7 @@
+ #
+ 
+ # VBOX_KBUILD_TARGET_ARCH = amd64|x86
+-ifeq ($(filter-out x86_64 amd64 AMD64,$(shell rpm --eval %_target_cpu)),)
++ifeq ($(filter-out x86_64 amd64 AMD64 znver1,$(shell rpm --eval %_target_cpu)),)
+  VBOX_KBUILD_TARGET_ARCH_DEFAULT := amd64
+ else
+  VBOX_KBUILD_TARGET_ARCH_DEFAULT := x86

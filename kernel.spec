@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 10
-%define sublevel 4
+%define sublevel 5
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
@@ -270,9 +270,9 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 # VirtualBox patches -- added as Source: rather than Patch:
 # because they need to be applied after stuff from the
 # virtualbox-kernel-module-sources package is copied around
-Source1005:	vbox-6.1-fix-build-on-znver1-hosts.patch
 Source1007:	vboxnet-clang.patch
 Source1008:	vboxvideo-kernel-6.3.patch
+Source1009:	vbox-7.1-znver1.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
@@ -992,8 +992,8 @@ sed -i -e 's,\$(VBOXPCI_DIR),drivers/pci/vboxpci/,g' drivers/pci/vboxpci/Makefil
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/pci/vboxpci/Makefile*
 echo 'obj-m += vboxpci/' >>drivers/pci/Makefile
 %endif
-patch -p1 -z .1005~ -b <%{S:1005}
 patch -p1 -z .1007~ -b <%{S:1007}
+patch -p1 -z .1009~ -b <%{S:1009}
 %endif
 
 # V4L2 loopback support
