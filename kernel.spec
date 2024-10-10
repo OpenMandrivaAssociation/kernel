@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 11
-%define sublevel 2
+%define sublevel 3
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -277,7 +277,7 @@ Source1008:	vboxvideo-kernel-6.3.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
-%define evdi_version 1.14.6
+%define evdi_version 1.14.7
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
 Source1011:	evdi-kernel-6.10.patch
 
