@@ -432,6 +432,8 @@ Patch1023:	0074-drm-rockchip-vop2-Add-uv-swap-for-cluster-window.patch
 Patch1024:	0075-dt-bindings-display-vop2-Add-rk3576-support.patch
 Patch1025:	0076-drm-rockchip-vop2-Add-support-for-rk3576.patch
 Patch1026:	0077-drm-rockchip-vop2-Don-t-spam-logs-in-atomic-update.patch
+# Buildfix for the patchset above to handle kernel 6.12 rather than 6.12-rc5
+Patch1027:	rk3588-hdmi-kernel-6.12-final.patch
 
 Autoreqprov:	no
 BuildRequires:	zstd
@@ -1157,6 +1159,8 @@ CONFIG_LTO_CLANG_THIN=y
 # CONFIG_CFI_PERMISSIVE is not set
 %else
 CONFIG_CFI_CLANG=y
+CONFIG_CFI_ICALL_NORMALIZE_INTEGERS=y
+CONFIG_CFI_AUTO_DEFAULT=y
 CONFIG_CFI_CLANG_SHADOW=y
 CONFIG_CFI_PERMISSIVE=y
 %endif
