@@ -1,0 +1,91 @@
+From 06e8e4b79345221088e0df874baa14b4ed3c9279 Mon Sep 17 00:00:00 2001
+From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
+Date: Wed, 17 Jan 2024 01:53:38 +0200
+Subject: [PATCH 42/77] arm64: dts: rockchip: Enable HDMI0 on rk3588-evb1
+
+Add the necessary DT changes to enable HDMI0 on Rockchip RK3588 EVB1.
+
+Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
+---
+ .../boot/dts/rockchip/rk3588-evb1-v10.dts     | 47 +++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts b/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts
+index 0de3930c80f15..fb893ef947933 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts
+@@ -9,6 +9,7 @@
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/input/input.h>
+ #include <dt-bindings/pinctrl/rockchip.h>
++#include <dt-bindings/soc/rockchip,vop2.h>
+ #include <dt-bindings/usb/pd.h>
+ #include "rk3588.dtsi"
+ 
+@@ -129,6 +130,17 @@ bluetooth-rfkill {
+ 		pinctrl-0 = <&bluetooth_pwren>;
+ 	};
+ 
++	hdmi0-con {
++		compatible = "hdmi-connector";
++		type = "a";
++
++		port {
++			hdmi0_con_in: endpoint {
++				remote-endpoint = <&hdmi0_out_con>;
++			};
++		};
++	};
++
+ 	pcie20_avdd0v85: pcie20-avdd0v85-regulator {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "pcie20_avdd0v85";
+@@ -310,6 +322,26 @@ &gpu {
+ 	status = "okay";
+ };
+ 
++&hdmi0 {
++	status = "okay";
++};
++
++&hdmi0_in {
++	hdmi0_in_vp0: endpoint {
++		remote-endpoint = <&vp0_out_hdmi0>;
++	};
++};
++
++&hdmi0_out {
++	hdmi0_out_con: endpoint {
++		remote-endpoint = <&hdmi0_con_in>;
++	};
++};
++
++&hdptxphy_hdmi0 {
++	status = "okay";
++};
++
+ &i2c2 {
+ 	status = "okay";
+ 
+@@ -1280,3 +1312,18 @@ &usb_host1_xhci {
+ 	dr_mode = "host";
+ 	status = "okay";
+ };
++
++&vop_mmu {
++	status = "okay";
++};
++
++&vop {
++	status = "okay";
++};
++
++&vp0 {
++	vp0_out_hdmi0: endpoint@ROCKCHIP_VOP2_EP_HDMI0 {
++		reg = <ROCKCHIP_VOP2_EP_HDMI0>;
++		remote-endpoint = <&hdmi0_in_vp0>;
++	};
++};
+-- 
+2.47.0
+

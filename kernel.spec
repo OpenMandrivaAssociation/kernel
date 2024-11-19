@@ -61,9 +61,9 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 11
-%define sublevel 7
-#define relc 7
+%define patchlevel 12
+%define sublevel 0
+#define relc 6
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -86,7 +86,6 @@
 
 # Build defines
 %bcond_with build_doc
-%bcond_with uksm
 
 %bcond_without build_source
 %bcond_without build_devel
@@ -148,7 +147,7 @@ Source0:	https://git.kernel.org/torvalds/t/linux-%{kernelversion}.%{patchlevel}-
 Source0:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.xz
 Source1:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.sign
 %endif
-Source2:	https://github.com/Kimplul/hid-tmff2/archive/refs/heads/master.tar.gz#/hid-tmff2-20240526.tar.gz
+Source2:	https://github.com/Kimplul/hid-tmff2/archive/refs/heads/master.tar.gz#/hid-tmff2-20241007.tar.gz
 ### This is for stripped SRC RPM
 %if %{with build_nosrc}
 NoSource:	0
@@ -173,6 +172,8 @@ Source24:	bluetooth.fragment
 Source25:	sensors.fragment
 Source26:	hid.fragment
 Source27:	nvme.fragment
+Source28:	modules.fragment
+Source29:	gcc-plugins.fragment
 # Overrides (highest priority) for configs
 Source30:	znver1.overrides
 # config and systemd service file from fedora
@@ -219,19 +220,10 @@ Patch37:	socket.h-include-bitsperlong.h.patch
 # Make Nouveau work on SynQuacer (and probably all other non-x86 boards)
 # FIXME this may need porting, not sure where WC is set in 5.10
 #Patch38:	kernel-5.8-nouveau-write-combining-only-on-x86.patch
+Source39:	tmff2-kernel-6.12.patch
 Patch40:	kernel-5.8-aarch64-gcc-10.2-workaround.patch
 # (tpg) https://github.com/ClangBuiltLinux/linux/issues/1341
 Patch42:	linux-5.11-disable-ICF-for-CONFIG_UNWINDER_ORC.patch
-
-# (tpg)
-# The Ultra Kernel Same Page Deduplication
-# http://kerneldedup.org/en/projects/uksm/download/
-# sources can be found here https://github.com/dolohow/uksm
-# Usually faster ports to new kernel releases can be found at
-# https://github.com/sirlucjan/kernel-patches/tree/master/5.16/uksm-patches
-%if %{with uksm}
-Patch43:	https://raw.githubusercontent.com/sirlucjan/kernel-patches/master/5.18/uksm-patches/0001-UKSM-for-5.18.patch
-%endif
 
 # (crazy) see: https://forum.openmandriva.org/t/nvme-ssd-m2-not-seen-by-omlx-4-0/2407
 Patch45:	Unknow-SSD-HFM128GDHTNG-8310B-QUIRK_NO_APST.patch
@@ -279,7 +271,7 @@ Source1008:	vboxvideo-kernel-6.3.patch
 # Needed by DisplayLink cruft
 %define evdi_version 1.14.7
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
-Source1011:	evdi-kernel-6.10.patch
+Source1011:	evdi-kernel-6.12.patch
 
 # Assorted fixes
 
@@ -307,19 +299,18 @@ Patch230:	linux-5.11-perf-compile.patch
 #Patch231:	ce71038e673ee8291c64631359e56c48c8616dc7.patch
 
 # (tpg) Armbian ARM Patches
+# https://github.com/armbian/build/tree/main/patch/kernel/archive/
 Patch240:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch
 Patch241:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-spi1-flash-speed.patch
 Patch242:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-work-led-heartbeat.patch
 Patch243:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-mmc-signal-voltage-before-reboot.patch
 Patch244:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-inno-usb2-phy-init.patch
-Patch245:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-unlock-temperature.patch
+Patch245:	https://github.com/armbian/build/raw/refs/heads/main/patch/kernel/archive/rockchip64-6.11/rk3399-unlock-temperature.patch
 Patch246:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-increasing_DMA_block_memory_allocation_to_2048.patch
 Patch247:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.5/general-rk808-configurable-switch-voltage-steps.patch
 Patch248:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-sd-drive-level-8ma.patch
 Patch250:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
 Patch251:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/add-rockchip-iep-driver.patch
-Patch252:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng.patch
-Patch253:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-legacy-rockchip-hwrng_5.10.patch
 Patch254:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-rp64-rng.patch
 
 # (tpg) Manjaro ARM Patches
@@ -360,6 +351,87 @@ Patch910:	0111-ipv4-tcp-allow-the-memory-tuning-for-tcp-to-go-a-lit.patch
 Patch913:	0117-migrate-some-systemd-defaults-to-the-kernel-defaults.patch
 Patch914:	0120-use-lfence-instead-of-rep-and-nop.patch
 %endif
+
+# Rockchip 3588 HDMI audio support
+# from https://github.com/andyshrk/linux
+# rk3588-vop2-hdmi-upstream-linux-6.12-rc5-2024-10-29 branch
+Patch950:	0001-arm64-rockchip-Add-rockchip_defconfig.patch
+Patch951:	0002-arm64-rockchip-defconfig-update-for-Linux-6.1-and-en.patch
+Patch952:	0003-arm64-rockchip_defconfig-update-for-linux-6.6.patch
+Patch953:	0004-arm64-rockchip_defconfig-Enable-edp-display.patch
+Patch954:	0005-arm64-rockchip_defconfig-Enable-panthor-GPU.patch
+Patch955:	0006-arm64-rockchip_defconfig-update-for-linux-6.9.patch
+Patch956:	0007-arm64-rockchip_defconfig-Enable-NLS_ISO8859_1-for-vf.patch
+Patch957:	0008-arm64-defconfig-Enable-ROCKCHIP_SAMSUNG_HDPTX-phy-fo.patch
+Patch958:	0009-arm64-rockchip_defconfig-update-for-Linux-6.12.patch
+Patch959:	0010-arm64-add-rpi_defconfig.patch
+Patch960:	0011-arm-Add-rockchip_defconfig.patch
+Patch961:	0012-arm64-dts-add-rootfs-uuid-for-rk3566-box-demo.patch
+Patch962:	0013-Revert-ARM-dts-rockchip-restyle-emac-nodes.patch
+Patch963:	0014-ARM-dts-rockchip-Add-psci-for-rk3036.patch
+Patch964:	0015-arm-dts-rockchip-Fix-emac-on-rk3036-kylin-board.patch
+Patch965:	0016-clk-rockchip-rk3036-Add-1000-MHZ-cpu-clk-rate.patch
+Patch966:	0017-clk-rockchip-rk3036-make-armclk-as-critical.patch
+Patch967:	0018-arm-dts-rockchip-rk3036-kylin-Force-MAC-address.patch
+Patch968:	0019-Revert-Revert-ARM-dts-rockchip-restyle-emac-nodes.patch
+# 0020-ethernet-arc-fix-the-device-for-dma_map_single-dma_u.patch is already upstream
+# 0021-net-arc-rockchip-fix-emac-mdio-node-support.patch is already upstream
+Patch971:	0022-drm-bridge-synopsys-Add-DW-HDMI-QP-TX-Controller-sup.patch
+Patch972:	0023-dt-bindings-display-rockchip-Add-schema-for-RK3588-H.patch
+Patch973:	0024-drm-rockchip-Add-basic-RK3588-HDMI-output-support.patch
+Patch974:	0025-arm64-dts-rockchip-Add-HDMI0-node-to-rk3588.patch
+Patch975:	0026-DONT-UPSTREAM-arm64-dts-rockchip-rk3588-evb1-Force-M.patch
+Patch976:	0027-DONT-UPSTREAM-net-r8169-Force-MAC-address.patch
+Patch977:	0028-regulator-Add-of_regulator_get_optional-for-pure-DT-.patch
+Patch978:	0029-regulator-Add-devres-version-of-of_regulator_get_opt.patch
+Patch979:	0030-math.h-add-DIV_ROUND_UP_NO_OVERFLOW.patch
+Patch980:	0031-clk-divider-Fix-divisor-masking-on-64-bit-platforms.patch
+Patch981:	0032-clk-composite-replace-open-coded-abs_diff.patch
+Patch982:	0033-clk-rockchip-support-clocks-registered-late.patch
+Patch983:	0034-clk-rockchip-rk3588-register-GATE_LINK-later.patch
+Patch984:	0035-clk-rockchip-expose-rockchip_clk_set_lookup.patch
+Patch985:	0036-clk-rockchip-implement-linked-gate-clock-support.patch
+Patch986:	0037-clk-rockchip-rk3588-drop-RK3588_LINKED_CLK.patch
+Patch987:	0038-arm64-dts-rockchip-rk3588-evb1-add-bluetooth-rfkill.patch
+Patch988:	0039-arm64-dts-rockchip-rk3588-evb1-improve-PCIe-ethernet.patch
+Patch989:	0040-arm64-dts-rockchip-Slow-down-EMMC-a-bit-to-keep-IO-s.patch
+Patch990:	0041-mfd-rk8xx-Fix-shutdown-handler.patch
+Patch991:	0042-arm64-dts-rockchip-Enable-HDMI0-on-rk3588-evb1.patch
+Patch992:	0043-arm64-defconfig-Enable-Rockchip-extensions-for-Synop.patch
+Patch993:	0044-regulator-Add-devm_-of_regulator_get.patch
+Patch994:	0045-pmdomain-rockchip-cleanup-mutex-handling-in-rockchip.patch
+Patch995:	0046-pmdomain-rockchip-forward-rockchip_do_pmu_set_power_.patch
+Patch996:	0047-pmdomain-rockchip-reduce-indentation-in-rockchip_pd_.patch
+Patch997:	0048-dt-bindings-power-rockchip-add-regulator-support.patch
+Patch998:	0049-pmdomain-rockchip-add-regulator-support.patch
+Patch999:	0050-arm64-dts-rockchip-Add-GPU-power-domain-regulator-de.patch
+Patch1000:	0051-dt-bindings-net-wireless-brcm4329-fmac-add-pci14e4-4.patch
+Patch1001:	0052-dt-bindings-net-wireless-brcm4329-fmac-add-clock-des.patch
+Patch1002:	0053-wifi-brcmfmac-Add-optional-lpo-clock-enable-support.patch
+Patch1003:	0054-wifi-brcmfmac-add-flag-for-random-seed-during-firmwa.patch
+Patch1004:	0055-arm64-dts-rockchip-rk3588-evb1-add-WLAN-controller.patch
+Patch1005:	0056-arm64-dts-rockchip-Add-wifi-regulator-for-Cool-Pi-4b.patch
+Patch1006:	0057-drm-panthor-Add-defer-probe-for-firmware-load.patch
+Patch1007:	0058-drm-rockchip-Add-DW-DisplayPort-driver.patch
+Patch1008:	0059-arm64-dts-rockchip-Enable-HDMI0-for-rk3588-Cool-Pi-C.patch
+Patch1009:	0060-arm64-dts-rockchip-Enable-HDMI-display-for-rk3588-Co.patch
+Patch1010:	0061-arm64-dts-rockchip-Enable-HDMI-display-for-rk3588-Co.patch
+Patch1011:	0062-drm-rockchip-vop2-Add-debugfs-support.patch
+Patch1012:	0063-drm-rockchip-Set-dma-mask-to-64-bit.patch
+Patch1013:	0064-drm-rockchip-vop2-Fix-cluster-windows-alpha-ctrl-reg.patch
+Patch1014:	0065-drm-rockchip-vop2-Fix-the-mixer-alpha-setup-for-laye.patch
+Patch1015:	0066-drm-rockchip-vop2-Fix-the-windows-switch-between-dif.patch
+Patch1016:	0067-drm-rockchip-vop2-include-rockchip_drm_drv.h.patch
+Patch1017:	0068-drm-rockchip-vop2-Support-32x8-superblock-afbc.patch
+Patch1018:	0069-drm-rockchip-vop2-Add-platform-specific-callback.patch
+Patch1019:	0070-drm-rockchip-vop2-Support-for-different-layer-selet-.patch
+Patch1020:	0071-drm-rockchip-vop2-Introduce-vop-hardware-version.patch
+Patch1021:	0072-drm-rockchip-vop2-Register-the-primary-plane-and-ove.patch
+Patch1022:	0073-drm-rockchip-vop2-Set-plane-possible-crtcs-by-possib.patch
+Patch1023:	0074-drm-rockchip-vop2-Add-uv-swap-for-cluster-window.patch
+Patch1024:	0075-dt-bindings-display-vop2-Add-rk3576-support.patch
+Patch1025:	0076-drm-rockchip-vop2-Add-support-for-rk3576.patch
+Patch1026:	0077-drm-rockchip-vop2-Don-t-spam-logs-in-atomic-update.patch
 
 Autoreqprov:	no
 BuildRequires:	zstd
@@ -914,6 +986,7 @@ EOF
 cat >>drivers/hid/Makefile <<'EOF'
 obj-$(CONFIG_HID_TMFF_NEW) += tmff-new/
 EOF
+patch -p1 -b -z .tmff2build~ <%{S:39}
 
 %if %{with rtl8821ce}
 # Merge RTL8723DE and RTL8821CE drivers
@@ -1358,7 +1431,7 @@ SaveDevel() {
 	cp -fRu drivers/media/dvb-frontends/lgdt330x.h $TempDevelRoot/drivers/media/dvb-frontends/
 
 # orc unwinder needs theese
-	cp -fRu tools/build/Build{,.include} $TempDevelRoot/tools/build
+	cp -fRu tools/build/Build.include $TempDevelRoot/tools/build
 	cp -fRu tools/build/fixdep.c $TempDevelRoot/tools/build
 	cp -fRu tools/lib/{str_error_r.c,string.c} $TempDevelRoot/tools/lib
 	cp -fRu tools/lib/subcmd/* $TempDevelRoot/tools/lib/subcmd
@@ -1412,6 +1485,7 @@ $DevelRoot/include/asm-generic
 $DevelRoot/include/clocksource
 $DevelRoot/include/config
 $DevelRoot/include/crypto
+$DevelRoot/include/cxl
 $DevelRoot/include/drm
 $DevelRoot/include/dt-bindings
 $DevelRoot/include/generated
@@ -1828,7 +1902,6 @@ done
 rm -f %{buildroot}%{_kerneldir}/{.config.old,.config.cmd,.gitignore,.lst,.mailmap,.gitattributes,.get_maintainer.ignore}
 rm -f %{buildroot}%{_kerneldir}/{.missing-syscalls.d,arch/.gitignore,firmware/.gitignore,.gitattributes}
 rm -rf %{buildroot}%{_kerneldir}/.tmp_depmod/
-rm -rf %{buildroot}/usr/src/linux-*/uksm.txt
 
 # more cleaning
 rm -f %{buildroot}%{_kerneldir}/arch/x86_64/boot/bzImage
@@ -1885,6 +1958,7 @@ cd -
 %{_kerneldir}/include/asm-generic
 %{_kerneldir}/include/clocksource
 %{_kerneldir}/include/crypto
+%{_kerneldir}/include/cxl
 %{_kerneldir}/include/drm
 %{_kerneldir}/include/dt-bindings
 %{_kerneldir}/include/keys

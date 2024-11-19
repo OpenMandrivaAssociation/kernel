@@ -1,0 +1,34 @@
+From f73e7868094edb2c64226860701efb788e41bf39 Mon Sep 17 00:00:00 2001
+From: Jacobe Zang <jacobe.zang@wesion.com>
+Date: Tue, 10 Sep 2024 11:04:11 +0800
+Subject: [PATCH 51/77] dt-bindings: net: wireless: brcm4329-fmac: add
+ pci14e4,449d
+
+It's the device id used by AP6275P which is the Wi-Fi module
+used by Rockchip's RK3588 evaluation board and also used in
+some other RK3588 boards.
+
+Acked-by: Arend van Spriel <arend.vanspriel@broadcom.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Jacobe Zang <jacobe.zang@wesion.com>
+Link: https://lore.kernel.org/r/20240910-wireless-mainline-v14-1-9d80fea5326d@wesion.com
+Signed-off-by: Sebastian Reichel <sre@kernel.org>
+---
+ .../devicetree/bindings/net/wireless/brcm,bcm4329-fmac.yaml      | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/net/wireless/brcm,bcm4329-fmac.yaml b/Documentation/devicetree/bindings/net/wireless/brcm,bcm4329-fmac.yaml
+index e564f20d8f415..2c2093c77ec9a 100644
+--- a/Documentation/devicetree/bindings/net/wireless/brcm,bcm4329-fmac.yaml
++++ b/Documentation/devicetree/bindings/net/wireless/brcm,bcm4329-fmac.yaml
+@@ -53,6 +53,7 @@ properties:
+           - pci14e4,4488  # BCM4377
+           - pci14e4,4425  # BCM4378
+           - pci14e4,4433  # BCM4387
++          - pci14e4,449d  # BCM43752
+ 
+   reg:
+     description: SDIO function number for the device (for most cases
+-- 
+2.47.0
+
