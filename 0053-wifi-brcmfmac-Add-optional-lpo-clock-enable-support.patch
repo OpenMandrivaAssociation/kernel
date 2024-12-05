@@ -1,37 +1,7 @@
-From aadd52c4059f3fcd4c1798ddab063faabcc5a1ca Mon Sep 17 00:00:00 2001
-From: Jacobe Zang <jacobe.zang@wesion.com>
-Date: Tue, 10 Sep 2024 11:04:13 +0800
-Subject: [PATCH 53/77] wifi: brcmfmac: Add optional lpo clock enable support
-
-WiFi modules often require 32kHz clock to function. Add support to
-enable the clock to PCIe driver and move "brcm,bcm4329-fmac" check
-to the top of brcmf_of_probe. Change function prototypes from void
-to int and add appropriate errno's for return values that will be
-send to bus when error occurred.
-
-Co-developed-by: Ondrej Jirman <megi@xff.cz>
-Signed-off-by: Ondrej Jirman <megi@xff.cz>
-Co-developed-by: Arend van Spriel <arend.vanspriel@broadcom.com>
-Signed-off-by: Arend van Spriel <arend.vanspriel@broadcom.com>
-Reviewed-by: Sai Krishna <saikrishnag@marvell.com>
-Signed-off-by: Jacobe Zang <jacobe.zang@wesion.com>
-Link: https://lore.kernel.org/r/20240910-wireless-mainline-v14-3-9d80fea5326d@wesion.com
-Signed-off-by: Sebastian Reichel <sre@kernel.org>
----
- .../broadcom/brcm80211/brcmfmac/bcmsdh.c      |  4 +--
- .../broadcom/brcm80211/brcmfmac/common.c      |  3 ++-
- .../wireless/broadcom/brcm80211/brcmfmac/of.c | 25 +++++++++++++------
- .../wireless/broadcom/brcm80211/brcmfmac/of.h |  9 ++++---
- .../broadcom/brcm80211/brcmfmac/pcie.c        |  3 +++
- .../broadcom/brcm80211/brcmfmac/sdio.c        | 22 ++++++++++------
- .../broadcom/brcm80211/brcmfmac/usb.c         |  3 +++
- 7 files changed, 47 insertions(+), 22 deletions(-)
-
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-index d35262335eaf7..17f6b33beabd8 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-@@ -947,8 +947,8 @@ int brcmf_sdiod_probe(struct brcmf_sdio_dev *sdiodev)
+diff -up linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c.112~ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
+--- linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c.112~	2024-11-17 23:15:08.000000000 +0100
++++ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c	2024-12-05 22:28:09.198282694 +0100
+@@ -947,8 +947,8 @@ int brcmf_sdiod_probe(struct brcmf_sdio_
  
  	/* try to attach to the target device */
  	sdiodev->bus = brcmf_sdio_probe(sdiodev);
@@ -42,11 +12,10 @@ index d35262335eaf7..17f6b33beabd8 100644
  		goto out;
  	}
  	brcmf_sdiod_host_fixup(sdiodev->func2->card->host);
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c
-index b24faae35873d..58d50918dd177 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c
-@@ -561,7 +561,8 @@ struct brcmf_mp_device *brcmf_get_module_param(struct device *dev,
+diff -up linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c.112~ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c
+--- linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c.112~	2024-11-17 23:15:08.000000000 +0100
++++ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c	2024-12-05 22:28:09.198378855 +0100
+@@ -561,7 +561,8 @@ struct brcmf_mp_device *brcmf_get_module
  	if (!found) {
  		/* No platform data for this device, try OF and DMI data */
  		brcmf_dmi_probe(settings, chip, chiprev);
@@ -56,10 +25,9 @@ index b24faae35873d..58d50918dd177 100644
  		brcmf_acpi_probe(dev, bus_type, settings);
  	}
  	return settings;
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.c
-index fe4f657561056..6d90be9529012 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.c
+diff -up linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.c.112~ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.c
+--- linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.c.112~	2024-12-05 22:28:08.488886481 +0100
++++ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.c	2024-12-05 22:33:53.581870477 +0100
 @@ -6,6 +6,7 @@
  #include <linux/of.h>
  #include <linux/of_irq.h>
@@ -68,7 +36,7 @@ index fe4f657561056..6d90be9529012 100644
  
  #include <defs.h>
  #include "debug.h"
-@@ -65,12 +66,13 @@ static int brcmf_of_get_country_codes(struct device *dev,
+@@ -65,12 +66,13 @@ static int brcmf_of_get_country_codes(st
  	return 0;
  }
  
@@ -84,7 +52,7 @@ index fe4f657561056..6d90be9529012 100644
  	const char *prop;
  	int irq;
  	int err;
-@@ -106,7 +108,7 @@ void brcmf_of_probe(struct device *dev, enum brcmf_bus_type bus_type,
+@@ -106,15 +108,22 @@ void brcmf_of_probe(struct device *dev,
  		board_type = devm_kstrdup(dev, tmp, GFP_KERNEL);
  		if (!board_type) {
  			of_node_put(root);
@@ -93,9 +61,8 @@ index fe4f657561056..6d90be9529012 100644
  		}
  		strreplace(board_type, '/', '-');
  		settings->board_type = board_type;
-@@ -114,8 +116,15 @@ void brcmf_of_probe(struct device *dev, enum brcmf_bus_type bus_type,
- 		of_node_put(root);
  	}
+ 	of_node_put(root);
  
 +	clk = devm_clk_get_optional_enabled(dev, "lpo");
 +	if (IS_ERR(clk))
@@ -110,7 +77,7 @@ index fe4f657561056..6d90be9529012 100644
  
  	err = brcmf_of_get_country_codes(dev, settings);
  	if (err)
-@@ -124,23 +133,25 @@ void brcmf_of_probe(struct device *dev, enum brcmf_bus_type bus_type,
+@@ -123,23 +132,25 @@ void brcmf_of_probe(struct device *dev,
  	of_get_mac_address(np, settings->mac);
  
  	if (bus_type != BRCMF_BUSTYPE_SDIO)
@@ -139,10 +106,9 @@ index fe4f657561056..6d90be9529012 100644
 +
 +	return 0;
  }
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.h b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.h
-index 10bf52253337e..ae124c73fc3b7 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.h
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.h
+diff -up linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.h.112~ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.h
+--- linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.h.112~	2024-11-17 23:15:08.000000000 +0100
++++ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/of.h	2024-12-05 22:28:09.198510082 +0100
 @@ -3,11 +3,12 @@
   * Copyright (c) 2014 Broadcom Corporation
   */
@@ -160,11 +126,10 @@ index 10bf52253337e..ae124c73fc3b7 100644
 +	return 0;
  }
  #endif /* CONFIG_OF */
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c
-index 5dee54819fbdf..af68cdf0b1140 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c
-@@ -2452,6 +2452,9 @@ brcmf_pcie_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+diff -up linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c.112~ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c
+--- linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c.112~	2024-11-17 23:15:08.000000000 +0100
++++ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c	2024-12-05 22:28:09.198623496 +0100
+@@ -2452,6 +2452,9 @@ brcmf_pcie_probe(struct pci_dev *pdev, c
  		ret = -ENOMEM;
  		goto fail;
  	}
@@ -174,11 +139,10 @@ index 5dee54819fbdf..af68cdf0b1140 100644
  
  	bus = kzalloc(sizeof(*bus), GFP_KERNEL);
  	if (!bus) {
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c
-index 7b936668c1b66..b1727f35217bc 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c
-@@ -3943,7 +3943,7 @@ static const struct brcmf_buscore_ops brcmf_sdio_buscore_ops = {
+diff -up linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c.112~ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c
+--- linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c.112~	2024-11-17 23:15:08.000000000 +0100
++++ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c	2024-12-05 22:28:09.198867055 +0100
+@@ -3943,7 +3943,7 @@ static const struct brcmf_buscore_ops br
  	.write32 = brcmf_sdio_buscore_write32,
  };
  
@@ -187,7 +151,7 @@ index 7b936668c1b66..b1727f35217bc 100644
  brcmf_sdio_probe_attach(struct brcmf_sdio *bus)
  {
  	struct brcmf_sdio_dev *sdiodev;
-@@ -3953,6 +3953,7 @@ brcmf_sdio_probe_attach(struct brcmf_sdio *bus)
+@@ -3953,6 +3953,7 @@ brcmf_sdio_probe_attach(struct brcmf_sdi
  	u32 reg_val;
  	u32 drivestrength;
  	u32 enum_base;
@@ -195,7 +159,7 @@ index 7b936668c1b66..b1727f35217bc 100644
  
  	sdiodev = bus->sdiodev;
  	sdio_claim_host(sdiodev->func1);
-@@ -4001,8 +4002,9 @@ brcmf_sdio_probe_attach(struct brcmf_sdio *bus)
+@@ -4001,8 +4002,9 @@ brcmf_sdio_probe_attach(struct brcmf_sdi
  						   BRCMF_BUSTYPE_SDIO,
  						   bus->ci->chip,
  						   bus->ci->chiprev);
@@ -206,7 +170,7 @@ index 7b936668c1b66..b1727f35217bc 100644
  		goto fail;
  	}
  	/* platform specific configuration:
-@@ -4071,7 +4073,7 @@ brcmf_sdio_probe_attach(struct brcmf_sdio *bus)
+@@ -4071,7 +4073,7 @@ brcmf_sdio_probe_attach(struct brcmf_sdi
  	/* allocate header buffer */
  	bus->hdrbuf = kzalloc(MAX_HDR_READ + bus->head_align, GFP_KERNEL);
  	if (!bus->hdrbuf)
@@ -215,7 +179,7 @@ index 7b936668c1b66..b1727f35217bc 100644
  	/* Locate an appropriately-aligned portion of hdrbuf */
  	bus->rxhdr = (u8 *) roundup((unsigned long)&bus->hdrbuf[0],
  				    bus->head_align);
-@@ -4082,11 +4084,11 @@ brcmf_sdio_probe_attach(struct brcmf_sdio *bus)
+@@ -4082,11 +4084,11 @@ brcmf_sdio_probe_attach(struct brcmf_sdi
  	if (bus->poll)
  		bus->pollrate = 1;
  
@@ -229,7 +193,7 @@ index 7b936668c1b66..b1727f35217bc 100644
  }
  
  static int
-@@ -4451,8 +4453,10 @@ struct brcmf_sdio *brcmf_sdio_probe(struct brcmf_sdio_dev *sdiodev)
+@@ -4451,8 +4453,10 @@ struct brcmf_sdio *brcmf_sdio_probe(stru
  
  	/* Allocate private bus interface state */
  	bus = kzalloc(sizeof(*bus), GFP_ATOMIC);
@@ -241,7 +205,7 @@ index 7b936668c1b66..b1727f35217bc 100644
  
  	bus->sdiodev = sdiodev;
  	sdiodev->bus = bus;
-@@ -4467,6 +4471,7 @@ struct brcmf_sdio *brcmf_sdio_probe(struct brcmf_sdio_dev *sdiodev)
+@@ -4467,6 +4471,7 @@ struct brcmf_sdio *brcmf_sdio_probe(stru
  				     dev_name(&sdiodev->func1->dev));
  	if (!wq) {
  		brcmf_err("insufficient memory to create txworkqueue\n");
@@ -249,7 +213,7 @@ index 7b936668c1b66..b1727f35217bc 100644
  		goto fail;
  	}
  	brcmf_sdiod_freezer_count(sdiodev);
-@@ -4474,7 +4479,8 @@ struct brcmf_sdio *brcmf_sdio_probe(struct brcmf_sdio_dev *sdiodev)
+@@ -4474,7 +4479,8 @@ struct brcmf_sdio *brcmf_sdio_probe(stru
  	bus->brcmf_wq = wq;
  
  	/* attempt to attach to the dongle */
@@ -259,7 +223,7 @@ index 7b936668c1b66..b1727f35217bc 100644
  		brcmf_err("brcmf_sdio_probe_attach failed\n");
  		goto fail;
  	}
-@@ -4546,7 +4552,7 @@ struct brcmf_sdio *brcmf_sdio_probe(struct brcmf_sdio_dev *sdiodev)
+@@ -4546,7 +4552,7 @@ struct brcmf_sdio *brcmf_sdio_probe(stru
  
  fail:
  	brcmf_sdio_remove(bus);
@@ -268,11 +232,10 @@ index 7b936668c1b66..b1727f35217bc 100644
  }
  
  /* Detach and free everything */
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/usb.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/usb.c
-index 8afbf529c7450..2821c27f317ee 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/usb.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/usb.c
-@@ -1272,6 +1272,9 @@ static int brcmf_usb_probe_cb(struct brcmf_usbdev_info *devinfo,
+diff -up linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/usb.c.112~ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/usb.c
+--- linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/usb.c.112~	2024-11-17 23:15:08.000000000 +0100
++++ linux-6.12/drivers/net/wireless/broadcom/brcm80211/brcmfmac/usb.c	2024-12-05 22:28:09.199077692 +0100
+@@ -1272,6 +1272,9 @@ static int brcmf_usb_probe_cb(struct brc
  		ret = -ENOMEM;
  		goto fail;
  	}
@@ -282,6 +245,3 @@ index 8afbf529c7450..2821c27f317ee 100644
  
  	if (!brcmf_usb_dlneeded(devinfo)) {
  		ret = brcmf_alloc(devinfo->dev, devinfo->settings);
--- 
-2.47.0
-
