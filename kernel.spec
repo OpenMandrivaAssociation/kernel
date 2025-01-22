@@ -61,9 +61,9 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 12
-%define sublevel 10
-#define relc 6
+%define patchlevel 13
+%define sublevel 0
+#define relc 7
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -271,7 +271,8 @@ Source1008:	vboxvideo-kernel-6.3.patch
 # Needed by DisplayLink cruft
 %define evdi_version 1.14.7
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
-Source1011:	evdi-kernel-6.12.patch
+Source1011:	https://github.com/DisplayLink/evdi/commit/3651b6debf631febf470106d43199d7fbd7bfd56.patch
+Source1012:	evdi-6.13.patch
 
 # Assorted fixes
 
@@ -376,14 +377,8 @@ Patch967:	0018-arm-dts-rockchip-rk3036-kylin-Force-MAC-address.patch
 Patch968:	0019-Revert-Revert-ARM-dts-rockchip-restyle-emac-nodes.patch
 # 0020-ethernet-arc-fix-the-device-for-dma_map_single-dma_u.patch is already upstream
 # 0021-net-arc-rockchip-fix-emac-mdio-node-support.patch is already upstream
-Patch971:	0022-drm-bridge-synopsys-Add-DW-HDMI-QP-TX-Controller-sup.patch
-Patch972:	0023-dt-bindings-display-rockchip-Add-schema-for-RK3588-H.patch
-Patch973:	0024-drm-rockchip-Add-basic-RK3588-HDMI-output-support.patch
-Patch974:	0025-arm64-dts-rockchip-Add-HDMI0-node-to-rk3588.patch
 Patch975:	0026-DONT-UPSTREAM-arm64-dts-rockchip-rk3588-evb1-Force-M.patch
 Patch976:	0027-DONT-UPSTREAM-net-r8169-Force-MAC-address.patch
-Patch977:	0028-regulator-Add-of_regulator_get_optional-for-pure-DT-.patch
-Patch978:	0029-regulator-Add-devres-version-of-of_regulator_get_opt.patch
 Patch979:	0030-math.h-add-DIV_ROUND_UP_NO_OVERFLOW.patch
 Patch980:	0031-clk-divider-Fix-divisor-masking-on-64-bit-platforms.patch
 Patch981:	0032-clk-composite-replace-open-coded-abs_diff.patch
@@ -396,7 +391,6 @@ Patch987:	0038-arm64-dts-rockchip-rk3588-evb1-add-bluetooth-rfkill.patch
 Patch988:	0039-arm64-dts-rockchip-rk3588-evb1-improve-PCIe-ethernet.patch
 Patch989:	0040-arm64-dts-rockchip-Slow-down-EMMC-a-bit-to-keep-IO-s.patch
 Patch990:	0041-mfd-rk8xx-Fix-shutdown-handler.patch
-Patch991:	0042-arm64-dts-rockchip-Enable-HDMI0-on-rk3588-evb1.patch
 Patch992:	0043-arm64-defconfig-Enable-Rockchip-extensions-for-Synop.patch
 Patch993:	0044-regulator-Add-devm_-of_regulator_get.patch
 Patch994:	0045-pmdomain-rockchip-cleanup-mutex-handling-in-rockchip.patch
@@ -405,17 +399,10 @@ Patch996:	0047-pmdomain-rockchip-reduce-indentation-in-rockchip_pd_.patch
 Patch997:	0048-dt-bindings-power-rockchip-add-regulator-support.patch
 Patch998:	0049-pmdomain-rockchip-add-regulator-support.patch
 Patch999:	0050-arm64-dts-rockchip-Add-GPU-power-domain-regulator-de.patch
-Patch1000:	0051-dt-bindings-net-wireless-brcm4329-fmac-add-pci14e4-4.patch
-Patch1001:	0052-dt-bindings-net-wireless-brcm4329-fmac-add-clock-des.patch
-Patch1002:	0053-wifi-brcmfmac-Add-optional-lpo-clock-enable-support.patch
-Patch1003:	0054-wifi-brcmfmac-add-flag-for-random-seed-during-firmwa.patch
 Patch1004:	0055-arm64-dts-rockchip-rk3588-evb1-add-WLAN-controller.patch
 Patch1005:	0056-arm64-dts-rockchip-Add-wifi-regulator-for-Cool-Pi-4b.patch
 Patch1006:	0057-drm-panthor-Add-defer-probe-for-firmware-load.patch
 Patch1007:	0058-drm-rockchip-Add-DW-DisplayPort-driver.patch
-Patch1008:	0059-arm64-dts-rockchip-Enable-HDMI0-for-rk3588-Cool-Pi-C.patch
-Patch1009:	0060-arm64-dts-rockchip-Enable-HDMI-display-for-rk3588-Co.patch
-Patch1010:	0061-arm64-dts-rockchip-Enable-HDMI-display-for-rk3588-Co.patch
 Patch1011:	0062-drm-rockchip-vop2-Add-debugfs-support.patch
 Patch1012:	0063-drm-rockchip-Set-dma-mask-to-64-bit.patch
 Patch1013:	0064-drm-rockchip-vop2-Fix-cluster-windows-alpha-ctrl-reg.patch
@@ -957,6 +944,9 @@ find drivers/media/tuners drivers/media/dvb-frontends -name "*.c" -o -name "*.h"
 %endif
 
 # Merge EVDI
+cd evdi-%{evdi_version}
+patch -p1 -b -z .evdi613~ <%{S:1011}
+cd ..
 mv evdi-%{evdi_version}/module drivers/gpu/drm/evdi
 rm -rf evdi-%{evdi_version}
 sed -i -e '/imagination/isource "drivers/gpu/drm/evdi/Kconfig"' drivers/gpu/drm/Kconfig
@@ -967,7 +957,7 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
-patch -p1 -b -z .evdi610~ <%{S:1011}
+patch -p1 -b -z .evdi613a~ <%{S:1012}
 
 # Merge TMFF2
 mv hid-tmff2-* drivers/hid/tmff-new
@@ -1175,6 +1165,7 @@ serverize() {
 		-e 's/CONFIG_HZ_1000=y/# CONFIG_HZ_1000 is not set/' \
 		-e 's/^CONFIG_HZ_100 is not set/CONFIG_HZ_100=y/' \
 		-e 's/^CONFIG_HZ=1000/CONFIG_HZ=100/' \
+		-e 's/^CONFIG_MODIFY_LDT_SYSCALL=y/# CONFIG_MODIFY_LDT_SYSCALL is not set/' \
 		"$1"
 }
 
@@ -1895,6 +1886,7 @@ for i in alpha arc avr32 blackfin c6x cris csky frv h8300 hexagon ia64 m32r m68k
     rm -rf %{buildroot}%{_kerneldir}/scripts/dtc/include-prefixes/$i
     rm -rf %{buildroot}%{_kerneldir}/tools/arch/$i
     rm -rf %{buildroot}%{_kerneldir}/tools/testing/selftests/$i
+    sed -i -e "/source.*${i}/d" %{buildroot}%{_kerneldir}/crypto/Kconfig
 done
 
 %ifnarch %{armx}
@@ -1942,6 +1934,7 @@ cd -
 %dir %{_kerneldir}/include
 %dir %{_kerneldir}/certs
 %{_kerneldir}/.clang-format
+%optional %{_kerneldir}/.clippy.toml
 %{_kerneldir}/.cocciconfig
 %{_kerneldir}/.editorconfig
 %{_kerneldir}/Documentation

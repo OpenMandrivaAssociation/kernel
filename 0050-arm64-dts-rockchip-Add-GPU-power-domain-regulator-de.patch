@@ -1,58 +1,7 @@
-From 10c8287aef13aa72ce7794b4dd2c67aafd056f55 Mon Sep 17 00:00:00 2001
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Date: Fri, 6 Sep 2024 19:24:03 +0200
-Subject: [PATCH 50/77] arm64: dts: rockchip: Add GPU power domain regulator
- dependency for RK3588
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-Enabling the GPU power domain requires that the GPU regulator is
-enabled. The regulator is enabled at boot time, but automatically
-gets disabled when there are no users.
-
-If the GPU driver is not probed at boot time or rebound while
-the system is running the system will try to enable the power
-domain before the regulator is enabled resulting in a failure
-hanging the whole system. Avoid this by adding an explicit
-dependency.
-
-Reported-by: Adrián Martínez Larumbe <adrian.larumbe@collabora.com>
-Tested-by: Adrian Larumbe <adrian.larumbe@collabora.com> # On Rock 5B
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- arch/arm64/boot/dts/rockchip/rk3588-armsom-sige7.dts          | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-base.dtsi                 | 2 +-
- arch/arm64/boot/dts/rockchip/rk3588-coolpi-cm5.dtsi           | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-edgeble-neu6a-common.dtsi | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts              | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-fet3588-c.dtsi            | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-friendlyelec-cm3588.dtsi  | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-jaguar.dts                | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-nanopc-t6.dtsi            | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-ok3588-c.dts              | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts       | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-quartzpro64.dts           | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-rock-5-itx.dts            | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts               | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-tiger.dtsi                | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-toybrick-x0.dts           | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588-turing-rk1.dtsi           | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588s-coolpi-4b.dts            | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts        | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588s-indiedroid-nova.dts      | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588s-khadas-edge2.dts         | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588s-nanopi-r6s.dts           | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588s-odroid-m2.dts            | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5.dts           | 4 ++++
- arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts              | 4 ++++
- 25 files changed, 97 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-armsom-sige7.dts b/arch/arm64/boot/dts/rockchip/rk3588-armsom-sige7.dts
-index c667704ba985e..00a1cd96781dd 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-armsom-sige7.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-armsom-sige7.dts
-@@ -286,6 +286,10 @@ &pcie3x4 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-armsom-sige7.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-armsom-sige7.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-armsom-sige7.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-armsom-sige7.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -286,6 +286,10 @@
  	status = "okay";
  };
  
@@ -63,11 +12,10 @@ index c667704ba985e..00a1cd96781dd 100644
  &pinctrl {
  	hym8563 {
  		hym8563_int: hym8563-int {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-base.dtsi b/arch/arm64/boot/dts/rockchip/rk3588-base.dtsi
-index bef5847953110..522aa9549a1c9 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-base.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-base.dtsi
-@@ -861,7 +861,7 @@ power-domain@RK3588_PD_NPU2 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-base.dtsi.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-base.dtsi
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-base.dtsi.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-base.dtsi	2024-12-02 01:10:45.264739115 +0100
+@@ -865,7 +865,7 @@
  				};
  			};
  			/* These power domains are grouped by VD_GPU */
@@ -76,11 +24,10 @@ index bef5847953110..522aa9549a1c9 100644
  				reg = <RK3588_PD_GPU>;
  				clocks = <&cru CLK_GPU>,
  					 <&cru CLK_GPU_COREGROUP>,
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-coolpi-cm5.dtsi b/arch/arm64/boot/dts/rockchip/rk3588-coolpi-cm5.dtsi
-index fde8b228f2c7c..cf9d75159ba6f 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-coolpi-cm5.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-coolpi-cm5.dtsi
-@@ -277,6 +277,10 @@ &pcie2x1l2 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-coolpi-cm5.dtsi.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-coolpi-cm5.dtsi
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-coolpi-cm5.dtsi.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-coolpi-cm5.dtsi	2024-12-02 01:10:45.264739115 +0100
+@@ -277,6 +277,10 @@
  	status = "okay";
  };
  
@@ -91,11 +38,10 @@ index fde8b228f2c7c..cf9d75159ba6f 100644
  &pinctrl {
  	hym8563 {
  		hym8563_int: hym8563-int {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-edgeble-neu6a-common.dtsi b/arch/arm64/boot/dts/rockchip/rk3588-edgeble-neu6a-common.dtsi
-index 03fd193be253d..381242c8d6db6 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-edgeble-neu6a-common.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-edgeble-neu6a-common.dtsi
-@@ -126,6 +126,10 @@ regulator-state-mem {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-edgeble-neu6a-common.dtsi.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-edgeble-neu6a-common.dtsi
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-edgeble-neu6a-common.dtsi.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-edgeble-neu6a-common.dtsi	2024-12-02 01:10:45.264739115 +0100
+@@ -126,6 +126,10 @@
  	};
  };
  
@@ -106,11 +52,10 @@ index 03fd193be253d..381242c8d6db6 100644
  &pinctrl {
  	leds {
  		led_user_en: led_user_en {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts b/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts
-index fb893ef947933..054d8d6f4bc3d 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts
-@@ -469,6 +469,10 @@ &pcie3x4 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts.102~	2024-12-02 01:10:45.214738524 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-evb1-v10.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -469,6 +469,10 @@
  	status = "okay";
  };
  
@@ -121,11 +66,10 @@ index fb893ef947933..054d8d6f4bc3d 100644
  &pinctrl {
  	audio {
  		hp_detect: headphone-detect {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-fet3588-c.dtsi b/arch/arm64/boot/dts/rockchip/rk3588-fet3588-c.dtsi
-index 47e64d547ea9c..799a71da7157f 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-fet3588-c.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-fet3588-c.dtsi
-@@ -205,6 +205,10 @@ regulator-state-mem {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-fet3588-c.dtsi.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-fet3588-c.dtsi
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-fet3588-c.dtsi.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-fet3588-c.dtsi	2024-12-02 01:10:45.264739115 +0100
+@@ -205,6 +205,10 @@
  	};
  };
  
@@ -136,11 +80,10 @@ index 47e64d547ea9c..799a71da7157f 100644
  &pinctrl {
  	leds {
  		led_rgb_b: led-rgb-b {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-friendlyelec-cm3588.dtsi b/arch/arm64/boot/dts/rockchip/rk3588-friendlyelec-cm3588.dtsi
-index e3a9598b99fca..1af0a30866f61 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-friendlyelec-cm3588.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-friendlyelec-cm3588.dtsi
-@@ -256,6 +256,10 @@ &pcie2x1l2 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-friendlyelec-cm3588.dtsi.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-friendlyelec-cm3588.dtsi
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-friendlyelec-cm3588.dtsi.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-friendlyelec-cm3588.dtsi	2024-12-02 01:10:45.264739115 +0100
+@@ -256,6 +256,10 @@
  	status = "okay";
  };
  
@@ -151,11 +94,10 @@ index e3a9598b99fca..1af0a30866f61 100644
  &pinctrl {
  	gpio-leds {
  		led_sys_pin: led-sys-pin {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-jaguar.dts b/arch/arm64/boot/dts/rockchip/rk3588-jaguar.dts
-index 31d2f8994f851..3cefaf8302297 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-jaguar.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-jaguar.dts
-@@ -403,6 +403,10 @@ &pcie3x4 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-jaguar.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-jaguar.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-jaguar.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-jaguar.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -451,6 +451,10 @@
  	status = "okay";
  };
  
@@ -166,11 +108,10 @@ index 31d2f8994f851..3cefaf8302297 100644
  &pinctrl {
  	emmc {
  		emmc_reset: emmc-reset {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-nanopc-t6.dtsi b/arch/arm64/boot/dts/rockchip/rk3588-nanopc-t6.dtsi
-index fc131789b4c32..30a5e4e9e8443 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-nanopc-t6.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-nanopc-t6.dtsi
-@@ -519,6 +519,10 @@ &pcie3x4 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-nanopc-t6.dtsi.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-nanopc-t6.dtsi
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-nanopc-t6.dtsi.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-nanopc-t6.dtsi	2024-12-02 01:10:45.264739115 +0100
+@@ -565,6 +565,10 @@
  	status = "okay";
  };
  
@@ -181,11 +122,10 @@ index fc131789b4c32..30a5e4e9e8443 100644
  &pinctrl {
  	gpio-leds {
  		sys_led_pin: sys-led-pin {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-ok3588-c.dts b/arch/arm64/boot/dts/rockchip/rk3588-ok3588-c.dts
-index c2a08bdf09e83..a9c1fed929fd1 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-ok3588-c.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-ok3588-c.dts
-@@ -312,6 +312,10 @@ &pcie3x4 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-ok3588-c.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-ok3588-c.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-ok3588-c.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-ok3588-c.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -312,6 +312,10 @@
  	status = "okay";
  };
  
@@ -196,11 +136,10 @@ index c2a08bdf09e83..a9c1fed929fd1 100644
  &pinctrl {
  	pcie2 {
  		pcie2_0_rst: pcie2-0-rst {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts b/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts
-index c3a6812cc93a2..62863b6b1c88d 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts
-@@ -389,6 +389,10 @@ &pcie3x4 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -455,6 +455,10 @@
  	status = "okay";
  };
  
@@ -211,11 +150,10 @@ index c3a6812cc93a2..62863b6b1c88d 100644
  &pinctrl {
  	hym8563 {
  		hym8563_int: hym8563-int {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-quartzpro64.dts b/arch/arm64/boot/dts/rockchip/rk3588-quartzpro64.dts
-index e4a20cda65ed6..c8efe60e93ca8 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-quartzpro64.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-quartzpro64.dts
-@@ -348,6 +348,10 @@ rgmii_phy: ethernet-phy@1 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-quartzpro64.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-quartzpro64.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-quartzpro64.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-quartzpro64.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -347,6 +347,10 @@
  	};
  };
  
@@ -226,11 +164,10 @@ index e4a20cda65ed6..c8efe60e93ca8 100644
  &pinctrl {
  	hym8563 {
  		hym8563_int: hym8563-int {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-rock-5-itx.dts b/arch/arm64/boot/dts/rockchip/rk3588-rock-5-itx.dts
-index d0b922b8d67e8..0eadf4fb4ba46 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-rock-5-itx.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-rock-5-itx.dts
-@@ -530,6 +530,10 @@ &pcie3x4 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-rock-5-itx.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-rock-5-itx.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-rock-5-itx.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-rock-5-itx.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -564,6 +564,10 @@
  	status = "okay";
  };
  
@@ -241,11 +178,10 @@ index d0b922b8d67e8..0eadf4fb4ba46 100644
  &pinctrl {
  	hym8563 {
  		rtc_int: rtc-int {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts b/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts
-index 31866f9dcf696..f56419695589d 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts
-@@ -344,6 +344,10 @@ &pcie3x4 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts.102~	2024-12-02 01:10:45.214738524 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -376,6 +376,10 @@
  	status = "okay";
  };
  
@@ -256,11 +192,10 @@ index 31866f9dcf696..f56419695589d 100644
  &pinctrl {
  	hym8563 {
  		hym8563_int: hym8563-int {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-tiger.dtsi b/arch/arm64/boot/dts/rockchip/rk3588-tiger.dtsi
-index 615094bb8ba38..1b5c4a7fd5c68 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-tiger.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-tiger.dtsi
-@@ -317,6 +317,10 @@ &pcie3x4 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-tiger.dtsi.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-tiger.dtsi
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-tiger.dtsi.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-tiger.dtsi	2024-12-02 01:10:45.264739115 +0100
+@@ -336,6 +336,10 @@
  	reset-gpios = <&gpio3 RK_PB6 GPIO_ACTIVE_HIGH>;
  };
  
@@ -271,11 +206,10 @@ index 615094bb8ba38..1b5c4a7fd5c68 100644
  &pinctrl {
  	emmc {
  		emmc_reset: emmc-reset {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-toybrick-x0.dts b/arch/arm64/boot/dts/rockchip/rk3588-toybrick-x0.dts
-index d0021524e7f95..69aadc6c8b74e 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-toybrick-x0.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-toybrick-x0.dts
-@@ -289,6 +289,10 @@ rgmii_phy: ethernet-phy@1 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-toybrick-x0.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-toybrick-x0.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-toybrick-x0.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-toybrick-x0.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -289,6 +289,10 @@
  	};
  };
  
@@ -286,11 +220,10 @@ index d0021524e7f95..69aadc6c8b74e 100644
  &pinctrl {
  	rtl8211f {
  		rtl8211f_rst: rtl8211f-rst {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-turing-rk1.dtsi b/arch/arm64/boot/dts/rockchip/rk3588-turing-rk1.dtsi
-index dbaa94ca69f47..83fc7ff551571 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-turing-rk1.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-turing-rk1.dtsi
-@@ -229,6 +229,10 @@ &pcie3x4 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-turing-rk1.dtsi.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-turing-rk1.dtsi
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-turing-rk1.dtsi.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588-turing-rk1.dtsi	2024-12-02 01:10:45.264739115 +0100
+@@ -287,6 +287,10 @@
  	status = "okay";
  };
  
@@ -301,11 +234,10 @@ index dbaa94ca69f47..83fc7ff551571 100644
  &pinctrl {
  	fan {
  		fan_int: fan-int {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-coolpi-4b.dts b/arch/arm64/boot/dts/rockchip/rk3588s-coolpi-4b.dts
-index 074c316a9a694..d938db0e2239c 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588s-coolpi-4b.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588s-coolpi-4b.dts
-@@ -329,6 +329,10 @@ &pcie2x1l2 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-coolpi-4b.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-coolpi-4b.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-coolpi-4b.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-coolpi-4b.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -361,6 +361,10 @@
  	status = "okay";
  };
  
@@ -316,11 +248,10 @@ index 074c316a9a694..d938db0e2239c 100644
  &pinctrl {
  	hym8563 {
  		hym8563_int: hym8563-int {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts b/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts
-index 467f69594089b..9b02cea96cdb4 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts
-@@ -675,6 +675,10 @@ &pcie2x1l1 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-gameforce-ace.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -675,6 +675,10 @@
  	status = "okay";
  };
  
@@ -331,11 +262,10 @@ index 467f69594089b..9b02cea96cdb4 100644
  &pinctrl {
  	audio-amplifier {
  		headphone_amplifier_en: headphone-amplifier-en {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-indiedroid-nova.dts b/arch/arm64/boot/dts/rockchip/rk3588s-indiedroid-nova.dts
-index d8c50fdcca3b5..1126fb4425166 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588s-indiedroid-nova.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588s-indiedroid-nova.dts
-@@ -416,6 +416,10 @@ &pcie2x1l2 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-indiedroid-nova.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-indiedroid-nova.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-indiedroid-nova.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-indiedroid-nova.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -455,6 +455,10 @@
  	status = "okay";
  };
  
@@ -346,11 +276,10 @@ index d8c50fdcca3b5..1126fb4425166 100644
  &pinctrl {
  	bluetooth-pins {
  		bt_reset: bt-reset {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-khadas-edge2.dts b/arch/arm64/boot/dts/rockchip/rk3588s-khadas-edge2.dts
-index dbddfc3bb4641..d29d404417ee0 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588s-khadas-edge2.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588s-khadas-edge2.dts
-@@ -233,6 +233,10 @@ hym8563: rtc@51 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-khadas-edge2.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-khadas-edge2.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-khadas-edge2.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-khadas-edge2.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -233,6 +233,10 @@
  	};
  };
  
@@ -361,26 +290,21 @@ index dbddfc3bb4641..d29d404417ee0 100644
  &pinctrl {
  	vdd_sd {
  		vdd_sd_en: vdd-sd-en {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-nanopi-r6s.dts b/arch/arm64/boot/dts/rockchip/rk3588s-nanopi-r6s.dts
-index 4fa644ae510ca..3dd8372b2578d 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588s-nanopi-r6s.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588s-nanopi-r6s.dts
-@@ -326,6 +326,10 @@ &pcie2x1l2 {
- 	status = "okay";
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-nanopi-r6s.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-nanopi-r6s.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-nanopi-r6s.dts.102~	2024-12-02 01:10:45.264739115 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-nanopi-r6s.dts	2024-12-02 01:11:57.685597559 +0100
+@@ -12,3 +12,7 @@
+ &lan2_led {
+ 	label = "lan2_led";
  };
- 
++
 +&pd_gpu {
 +	domain-supply = <&vdd_gpu_s0>;
 +};
-+
- &pinctrl {
- 	gpio-key {
- 		key1_pin: key1-pin {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-odroid-m2.dts b/arch/arm64/boot/dts/rockchip/rk3588s-odroid-m2.dts
-index 63d91236ba9ff..5f32a339f5c91 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588s-odroid-m2.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588s-odroid-m2.dts
-@@ -401,6 +401,10 @@ &pcie2x1l2 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-odroid-m2.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-odroid-m2.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-odroid-m2.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-odroid-m2.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -433,6 +433,10 @@
  	status = "okay";
  };
  
@@ -391,26 +315,21 @@ index 63d91236ba9ff..5f32a339f5c91 100644
  &pinctrl {
  	lcd {
  		lcd_pwren: lcd-pwren {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5.dts b/arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5.dts
-index feea6b20a6bf5..ef3a721d1fc77 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5.dts
-@@ -297,6 +297,10 @@ &pcie2x1l2 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5.dts.102~	2024-12-02 01:10:45.264739115 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5.dts	2024-12-02 01:11:51.755527271 +0100
+@@ -30,3 +30,7 @@
+ &sfc {
  	status = "okay";
  };
- 
++
 +&pd_gpu {
 +	domain-supply = <&vdd_gpu_s0>;
 +};
-+
- &pinctrl {
- 	gpio-func {
- 		leds_gpio: leds-gpio {
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
-index 294b99dd50da2..a61864482f1fd 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
-@@ -317,6 +317,10 @@ &pcie2x1l2 {
+diff -up linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts.102~ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
+--- linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts.102~	2024-12-01 23:28:56.000000000 +0100
++++ linux-6.13-rc1/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts	2024-12-02 01:10:45.264739115 +0100
+@@ -359,6 +359,10 @@
  	status = "okay";
  };
  
@@ -421,6 +340,3 @@ index 294b99dd50da2..a61864482f1fd 100644
  &pinctrl {
  	leds {
  		io_led: io-led {
--- 
-2.47.0
-
