@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 13
-%define sublevel 1
+%define sublevel 2
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -405,20 +405,7 @@ Patch1006:	0057-drm-panthor-Add-defer-probe-for-firmware-load.patch
 Patch1007:	0058-drm-rockchip-Add-DW-DisplayPort-driver.patch
 Patch1011:	0062-drm-rockchip-vop2-Add-debugfs-support.patch
 Patch1012:	0063-drm-rockchip-Set-dma-mask-to-64-bit.patch
-Patch1013:	0064-drm-rockchip-vop2-Fix-cluster-windows-alpha-ctrl-reg.patch
-Patch1014:	0065-drm-rockchip-vop2-Fix-the-mixer-alpha-setup-for-laye.patch
-Patch1015:	0066-drm-rockchip-vop2-Fix-the-windows-switch-between-dif.patch
-Patch1016:	0067-drm-rockchip-vop2-include-rockchip_drm_drv.h.patch
-Patch1017:	0068-drm-rockchip-vop2-Support-32x8-superblock-afbc.patch
-Patch1018:	0069-drm-rockchip-vop2-Add-platform-specific-callback.patch
-Patch1019:	0070-drm-rockchip-vop2-Support-for-different-layer-selet-.patch
-Patch1020:	0071-drm-rockchip-vop2-Introduce-vop-hardware-version.patch
-Patch1021:	0072-drm-rockchip-vop2-Register-the-primary-plane-and-ove.patch
-Patch1022:	0073-drm-rockchip-vop2-Set-plane-possible-crtcs-by-possib.patch
-Patch1023:	0074-drm-rockchip-vop2-Add-uv-swap-for-cluster-window.patch
 Patch1024:	0075-dt-bindings-display-vop2-Add-rk3576-support.patch
-Patch1025:	0076-drm-rockchip-vop2-Add-support-for-rk3576.patch
-Patch1026:	0077-drm-rockchip-vop2-Don-t-spam-logs-in-atomic-update.patch
 # Buildfix for the patchset above to handle kernel 6.12 rather than 6.12-rc5
 Patch1027:	rk3588-hdmi-kernel-6.12-final.patch
 
