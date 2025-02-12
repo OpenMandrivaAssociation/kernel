@@ -52,9 +52,9 @@
 
 # (tpg) package these kernel modules as subpackages
 %ifarch %{aarch64}
-%define modules_subpackages appletalk decnet fddi can
+%define modules_subpackages appletalk decnet fddi can adfs affs afs bfs coda efs freevxfs hfs hfsplus hpfs jfs minix ocfs2 omfs orangefs qnx4 qnx6 sysv
 %else
-%define modules_subpackages appletalk arcnet comedi infiniband isdn can
+%define modules_subpackages appletalk arcnet comedi infiniband isdn can adfs affs afs bfs coda efs freevxfs hfs hfsplus hpfs jfs minix ocfs2 omfs orangefs qnx4 qnx6 sysv
 %endif
 
 # IMPORTANT
@@ -129,7 +129,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}1
+Release:	%{?relc:0.rc%{relc}.}2
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -671,7 +671,13 @@ Provides:	installonlypkg(kernel-module)
 AutoReq:	no
 AutoProv:	yes
 Requires(posttrans,postun):	kmod
+EOF
 
+	if [ "$module" = "hfs" ]; then
+		echo "Obsoletes: hfsutils < 3.2.6-42"
+	fi
+
+	cat <<EOF
 %description -n %{name}-${flavour}-modules-${modules}
 %{modules} modules for kernel %{name}-${flavour} .
 
@@ -679,6 +685,7 @@ Requires(posttrans,postun):	kmod
 [ -x %{_bindir}/depmod ] && %{_bindir}/depmod -A %{version}-$kernel_flavour-%{release}%{disttag}
 
 %files -n %{name}-${flavour}-modules-${modules}
+%optional %{_modulesdir}/%{version}-${flavour}-%{release}%{disttag}/kernel/fs/${modules}
 %optional %{_modulesdir}/%{version}-${flavour}-%{release}%{disttag}/kernel/net/${modules}
 %optional %{_modulesdir}/%{version}-${flavour}-%{release}%{disttag}/kernel/drivers/${modules}
 %optional %{_modulesdir}/%{version}-${flavour}-%{release}%{disttag}/kernel/drivers/net/${modules}
@@ -1569,6 +1576,24 @@ CreateFiles() {
 %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/config
 %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/vmlinuz
 %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/adfs
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/affs
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/afs
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/bfs
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/coda
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/efs
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/freevxfs
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/hfs
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/hfsplus
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/hpfs
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/jfs
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/minix
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/ocfs2
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/omfs
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/orangefs
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/qnx4
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/qnx6
+%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/sysv
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/appletalk
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/can
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/decnet
