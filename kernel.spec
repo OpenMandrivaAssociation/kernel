@@ -673,7 +673,7 @@ AutoProv:	yes
 Requires(posttrans,postun):	kmod
 EOF
 
-	if [ "$module" = "hfs" ]; then
+	if [ "$modules" = "hfs" ]; then
 		echo "Obsoletes: hfsutils < 3.2.6-42"
 	fi
 
