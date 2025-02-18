@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 13
-%define sublevel 2
+%define sublevel 3
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -129,7 +129,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}2
+Release:	%{?relc:0.rc%{relc}.}1
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -208,7 +208,6 @@ Source1002:	revert-9d55bebd9816903b821a403a69a94190442ac043.patch
 Patch30:	https://gitweb.gentoo.org/proj/linux-patches.git/plain/5010_enable-cpu-optimizations-universal.patch?h=6.7#/cpu-optimizations.patch
 Patch31:	die-floppy-die.patch
 Patch32:	0001-Add-support-for-Acer-Predator-macro-keys.patch
-Patch33:	acer-wmi-Predator-PH18-71.patch
 Patch34:	kernel-5.6-kvm-gcc10.patch
 Patch35:	linux-6.7-BTF-deps.patch
 # Work around rpm dependency generator screaming about
