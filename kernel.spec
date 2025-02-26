@@ -129,7 +129,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}2
+Release:	%{?relc:0.rc%{relc}.}3
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -154,6 +154,7 @@ NoSource:	0
 %endif
 Source3:	README.kernel-sources
 Source4:	%{name}.rpmlintrc
+Source5:	https://github.com/linux-thinkpad/tp_smapi/releases/download/tp-smapi%2F0.44/tp_smapi-0.44.tgz
 ## all in one configs for each kernel
 Source10:	x86-omv-defconfig
 Source11:	i386-omv-defconfig
@@ -221,6 +222,7 @@ Patch37:	socket.h-include-bitsperlong.h.patch
 #Patch38:	kernel-5.8-nouveau-write-combining-only-on-x86.patch
 Source39:	tmff2-kernel-6.12.patch
 Patch40:	kernel-5.8-aarch64-gcc-10.2-workaround.patch
+Patch41:	tp_smapi-clang.patch
 # (tpg) https://github.com/ClangBuiltLinux/linux/issues/1341
 Patch42:	linux-5.11-disable-ICF-for-CONFIG_UNWINDER_ORC.patch
 
@@ -268,10 +270,8 @@ Source1008:	vboxvideo-kernel-6.3.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
-%define evdi_version 1.14.7
+%define evdi_version 1.14.8
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
-Source1011:	https://github.com/DisplayLink/evdi/commit/3651b6debf631febf470106d43199d7fbd7bfd56.patch
-Source1012:	evdi-6.13.patch
 
 # Assorted fixes
 
@@ -914,12 +914,32 @@ done
 #
 %prep
 
-%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 2 -a 1003 -a 1004 -a 1010
+%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 2 -a 5 -a 1003 -a 1004 -a 1010
 %if 0%{?sublevel:%{sublevel}}
 [ -e .git ] || git init
 xzcat %{SOURCE1000} |git apply - || git apply %{SOURCE1000}
 rm -rf .git
 %endif
+
+mv tp_smapi-*/*.{c,h} drivers/platform/x86
+sed -i -e 's,  ---help---,help,g' tp_smapi-*/diff/*.add
+cat tp_smapi-*/diff/*.add >>drivers/platform/x86/Kconfig
+cat >>drivers/platform/x86/Kconfig <<EOF
+config SENSORS_HDAPS
+	tristate "Thinkpad HDAPS sensor support"
+	depends on X86
+	select THINKPAD_EC
+	default n
+	help
+	  ThinkPad HDAPS sensor
+EOF
+cat >>drivers/platform/x86/Makefile <<EOF
+obj-\$(CONFIG_THINKPAD_EC) += thinkpad_ec.o
+obj-\$(CONFIG_TP_SMAPI) += tp_smapi.o
+obj-\$(CONFIG_SENSORS_HDAPS) += hdaps.o
+EOF
+rm -rf tp_smapi-*
+
 %autopatch -p1
 
 # Apparently, vm_clean was added in tools/Makefile before tools/vm was added
@@ -937,9 +957,6 @@ find drivers/media/tuners drivers/media/dvb-frontends -name "*.c" -o -name "*.h"
 %endif
 
 # Merge EVDI
-cd evdi-%{evdi_version}
-patch -p1 -b -z .evdi613~ <%{S:1011}
-cd ..
 mv evdi-%{evdi_version}/module drivers/gpu/drm/evdi
 rm -rf evdi-%{evdi_version}
 sed -i -e '/imagination/isource "drivers/gpu/drm/evdi/Kconfig"' drivers/gpu/drm/Kconfig
@@ -950,7 +967,6 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
-patch -p1 -b -z .evdi613a~ <%{S:1012}
 
 # Merge TMFF2
 mv hid-tmff2-* drivers/hid/tmff-new
