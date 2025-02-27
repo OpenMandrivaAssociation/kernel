@@ -129,7 +129,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}3
+Release:	%{?relc:0.rc%{relc}.}4
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -681,7 +681,7 @@ EOF
 %{modules} modules for kernel %{name}-${flavour} .
 
 %postun -n %{name}-${flavour}-modules-${modules}
-[ -x %{_bindir}/depmod ] && %{_bindir}/depmod -A %{version}-$kernel_flavour-%{release}%{disttag}
+[ -x %{_bindir}/depmod ] && %{_bindir}/depmod -A %{version}-$flavour-%{release}%{disttag}
 
 %files -n %{name}-${flavour}-modules-${modules}
 %optional %{_modulesdir}/%{version}-${flavour}-%{release}%{disttag}/kernel/fs/${modules}
