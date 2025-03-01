@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 13
-%define sublevel 4
+%define sublevel 5
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -129,7 +129,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}4
+Release:	%{?relc:0.rc%{relc}.}1
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -1371,9 +1371,6 @@ BuildKernel() {
 	ln -s %{_modulesdir}/$KernelVer/dtb %{temp_boot}/dtb-$KernelVer
 %endif
 
-# remove /lib/firmware, we use a separate kernel-firmware
-	rm -rf %{temp_root}/lib/firmware
-
 # (tpg) strip modules out of debug bits
 	find %{temp_modules}/$KernelVer -name "*.ko" -type f > all_modules
 %if %{with build_debug}
@@ -1837,10 +1834,14 @@ install -c -m 644 %{S:7003} %{temp_root}%{_udevrulesdir}/70-hypervvss.rules
 install -c -m 644 %{S:7005} %{temp_root}%{_udevrulesdir}/70-hypervfcopy.rules
 %endif
 
+mkdir -p %{temp_root}%{_bindir}
+cp tools/bpf/resolve_btfids/resolve_btfids %{temp_root}%{_bindir}/
+
 # We don't make to repeat the depend code at the install phase
 %if %{with build_source}
 PrepareKernel "" %{release}custom
 %make_build -s mrproper
+cp %{temp_root}%{_bindir}/resolve_btfids tools/bpf/resolve_btfids/
 %endif
 
 ###
@@ -1956,6 +1957,7 @@ cd -
 
 %if %{with build_source}
 %files -n %{name}-source
+%{_bindir}/resolve_btfids
 %dir %{_kerneldir}
 %dir %{_kerneldir}/arch
 %dir %{_kerneldir}/include
