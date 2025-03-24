@@ -61,8 +61,8 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 13
-%define sublevel 8
+%define patchlevel 14
+%define sublevel 0
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -129,7 +129,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}1
+Release:	%{?relc:0.rc%{relc}.}2
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -175,8 +175,10 @@ Source26:	hid.fragment
 Source27:	nvme.fragment
 Source28:	modules.fragment
 Source29:	gcc-plugins.fragment
+Source30:	pps.fragment
+Source31:	cgroups.fragment
 # Overrides (highest priority) for configs
-Source30:	znver1.overrides
+Source200:	znver1.overrides
 # config and systemd service file from fedora
 Source300:	cpupower.service
 Source301:	cpupower.config
@@ -272,6 +274,7 @@ Source1008:	vboxvideo-kernel-6.3.patch
 # Needed by DisplayLink cruft
 %define evdi_version 1.14.8
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
+Source1011:	evdi-6.14.patch
 
 # Assorted fixes
 
@@ -280,6 +283,7 @@ Patch211:	revert-721412ed3d819e767cac2b06646bf03aa158aaec.patch
 # Modular binder and ashmem -- let's try to make anbox happy
 Patch212:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/debian/android-enable-building-ashmem-and-binder-as-modules.patch
 Patch213:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/debian/export-symbols-needed-by-android-drivers.patch
+Patch216:	restore-exporting-symbols-needed-by-binder.patch
 
 Patch214:	ras-fix-build-without-debugfs.patch
 Patch215:	linux-5.19-prefer-amdgpu-over-radeon.patch
@@ -381,16 +385,10 @@ Patch976:	0027-DONT-UPSTREAM-net-r8169-Force-MAC-address.patch
 Patch979:	0030-math.h-add-DIV_ROUND_UP_NO_OVERFLOW.patch
 Patch980:	0031-clk-divider-Fix-divisor-masking-on-64-bit-platforms.patch
 Patch981:	0032-clk-composite-replace-open-coded-abs_diff.patch
-Patch982:	0033-clk-rockchip-support-clocks-registered-late.patch
-Patch983:	0034-clk-rockchip-rk3588-register-GATE_LINK-later.patch
-Patch984:	0035-clk-rockchip-expose-rockchip_clk_set_lookup.patch
-Patch985:	0036-clk-rockchip-implement-linked-gate-clock-support.patch
-Patch986:	0037-clk-rockchip-rk3588-drop-RK3588_LINKED_CLK.patch
 Patch987:	0038-arm64-dts-rockchip-rk3588-evb1-add-bluetooth-rfkill.patch
 Patch988:	0039-arm64-dts-rockchip-rk3588-evb1-improve-PCIe-ethernet.patch
 Patch989:	0040-arm64-dts-rockchip-Slow-down-EMMC-a-bit-to-keep-IO-s.patch
 Patch990:	0041-mfd-rk8xx-Fix-shutdown-handler.patch
-Patch992:	0043-arm64-defconfig-Enable-Rockchip-extensions-for-Synop.patch
 Patch993:	0044-regulator-Add-devm_-of_regulator_get.patch
 Patch994:	0045-pmdomain-rockchip-cleanup-mutex-handling-in-rockchip.patch
 Patch995:	0046-pmdomain-rockchip-forward-rockchip_do_pmu_set_power_.patch
@@ -398,12 +396,13 @@ Patch996:	0047-pmdomain-rockchip-reduce-indentation-in-rockchip_pd_.patch
 Patch997:	0048-dt-bindings-power-rockchip-add-regulator-support.patch
 Patch998:	0049-pmdomain-rockchip-add-regulator-support.patch
 Patch999:	0050-arm64-dts-rockchip-Add-GPU-power-domain-regulator-de.patch
-Patch1004:	0055-arm64-dts-rockchip-rk3588-evb1-add-WLAN-controller.patch
 Patch1005:	0056-arm64-dts-rockchip-Add-wifi-regulator-for-Cool-Pi-4b.patch
 Patch1006:	0057-drm-panthor-Add-defer-probe-for-firmware-load.patch
 Patch1007:	0058-drm-rockchip-Add-DW-DisplayPort-driver.patch
-Patch1011:	0062-drm-rockchip-vop2-Add-debugfs-support.patch
 Patch1012:	0063-drm-rockchip-Set-dma-mask-to-64-bit.patch
+Patch1021:	0072-drm-rockchip-vop2-Register-the-primary-plane-and-ove.patch
+Patch1022:	0073-drm-rockchip-vop2-Set-plane-possible-crtcs-by-possib.patch
+Patch1023:	0074-drm-rockchip-vop2-Add-uv-swap-for-cluster-window.patch
 Patch1024:	0075-dt-bindings-display-vop2-Add-rk3576-support.patch
 # Buildfix for the patchset above to handle kernel 6.12 rather than 6.12-rc5
 Patch1027:	rk3588-hdmi-kernel-6.12-final.patch
@@ -967,6 +966,7 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
+patch -p1 -b -z .evdi614~ <%{S:1011}
 
 # Merge TMFF2
 mv hid-tmff2-* drivers/hid/tmff-new
@@ -1371,6 +1371,9 @@ BuildKernel() {
 	ln -s %{_modulesdir}/$KernelVer/dtb %{temp_boot}/dtb-$KernelVer
 %endif
 
+# remove /lib/firmware, we use a separate kernel-firmware
+	rm -rf %{temp_root}/lib/firmware
+
 # (tpg) strip modules out of debug bits
 	find %{temp_modules}/$KernelVer -name "*.ko" -type f > all_modules
 %if %{with build_debug}
@@ -1490,6 +1493,7 @@ $DevelRoot/include/cxl
 $DevelRoot/include/drm
 $DevelRoot/include/dt-bindings
 $DevelRoot/include/generated
+%optional $DevelRoot/include/hyperv
 $DevelRoot/include/keys
 $DevelRoot/include/kunit
 $DevelRoot/include/kvm
@@ -1987,6 +1991,7 @@ cd -
 %{_kerneldir}/include/cxl
 %{_kerneldir}/include/drm
 %{_kerneldir}/include/dt-bindings
+%optional %{_kerneldir}/include/hyperv
 %{_kerneldir}/include/keys
 %{_kerneldir}/include/kunit
 %{_kerneldir}/include/kvm

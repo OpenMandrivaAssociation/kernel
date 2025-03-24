@@ -1,37 +1,37 @@
-diff -up linux-6.13/tools/build/feature/test-libcrypto.c.36~ linux-6.13/tools/build/feature/test-libcrypto.c
---- linux-6.13/tools/build/feature/test-libcrypto.c.36~	2025-01-20 00:51:45.000000000 +0100
-+++ linux-6.13/tools/build/feature/test-libcrypto.c	2025-02-08 20:56:17.013469623 +0100
+diff -up linux-6.14-rc2/tools/build/feature/test-libcrypto.c.35~ linux-6.14-rc2/tools/build/feature/test-libcrypto.c
+--- linux-6.14-rc2/tools/build/feature/test-libcrypto.c.35~	2025-02-09 21:45:03.000000000 +0100
++++ linux-6.14-rc2/tools/build/feature/test-libcrypto.c	2025-02-15 02:48:04.730554976 +0100
 @@ -1,4 +1,5 @@
  // SPDX-License-Identifier: GPL-2.0
 +#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
  #include <openssl/evp.h>
  #include <openssl/sha.h>
  #include <openssl/md5.h>
-diff -up linux-6.13/tools/build/feature/test-libperl.c.36~ linux-6.13/tools/build/feature/test-libperl.c
---- linux-6.13/tools/build/feature/test-libperl.c.36~	2025-01-20 00:51:45.000000000 +0100
-+++ linux-6.13/tools/build/feature/test-libperl.c	2025-02-08 20:56:17.013526069 +0100
+diff -up linux-6.14-rc2/tools/build/feature/test-libperl.c.35~ linux-6.14-rc2/tools/build/feature/test-libperl.c
+--- linux-6.14-rc2/tools/build/feature/test-libperl.c.35~	2025-02-09 21:45:03.000000000 +0100
++++ linux-6.14-rc2/tools/build/feature/test-libperl.c	2025-02-15 02:48:04.730592736 +0100
 @@ -1,4 +1,5 @@
  // SPDX-License-Identifier: GPL-2.0
 +#pragma GCC diagnostic ignored "-Wcompound-token-split-by-macro"
  #include <EXTERN.h>
  #include <perl.h>
  
-diff -up linux-6.13/tools/perf/Makefile.config.36~ linux-6.13/tools/perf/Makefile.config
---- linux-6.13/tools/perf/Makefile.config.36~	2025-02-08 20:56:16.816622201 +0100
-+++ linux-6.13/tools/perf/Makefile.config	2025-02-08 21:22:16.861126075 +0100
-@@ -133,6 +133,11 @@ ifdef LIBUNWIND_DIR
+diff -up linux-6.14-rc2/tools/perf/Makefile.config.35~ linux-6.14-rc2/tools/perf/Makefile.config
+--- linux-6.14-rc2/tools/perf/Makefile.config.35~	2025-02-09 21:45:03.000000000 +0100
++++ linux-6.14-rc2/tools/perf/Makefile.config	2025-02-15 02:51:40.247270425 +0100
+@@ -114,6 +114,11 @@ ifdef LIBUNWIND_DIR
    LIBUNWIND_LDFLAGS = -L$(LIBUNWIND_DIR)/lib
    LIBUNWIND_ARCHS = x86 x86_64 arm aarch64 debug-frame-arm debug-frame-aarch64 loongarch
    $(foreach libunwind_arch,$(LIBUNWIND_ARCHS),$(call libunwind_arch_set_flags,$(libunwind_arch)))
 +else
 +  LIBUNWIND_CFLAGS  = -I/usr/include/libunwind
 +  LIBUNWIND_LDFLAGS = -L/usr/lib64/libunwind
-+  LIBUNWIND_ARCHS = x86 x86_64 arm aarch64 debug-frame-arm debug-frame-aarch64
++  LIBUNWIND_ARCHS = x86 x86_64 arm aarch64 debug-frame-arm debug-frame-aarch64 loongarch
 +  $(foreach libunwind_arch,$(LIBUNWIND_ARCHS),$(call libunwind_arch_set_flags,$(libunwind_arch)))
  endif
  
  ifndef NO_LIBUNWIND
-@@ -1142,11 +1147,15 @@ ifdef EXTRA_TESTS
+@@ -1115,11 +1120,15 @@ ifdef EXTRA_TESTS
  endif
  
  ifndef NO_JVMTI
@@ -51,10 +51,10 @@ diff -up linux-6.13/tools/perf/Makefile.config.36~ linux-6.13/tools/perf/Makefil
      endif
    endif
    ifndef JDIR
-diff -up linux-6.13/tools/perf/Makefile.perf.36~ linux-6.13/tools/perf/Makefile.perf
---- linux-6.13/tools/perf/Makefile.perf.36~	2025-01-20 00:51:45.000000000 +0100
-+++ linux-6.13/tools/perf/Makefile.perf	2025-02-08 20:56:17.013809314 +0100
-@@ -520,6 +520,11 @@ asm_generic_uapi_dir := $(srctree)/tools
+diff -up linux-6.14-rc2/tools/perf/Makefile.perf.35~ linux-6.14-rc2/tools/perf/Makefile.perf
+--- linux-6.14-rc2/tools/perf/Makefile.perf.35~	2025-02-09 21:45:03.000000000 +0100
++++ linux-6.14-rc2/tools/perf/Makefile.perf	2025-02-15 02:48:04.730786222 +0100
+@@ -553,6 +553,11 @@ asm_generic_uapi_dir := $(srctree)/tools
  arch_asm_uapi_dir := $(srctree)/tools/arch/$(SRCARCH)/include/uapi/asm/
  x86_arch_asm_dir := $(srctree)/tools/arch/x86/include/asm/
  
