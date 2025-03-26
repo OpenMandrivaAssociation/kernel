@@ -10,13 +10,3 @@ diff -up linux-6.14/drivers/gpu/drm/vboxvideo/vbox_drv.c.omv~ linux-6.14/drivers
  
  static int vbox_modeset = -1;
  
-@@ -373,7 +373,9 @@ static struct drm_driver driver = {
- #endif
- 	.name = DRIVER_NAME,
- 	.desc = DRIVER_DESC,
-+#if RTLNX_VER_MAX(6,13,0)
- 	.date = DRIVER_DATE,
-+#endif
- 	.major = DRIVER_MAJOR,
- 	.minor = DRIVER_MINOR,
- 	.patchlevel = DRIVER_PATCHLEVEL,
