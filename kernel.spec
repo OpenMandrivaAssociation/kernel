@@ -94,7 +94,7 @@
 %bcond_with lazy_developer
 %bcond_with build_debug
 %bcond_without clr
-%bcond_with vbox_orig_mods
+%bcond_without vbox_orig_mods
 # FIXME re-enable by default when the patches have been adapted to 5.8
 %bcond_with saa716x
 %bcond_with rtl8821ce
@@ -129,7 +129,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}2
+Release:	%{?relc:0.rc%{relc}.}3
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -268,7 +268,7 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 # because they need to be applied after stuff from the
 # virtualbox-kernel-module-sources package is copied around
 Source1007:	vboxnet-clang.patch
-Source1008:	vboxvideo-kernel-6.3.patch
+Source1008:	vbox-modules-7.1.6-compile.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
@@ -494,9 +494,9 @@ BuildRequires:	uboot-mkimage
 # so end users don't have to install compilers (and worse,
 # get compiler error messages on failures)
 %ifarch %{x86_64}
-BuildRequires:	virtualbox-kernel-module-sources >= 7.0.8b
+BuildRequires:	virtualbox-kernel-module-sources >= 7.1.6
 %if %{with vbox_orig_mods}
-BuildRequires:	virtualbox-guest-kernel-module-sources >= 7.0.8b
+BuildRequires:	virtualbox-guest-kernel-module-sources >= 7.1.6
 %endif
 %endif
 
