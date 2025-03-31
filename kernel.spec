@@ -61,8 +61,8 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 14
-%define sublevel 0
+%define patchlevel 13
+%define sublevel 9
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -272,9 +272,8 @@ Source1008:	vbox-modules-7.1.6-compile.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
-%define evdi_version 1.14.8
+%define evdi_version 1.14.9
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
-Source1011:	evdi-6.14.patch
 
 # Assorted fixes
 
@@ -966,7 +965,6 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
-patch -p1 -b -z .evdi614~ <%{S:1011}
 
 # Merge TMFF2
 mv hid-tmff2-* drivers/hid/tmff-new
