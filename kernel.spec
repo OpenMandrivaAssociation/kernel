@@ -129,7 +129,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}3
+Release:	%{?relc:0.rc%{relc}.}4
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
@@ -414,6 +414,7 @@ BuildRequires:	flex
 BuildRequires:	bison
 BuildRequires:	binutils
 BuildRequires:	hostname
+BuildRequires:	gnutar
 BuildRequires:	clang
 BuildRequires:	llvm
 BuildRequires:	lld
@@ -918,6 +919,9 @@ done
 xzcat %{SOURCE1000} |git apply - || git apply %{SOURCE1000}
 rm -rf .git
 %endif
+
+# uses --sort=name and other gnutar specific options
+sed -i -e 's,^tar ,gtar ,' kernel/gen_kheaders.sh
 
 mv tp_smapi-*/*.{c,h} drivers/platform/x86
 sed -i -e 's,  ---help---,help,g' tp_smapi-*/diff/*.add
