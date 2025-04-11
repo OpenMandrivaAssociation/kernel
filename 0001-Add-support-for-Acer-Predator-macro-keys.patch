@@ -1,6 +1,6 @@
-diff -up linux-6.13/drivers/platform/x86/acer-wmi.c.3~ linux-6.13/drivers/platform/x86/acer-wmi.c
---- linux-6.13/drivers/platform/x86/acer-wmi.c.3~	2025-03-31 14:36:28.165599746 +0200
-+++ linux-6.13/drivers/platform/x86/acer-wmi.c	2025-03-31 14:37:03.782328231 +0200
+diff -up linux-6.15-rc1/drivers/platform/x86/acer-wmi.c.2~ linux-6.15-rc1/drivers/platform/x86/acer-wmi.c
+--- linux-6.15-rc1/drivers/platform/x86/acer-wmi.c.2~	2025-04-06 22:11:33.000000000 +0200
++++ linux-6.15-rc1/drivers/platform/x86/acer-wmi.c	2025-04-07 23:19:30.356309298 +0200
 @@ -7,6 +7,9 @@
   *  Based on acer_acpi:
   *    Copyright (C) 2005-2007	E.M. Smith
@@ -11,7 +11,7 @@ diff -up linux-6.13/drivers/platform/x86/acer-wmi.c.3~ linux-6.13/drivers/platfo
   */
  
  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-@@ -94,7 +97,7 @@ MODULE_ALIAS("wmi:676AA15E-6A47-4D9F-A2C
+@@ -103,7 +106,7 @@ MODULE_ALIAS("wmi:676AA15E-6A47-4D9F-A2C
  enum acer_wmi_event_ids {
  	WMID_HOTKEY_EVENT = 0x1,
  	WMID_ACCEL_OR_KBD_DOCK_EVENT = 0x5,
@@ -20,7 +20,7 @@ diff -up linux-6.13/drivers/platform/x86/acer-wmi.c.3~ linux-6.13/drivers/platfo
  	WMID_AC_EVENT = 0x8,
  };
  
-@@ -146,6 +149,26 @@ static const struct key_entry acer_wmi_k
+@@ -175,6 +178,26 @@ static const struct key_entry acer_wmi_k
  	{KE_KEY, 0x85, {KEY_TOUCHPAD_TOGGLE} },
  	{KE_KEY, 0x86, {KEY_WLAN} },
  	{KE_KEY, 0x87, {KEY_POWER} },
@@ -47,15 +47,15 @@ diff -up linux-6.13/drivers/platform/x86/acer-wmi.c.3~ linux-6.13/drivers/platfo
  	{KE_END, 0}
  };
  
-@@ -270,6 +293,7 @@ static bool ec_raw_mode;
+@@ -299,6 +322,7 @@ static bool ec_raw_mode;
  static bool has_type_aa;
  static u16 commun_func_bitmap;
  static u8 commun_fn_key_number;
 +static u8 macro_key_state = 0;
  static bool cycle_gaming_thermal_profile = true;
  static bool predator_v4;
- 
-@@ -2316,12 +2340,30 @@ static void acer_wmi_notify(union acpi_o
+ static u64 supported_sensors;
+@@ -2420,12 +2444,30 @@ static void acer_wmi_notify(union acpi_o
  		acer_gsensor_event();
  		acer_kbd_dock_event(&return_value);
  		break;

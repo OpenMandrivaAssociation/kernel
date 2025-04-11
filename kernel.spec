@@ -61,8 +61,8 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 13
-%define sublevel 10
+%define patchlevel 14
+%define sublevel 1
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -177,6 +177,7 @@ Source28:	modules.fragment
 Source29:	gcc-plugins.fragment
 Source30:	pps.fragment
 Source31:	cgroups.fragment
+
 # Overrides (highest priority) for configs
 Source200:	znver1.overrides
 # config and systemd service file from fedora
@@ -328,6 +329,9 @@ Patch303:	rk3399-add-sclk-i2sout-src-clock.patch
 #Patch304:	rtl8723cs-compile.patch
 Patch305:	kernel-6.0-rc2-perf-x86-compile.patch
 #Patch306:	linux-6.1-binutils-2.40.patch
+
+# https://lore.kernel.org/lkml/Y9ES4UKl%2F+DtvAVS@gmail.com/T/
+Patch310:	insn_decoder_test-fix-buffer-overrun.patch
 
 # V4L2 loopback
 # https://github.com/umlaeute/v4l2loopback
