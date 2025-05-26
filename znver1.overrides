@@ -1,7 +1,6 @@
 # Remove support for all non-znver1 CPUs
 # CONFIG_GENERIC_CPU is not set
 CONFIG_MZEN=y
-CONFIG_X86_64_VERSION=3
 # CONFIG_HAVE_INTEL_TXT is not set
 # CONFIG_X86_INTEL_LPSS is not set
 # CONFIG_CPU_SUP_INTEL is not set
