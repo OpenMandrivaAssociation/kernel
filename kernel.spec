@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 15
-%define sublevel 0
+%define sublevel 1
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -273,7 +273,6 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 # virtualbox-kernel-module-sources package is copied around
 Source1007:	vboxnet-clang.patch
 Source1008:	vbox-modules-7.1.6-compile.patch
-Source1009:	vbox-modules-6.15.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
@@ -515,9 +514,9 @@ BuildRequires:	uboot-mkimage
 # so end users don't have to install compilers (and worse,
 # get compiler error messages on failures)
 %ifarch %{x86_64}
-BuildRequires:	virtualbox-kernel-module-sources >= 7.1.6
+BuildRequires:	virtualbox-kernel-module-sources >= 7.1.10
 %if %{with vbox_orig_mods}
-BuildRequires:	virtualbox-guest-kernel-module-sources >= 7.1.6
+BuildRequires:	virtualbox-guest-kernel-module-sources >= 7.1.10
 %endif
 %endif
 
@@ -1091,7 +1090,6 @@ sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/pci/vboxpci/Makefile*
 echo 'obj-m += vboxpci/' >>drivers/pci/Makefile
 %endif
 patch -p1 -z .1007~ -b <%{S:1007}
-patch -p1 -z .1009~ -b <%{S:1009}
 %endif
 
 # V4L2 loopback support
