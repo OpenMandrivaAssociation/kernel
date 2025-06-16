@@ -6,3 +6,4 @@ sources:
   v1.14.9.tar.gz: c71c48129c9edc3421070a755d02ad7cef618fdd
   linux-6.15.tar.xz: 75c2ba0a8f542ca379bce5cc446b22701e12b247
   patch-6.15.1.xz: 20fc7bc50a94e9ece8c92a20c3133d2a256e7619
+  patch-6.15.2.xz: 90a55c82205fe16c4a7f23b32a4800b317cb8edb
