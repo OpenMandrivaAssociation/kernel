@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 15
-%define sublevel 2
+%define sublevel 4
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -93,8 +93,7 @@
 
 %bcond_with lazy_developer
 %bcond_with build_debug
-# FIXME re-enable once ported to 6.15
-%bcond_with evdi
+%bcond_without evdi
 %bcond_with vbox_orig_mods
 %bcond_without clr
 # FIXME re-enable by default when the patches have been adapted to 5.8
@@ -276,7 +275,7 @@ Source1008:	vbox-modules-7.1.6-compile.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
-%define evdi_version 1.14.9
+%define evdi_version 1.14.10
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
 
 # Assorted fixes

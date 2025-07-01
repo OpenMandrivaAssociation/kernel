@@ -1,19 +1,19 @@
-diff -up linux-6.8-rc3/kernel/watchdog.c.55~ linux-6.8-rc3/kernel/watchdog.c
---- linux-6.8-rc3/kernel/watchdog.c.55~	2024-02-04 13:20:36.000000000 +0100
-+++ linux-6.8-rc3/kernel/watchdog.c	2024-02-09 15:09:25.100848779 +0100
-@@ -39,7 +39,7 @@ unsigned long __read_mostly watchdog_ena
+diff -up linux-6.15/kernel/watchdog.c.55~ linux-6.15/kernel/watchdog.c
+--- linux-6.15/kernel/watchdog.c.55~	2025-07-01 12:36:01.306838662 +0200
++++ linux-6.15/kernel/watchdog.c	2025-07-01 12:36:39.059532707 +0200
+@@ -46,7 +46,7 @@ unsigned long __read_mostly watchdog_ena
  int __read_mostly watchdog_user_enabled = 1;
  static int __read_mostly watchdog_hardlockup_user_enabled = WATCHDOG_HARDLOCKUP_DEFAULT;
  static int __read_mostly watchdog_softlockup_user_enabled = 1;
 -int __read_mostly watchdog_thresh = 10;
 +int __read_mostly watchdog_thresh = 40;
+ static int __read_mostly watchdog_thresh_next;
  static int __read_mostly watchdog_hardlockup_available;
  
- struct cpumask watchdog_cpumask __read_mostly;
-diff -up linux-6.8-rc3/mm/ksm.c.55~ linux-6.8-rc3/mm/ksm.c
---- linux-6.8-rc3/mm/ksm.c.55~	2024-02-09 15:09:25.100848779 +0100
-+++ linux-6.8-rc3/mm/ksm.c	2024-02-09 15:16:55.289135994 +0100
-@@ -2782,9 +2782,14 @@ static int ksm_scan_thread(void *nothing
+diff -up linux-6.15/mm/ksm.c.55~ linux-6.15/mm/ksm.c
+--- linux-6.15/mm/ksm.c.55~	2025-05-26 01:09:23.000000000 +0200
++++ linux-6.15/mm/ksm.c	2025-07-01 12:36:01.621730709 +0200
+@@ -2685,9 +2685,14 @@ static int ksm_scan_thread(void *nothing
  
  		if (ksmd_should_run()) {
  			sleep_ms = READ_ONCE(ksm_thread_sleep_millisecs);
