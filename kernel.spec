@@ -578,7 +578,7 @@ Suggests:	microcode-intel
 %summary .
 
 %posttrans -n %{name}-${flavour} -f kernel_files.${flavour}-posttrans
-% -n %{name}-${flavour} -f kernel_files.${flavour}-
+%postun -n %{name}-${flavour} -f kernel_files.${flavour}-postun
 
 %files -n %{name}-${flavour} -f kernel_files.${flavour}
 EOF
