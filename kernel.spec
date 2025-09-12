@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 16
-%define sublevel 5
+%define sublevel 7
 #define relc 0
 
 # Having different top level names for packges means that you have to remove
