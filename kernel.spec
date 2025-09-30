@@ -61,9 +61,9 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 16
-%define sublevel 7
-#define relc 0
+%define patchlevel 17
+%define sublevel 0
+#define relc 7
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -91,6 +91,7 @@
 %bcond_without build_devel
 %bcond_without cross_headers
 
+%bcond_with lazy_developer
 %bcond_with build_debug
 # FIXME re-enable once ported to 6.15
 %bcond_without evdi
@@ -278,6 +279,7 @@ Source1009:	vbox-modules-6.15.patch
 # Needed by DisplayLink cruft
 %define evdi_version 1.14.10
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
+Source1011:	https://patch-diff.githubusercontent.com/raw/DisplayLink/evdi/pull/526.patch
 
 # Assorted fixes
 
@@ -420,6 +422,7 @@ Patch1006:	https://github.com/torvalds/linux/commit/06fb8acf220d3bd8d1bffe098c41
 # 406e4c9... has landed
 Patch1019:	https://github.com/torvalds/linux/commit/dfb6b6ac7b8403a37c94e5afb0b990643409cbed.patch
 Patch1020:	rk3588-port-to-6.15.patch
+Patch1021:	rk3588-port-to-6.17.patch
 
 BuildRequires:	zstd
 BuildRequires:	findutils
@@ -925,6 +928,9 @@ done
 %setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 2 -a 5 -a 1003 -a 1004
 %if %{with evdi}
 tar xf %{S:1010}
+cd evdi-*
+patch -p1 -b -z .1011~ <%{S:1011}
+cd ..
 %endif
 %if 0%{?sublevel:%{sublevel}}
 [ -e .git ] || git init
@@ -933,7 +939,8 @@ rm -rf .git
 %endif
 
 # uses --sort=name and other gnutar specific options
-sed -i -e 's,^tar ,gtar ,' kernel/gen_kheaders.sh
+sed -i -e '/\${TAR}/iTAR=gtar' kernel/gen_kheaders.sh
+sed -i -e 's, tar , gtar ,g' scripts/Makefile.package
 
 mv tp_smapi-*/*.{c,h} drivers/platform/x86
 sed -i -e 's,  ---help---,help,g' tp_smapi-*/diff/*.add
@@ -1284,8 +1291,16 @@ CreateConfig() {
 # (tpg) apply our dynamic configs
 	scripts/config $FIXED_CONFIGS
 
+%if %{without lazy_developer}
+## YES, intentionally, DIE on wrong config
 	printf '%s\n' "=== Configuring ${arch} ${type} kernel ==="
-	make ARCH="${arch}" CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 olddefconfig
+	make ARCH="${arch}" CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 oldconfig
+%else
+	printf '%s\n' "Lazy developer option is enabled!!. Don't be lazy!."
+## that takes kernel defaults on missing or changed things
+## olddefconfig is similar to yes ... but not that verbose
+	yes "" | make ARCH="${arch}" CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
+%endif
 
 	scripts/config --set-val BUILD_SALT \"$(echo "$arch-$type-%{EVRD}"|sha1sum|awk '{ print $1; }')\"
 
@@ -1685,7 +1700,6 @@ EOF
 
 ### Create kernel Postun script on the fly
 cat > $kernel_files-postun <<EOF
-
 if [ "$1" = "0" ]; then
 [ -e %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag} ] && rm -rf %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/modules.{alias{,.bin},builtin.bin,dep{,.bin},devname,softdep,symbols{,.bin}} ||:
 [ -e /boot/vmlinuz-%{version}-$kernel_flavour-%{release}%{disttag} ] && rm -rf /boot/vmlinuz-%{version}-$kernel_flavour-%{release}%{disttag}
