@@ -143,3 +143,14 @@ diff -up linux-6.16-rc1/security/security.c.27~ linux-6.16-rc1/security/security
  
  /**
   * security_ptrace_access_check() - Check if tracing is allowed
+diff -up linux-6.17/mm/mmap_lock.c.omv~ linux-6.17/mm/mmap_lock.c
+--- linux-6.17/mm/mmap_lock.c.omv~	2025-10-01 14:40:19.854440427 +0100
++++ linux-6.17/mm/mmap_lock.c	2025-10-01 14:41:04.264732935 +0100
+@@ -177,6 +177,7 @@ inval:
+ 	count_vm_vma_lock_event(VMA_LOCK_ABORT);
+ 	return NULL;
+ }
++EXPORT_SYMBOL_GPL(lock_vma_under_rcu);
+ 
+ static struct vm_area_struct *lock_next_vma_under_mmap_lock(struct mm_struct *mm,
+ 							    struct vma_iterator *vmi,
