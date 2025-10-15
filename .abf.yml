@@ -5,3 +5,4 @@ sources:
   tp_smapi-0.44.tgz: 16c2229068628ff58d363f61de0d094b2177ea5c
   v1.14.10.tar.gz: dacd2fcd590fa7774d463fbbb003a8ee266b05be
   linux-6.17.tar.xz: 9bec958f2865fbd01166c7db73ee4aaf2dc23e4d
+  patch-6.17.2.xz: 2a819cf9ff13aa429af2a3af9cb92778f53c2f26
