@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 17
-%define sublevel 4
+%define sublevel 6
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -282,6 +282,7 @@ Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_versio
 Source1011:	https://patch-diff.githubusercontent.com/raw/DisplayLink/evdi/pull/526.patch
 
 # Assorted fixes
+Patch210:	linux-6.17-clang.patch
 
 # Bring back ashmem -- anbox and waydroid still need it
 Patch211:	revert-721412ed3d819e767cac2b06646bf03aa158aaec.patch
