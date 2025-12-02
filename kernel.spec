@@ -61,8 +61,8 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 17
-%define sublevel 9
+%define patchlevel 18
+%define sublevel 0
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -149,7 +149,7 @@ Source0:	https://git.kernel.org/torvalds/t/linux-%{kernelversion}.%{patchlevel}-
 Source0:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.xz
 Source1:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.sign
 %endif
-Source2:	https://github.com/Kimplul/hid-tmff2/archive/refs/heads/master.tar.gz#/hid-tmff2-20241007.tar.gz
+Source2:	https://github.com/Kimplul/hid-tmff2/archive/refs/heads/master.tar.gz#/hid-tmff2-20251202.tar.gz
 ### This is for stripped SRC RPM
 %if %{with build_nosrc}
 NoSource:	0
@@ -226,7 +226,6 @@ Patch37:	socket.h-include-bitsperlong.h.patch
 # Make Nouveau work on SynQuacer (and probably all other non-x86 boards)
 # FIXME this may need porting, not sure where WC is set in 5.10
 #Patch38:	kernel-5.8-nouveau-write-combining-only-on-x86.patch
-Source39:	tmff2-kernel-6.12.patch
 Patch40:	kernel-5.8-aarch64-gcc-10.2-workaround.patch
 Patch41:	tp_smapi-clang.patch
 # (tpg) https://github.com/ClangBuiltLinux/linux/issues/1341
@@ -240,6 +239,7 @@ Patch47:	https://gitweb.frugalware.org/wip_kernel/raw/23f5e50042768b823e18613151
 Patch51:	linux-5.5-corsair-strafe-quirks.patch
 Patch52:	http://crazy.dev.frugalware.org/smpboot-no-stack-protector-for-gcc10.patch
 Patch55:	linux-5.16-clang-no-attribute-symver.patch
+Patch60:	linux-6.18-clang.patch
 
 ### Additional hardware support
 ### TV tuners:
@@ -277,12 +277,11 @@ Source1009:	vbox-modules-6.15.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
-%define evdi_version 1.14.10
+%define evdi_version 1.14.11
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
-Source1011:	https://patch-diff.githubusercontent.com/raw/DisplayLink/evdi/pull/526.patch
+Source1011:	evdi-6.18.patch
 
 # Assorted fixes
-Patch210:	linux-6.17-clang.patch
 
 # Bring back ashmem -- anbox and waydroid still need it
 Patch211:	revert-721412ed3d819e767cac2b06646bf03aa158aaec.patch
@@ -352,7 +351,6 @@ Patch900:	0101-i8042-decrease-debug-message-level-to-info.patch
 Patch901:	0102-increase-the-ext4-default-commit-age.patch
 Patch903:	0104-pci-pme-wakeups.patch
 Patch904:	0105-ksm-wakeups.patch
-Patch905:	https://raw.githubusercontent.com/clearlinux-pkgs/linux/refs/heads/main/0106-intel_idle-tweak-cpuidle-cstates.patch
 Patch907:	0108-smpboot-reuse-timer-calibration.patch
 Patch908:	0109-initialize-ata-before-graphics.patch
 Patch910:	0111-ipv4-tcp-allow-the-memory-tuning-for-tcp-to-go-a-lit.patch
@@ -401,7 +399,7 @@ Patch983:	https://github.com/torvalds/linux/commit/f0118748bc1f791775c90c52791a1
 # bf10475... has landed
 #Patch994:	https://github.com/torvalds/linux/commit/c1cffe7e472cf58c948a52de76007117e7d550ae.patch
 # 0ab95ab... has landed
-Patch996:	https://github.com/torvalds/linux/commit/bc27ea85742ece4a9299fe27004af9df777d351d.patch
+# bc27ea8... has landed
 # 565e00d... has landed
 Patch998:	https://github.com/torvalds/linux/commit/899558f6782528d5324322ae6e4c270e150c3d6f.patch
 # b5fb817... has landed
@@ -422,8 +420,6 @@ Patch1006:	https://github.com/torvalds/linux/commit/06fb8acf220d3bd8d1bffe098c41
 #Patch1016:	https://github.com/torvalds/linux/commit/05a7eca409973abbc3d97a726b88b07d256859ae.patch
 # 406e4c9... has landed
 Patch1019:	https://github.com/torvalds/linux/commit/dfb6b6ac7b8403a37c94e5afb0b990643409cbed.patch
-Patch1020:	rk3588-port-to-6.15.patch
-Patch1021:	rk3588-port-to-6.17.patch
 
 BuildRequires:	zstd
 BuildRequires:	findutils
@@ -929,9 +925,6 @@ done
 %setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 2 -a 5 -a 1003 -a 1004
 %if %{with evdi}
 tar xf %{S:1010}
-cd evdi-*
-patch -p1 -b -z .1011~ <%{S:1011}
-cd ..
 %endif
 %if 0%{?sublevel:%{sublevel}}
 [ -e .git ] || git init
@@ -990,6 +983,7 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
+patch -p1 -b -z .1011~ <%{S:1011}
 %endif
 
 # Merge TMFF2
@@ -1011,7 +1005,6 @@ EOF
 cat >>drivers/hid/Makefile <<'EOF'
 obj-$(CONFIG_HID_TMFF_NEW) += tmff-new/
 EOF
-patch -p1 -b -z .tmff2build~ <%{S:39}
 
 %if %{with rtl8821ce}
 # Merge RTL8723DE and RTL8821CE drivers
