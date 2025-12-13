@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 18
-%define sublevel 0
+%define sublevel 1
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -91,7 +91,6 @@
 %bcond_without build_devel
 %bcond_without cross_headers
 
-%bcond_with lazy_developer
 %bcond_with build_debug
 # FIXME re-enable once ported to 6.15
 %bcond_without evdi
@@ -149,7 +148,7 @@ Source0:	https://git.kernel.org/torvalds/t/linux-%{kernelversion}.%{patchlevel}-
 Source0:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.xz
 Source1:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.sign
 %endif
-Source2:	https://github.com/Kimplul/hid-tmff2/archive/refs/heads/master.tar.gz#/hid-tmff2-20251202.tar.gz
+Source2:	https://github.com/Kimplul/hid-tmff2/archive/refs/heads/master.tar.gz#/hid-tmff2-20251211.tar.gz
 ### This is for stripped SRC RPM
 %if %{with build_nosrc}
 NoSource:	0
@@ -180,6 +179,8 @@ Source29:	gcc-plugins.fragment
 Source30:	pps.fragment
 Source31:	cgroups.fragment
 Source32:	firmware.fragment
+Source33:	security.fragment
+Source34:	trace.fragment
 # Overrides (highest priority) for configs
 Source200:	znver1.overrides
 # config and systemd service file from fedora
@@ -282,6 +283,9 @@ Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_versio
 Source1011:	evdi-6.18.patch
 
 # Assorted fixes
+
+# https://github.com/Kicksecure/tirdad
+Patch100:	security_tirdad.patch
 
 # Bring back ashmem -- anbox and waydroid still need it
 Patch211:	revert-721412ed3d819e767cac2b06646bf03aa158aaec.patch
@@ -421,6 +425,7 @@ Patch1006:	https://github.com/torvalds/linux/commit/06fb8acf220d3bd8d1bffe098c41
 # 406e4c9... has landed
 Patch1019:	https://github.com/torvalds/linux/commit/dfb6b6ac7b8403a37c94e5afb0b990643409cbed.patch
 
+BuildRequires:	make
 BuildRequires:	zstd
 BuildRequires:	findutils
 BuildRequires:	bc
@@ -993,10 +998,11 @@ config HID_TMFF_NEW
 	tristate "Thrustmaster T300RS, T248, TX, TS-XV wheel support"
 	help
 	  A Linux kernel module for Thrustmaster T300RS, T248, and
-	  (experimental support) TX and TS-XV wheels.
+	  (experimental support) TX, TS-PC and TS-XV wheels.
+
 EOF
 cat >drivers/hid/tmff-new/Makefile <<'EOF'
-hid-tmff-new-y := src/hid-tmff2.o src/tmt300rs/hid-tmt300rs.o src/tmt248/hid-tmt248.o src/tmtx/hid-tmtx.o src/tmtsxw/hid-tmtsxw.o
+hid-tmff-new-y := src/hid-tmff2.o src/tmt248/hid-tmt248.o src/tmt300rs/hid-tmt300rs.o src/tmtspc/hid-tmtspc.o src/tmtsxw/hid-tmtsxw.o src/tmtx/hid-tmtx.o
 obj-$(CONFIG_HID_TMFF_NEW) += hid-tmff-new.o
 EOF
 cat >>drivers/hid/Kconfig <<'EOF'
@@ -1285,16 +1291,8 @@ CreateConfig() {
 # (tpg) apply our dynamic configs
 	scripts/config $FIXED_CONFIGS
 
-%if %{without lazy_developer}
-## YES, intentionally, DIE on wrong config
 	printf '%s\n' "=== Configuring ${arch} ${type} kernel ==="
-	make ARCH="${arch}" CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 oldconfig
-%else
-	printf '%s\n' "Lazy developer option is enabled!!. Don't be lazy!."
-## that takes kernel defaults on missing or changed things
-## olddefconfig is similar to yes ... but not that verbose
-	yes "" | make ARCH="${arch}" CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
-%endif
+	make ARCH="${arch}" CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 olddefconfig
 
 	scripts/config --set-val BUILD_SALT \"$(echo "$arch-$type-%{EVRD}"|sha1sum|awk '{ print $1; }')\"
 
@@ -1341,7 +1339,7 @@ BuildKernel() {
 		CXX=clang++
 		HCC=clang
 		HCXX=clang++
-		BUILD_OPT_CFLAGS="-O3 %{pollyflags}"
+		BUILD_OPT_CFLAGS="-O3 -Wno-unknown-warning-option %{pollyflags}"
 		# Workaround for LLD 16 BTF generation problem
 		#BUILD_LD=ld.bfd
 		#BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
@@ -1367,8 +1365,8 @@ BuildKernel() {
 	IMAGE=bzImage
 %endif
 %endif
-# FIXME add KBUILD_CFLAGS="$BUILD_OPT_CFLAGS" once that actually works
-	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE modules $DTBS
+
+	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KCFLAGS="$BUILD_OPT_CFLAGS" KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE modules $DTBS
 
 # Start installing stuff
 	install -d %{temp_boot}
