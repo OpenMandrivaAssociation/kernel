@@ -1852,13 +1852,17 @@ install -c -m 644 %{S:7005} %{temp_root}%{_udevrulesdir}/70-hypervfcopy.rules
 %endif
 
 mkdir -p %{temp_root}%{_bindir}
+%if ! %{cross_compiling}
 cp tools/bpf/resolve_btfids/resolve_btfids %{temp_root}%{_bindir}/
+%endif
 
 # We don't make to repeat the depend code at the install phase
 %if %{with build_source}
 PrepareKernel "" %{release}custom
 %make_build -s mrproper
+%if ! %{cross_compiling}
 cp %{temp_root}%{_bindir}/resolve_btfids tools/bpf/resolve_btfids/
+%endif
 %endif
 
 ###
@@ -1974,7 +1978,9 @@ cd -
 
 %if %{with build_source}
 %files -n %{name}-source
+%if ! %{cross_compiling}
 %{_bindir}/resolve_btfids
+%endif
 %dir %{_kerneldir}
 %dir %{_kerneldir}/arch
 %dir %{_kerneldir}/include
