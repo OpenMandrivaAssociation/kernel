@@ -62,7 +62,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 18
-%define sublevel 3
+%define sublevel 4
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -271,9 +271,8 @@ Source1009:	vbox-modules-6.15.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
-%define evdi_version 1.14.11
+%define evdi_version 1.14.12
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
-Source1011:	evdi-6.18.patch
 
 # Assorted fixes
 
@@ -976,7 +975,6 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
-patch -p1 -b -z .1011~ <%{S:1011}
 %endif
 
 # Merge TMFF2
