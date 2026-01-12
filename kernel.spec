@@ -133,7 +133,7 @@ Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
 Release:	%{?relc:0.rc%{relc}.}1
 License:	GPLv2
 Group:		System/Kernel and hardware
-ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
+ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv} %{loongarch64}
 ExclusiveOS:	Linux
 URL:		https://www.kernel.org
 
