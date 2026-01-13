@@ -1351,7 +1351,7 @@ BuildKernel() {
 	IMAGE=bzImage
 %endif
 %ifarch %{loongarch64}
-	IMAGE=vmlinux
+	IMAGE=vmlinux.efi
 %endif
 %endif
 
