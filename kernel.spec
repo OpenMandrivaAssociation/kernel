@@ -44,7 +44,7 @@
     && RPM_BUILD_NCPUS="$(/usr/bin/getconf _NPROCESSORS_ONLN)"; \\\
     [ "$RPM_BUILD_NCPUS" -gt 1 ] && echo "-P $RPM_BUILD_NCPUS")
 
-%define target_arch %(echo %{_arch} | sed -e 's/mips.*/mips/' -e 's/arm.*/arm/' -e 's/aarch64/arm64/' -e 's/x86_64/x86/' -e 's/i.86/x86/' -e 's/znver1/x86/' -e 's/riscv.*/riscv/' -e 's/ppc.*/powerpc/')
+%define target_arch %(echo %{_arch} | sed -e 's/mips.*/mips/' -e 's/arm.*/arm/' -e 's/aarch64/arm64/' -e 's/x86_64/x86/' -e 's/i.86/x86/' -e 's/znver1/x86/' -e 's/riscv.*/riscv/' -e 's/ppc.*/powerpc/' -e 's/loongarch64/loongarch/')
 
 # (tpg) define here per arch which kernel flavours you would like to build
 %define kernel_flavours desktop server desktop-gcc server-gcc
@@ -1349,6 +1349,9 @@ BuildKernel() {
 	DTBS="dtbs"
 %else
 	IMAGE=bzImage
+%endif
+%ifarch %{loongarch64}
+	IMAGE=vmlinux
 %endif
 %endif
 
