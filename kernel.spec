@@ -47,6 +47,7 @@
 %define target_arch %(echo %{_arch} | sed -e 's/mips.*/mips/' -e 's/arm.*/arm/' -e 's/aarch64/arm64/' -e 's/x86_64/x86/' -e 's/i.86/x86/' -e 's/znver1/x86/' -e 's/riscv.*/riscv/' -e 's/ppc.*/powerpc/' -e 's/loongarch64/loongarch/')
 
 # (tpg) define here per arch which kernel flavours you would like to build
+# we don't currently have gcc on loongarch64, enable all kernels when we do
 %ifarch %{loongarch64}
 %define kernel_flavours desktop server
 %else
@@ -65,9 +66,9 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 6
-%define patchlevel 18
-%define sublevel 9
-#define relc 7
+%define patchlevel 19
+%define sublevel 0
+#define relc 8
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -98,7 +99,7 @@
 %bcond_with build_debug
 # FIXME re-enable once ported to 6.15
 %bcond_without evdi
-%bcond_with vbox_orig_mods
+%bcond_without vbox_orig_mods
 %bcond_without clr
 # FIXME re-enable by default when the patches have been adapted to 5.8
 %bcond_with saa716x
@@ -134,7 +135,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}2
+Release:	%{?relc:0.rc%{relc}.}1
 License:	GPLv2
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv} %{loongarch64}
@@ -187,6 +188,7 @@ Source33:	security.fragment
 Source34:	trace.fragment
 # Overrides (highest priority) for configs
 Source200:	znver1.overrides
+Source201:	temporary-workarounds.overrides
 # config and systemd service file from fedora
 Source300:	cpupower.service
 Source301:	cpupower.config
@@ -296,7 +298,6 @@ Patch213:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/d
 Patch216:	restore-exporting-symbols-needed-by-binder.patch
 
 Patch214:	ras-fix-build-without-debugfs.patch
-Patch215:	linux-5.19-prefer-amdgpu-over-radeon.patch
 Patch217:	acpi-chipset-workarounds-shouldnt-be-necessary-on-non-x86.patch
 # Revert minimum power limit lock on amdgpu. If you bought a GPU, it means you own it at every level. That a power of Free Software,
 # AMD cannot limit the right to own and prohibit people under volting/under power when they need it or when AMD cards are poorly designed to the point that they heat up, restart and cause very noisy operation.
@@ -322,7 +323,6 @@ Patch246:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/ar
 Patch247:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.5/general-rk808-configurable-switch-voltage-steps.patch
 Patch248:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-sd-drive-level-8ma.patch
 Patch250:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
-Patch251:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/add-rockchip-iep-driver.patch
 Patch254:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-rp64-rng.patch
 
 # (tpg) Manjaro ARM Patches
@@ -379,13 +379,13 @@ Patch958:	https://github.com/torvalds/linux/commit/6d478d25de6b7550769b77edcbf8d
 Patch959:	https://github.com/torvalds/linux/commit/cc17a3358bece56c8932b6a62da242f841feb2e2.patch
 Patch960:	https://github.com/torvalds/linux/commit/bc1d59cd423b4a327af19bcd726f108f0f5a5da5.patch
 Patch961:	https://github.com/torvalds/linux/commit/00e0ee4050216dc768704c503860ac4ec82e7e41.patch
-Patch962:	https://github.com/torvalds/linux/commit/839301464ba91c64483923c9a2a344b1c28e56ed.patch
+#Patch962:	https://github.com/torvalds/linux/commit/839301464ba91c64483923c9a2a344b1c28e56ed.patch
 Patch963:	https://github.com/torvalds/linux/commit/0b7853f3fa5807bfcc193af0ebe4174fb7df21f3.patch
-Patch964:	https://github.com/torvalds/linux/commit/dd3ada12c3f671e92f67416ba9c267e1b12ed29d.patch
+#Patch964:	https://github.com/torvalds/linux/commit/dd3ada12c3f671e92f67416ba9c267e1b12ed29d.patch
 Patch965:	https://github.com/torvalds/linux/commit/725cb07d90c7949a971378635e7755ff9a54d25d.patch
 Patch966:	https://github.com/torvalds/linux/commit/046fbc970839b287d29053c7a1083e78eecb5822.patch
-Patch967:	https://github.com/torvalds/linux/commit/f45ac0c8b0145582ba277f149a39ad386b0627b1.patch
-Patch968:	https://github.com/torvalds/linux/commit/516ae4f2e84130ee33375cf28fbeb95ea443620a.patch
+#Patch967:	https://github.com/torvalds/linux/commit/f45ac0c8b0145582ba277f149a39ad386b0627b1.patch
+# 516ae4f... has landed
 Patch975:	https://github.com/torvalds/linux/commit/cef2dc6b338e1349b2e9feda9bf41e88510aaf5a.patch
 Patch976:	https://github.com/torvalds/linux/commit/0f13fb4aa5e9aec8fcc30d4cd244a1c94a9ab01f.patch
 Patch979:	https://github.com/torvalds/linux/commit/beba499cda3702062e7708b6b402d07b26d090e5.patch
@@ -413,8 +413,8 @@ Patch998:	https://github.com/torvalds/linux/commit/899558f6782528d5324322ae6e4c2
 #Patch1002:	https://github.com/torvalds/linux/commit/d41ae3d5aa30f6ad8229967e9f97f9cf9d8527f9.patch
 # 6ebd774... has landed
 #Patch1004:	https://github.com/torvalds/linux/commit/353e6fcd1cd010ce89dd90a8cc5bcb506c362025.patch
-Patch1005:	https://github.com/torvalds/linux/commit/52a77da4f18b009c85fbfd30701b93e5fe5e715a.patch
-Patch1006:	https://github.com/torvalds/linux/commit/06fb8acf220d3bd8d1bffe098c41fbe398b36d07.patch
+#Patch1005:	https://github.com/torvalds/linux/commit/52a77da4f18b009c85fbfd30701b93e5fe5e715a.patch
+#Patch1006:	https://github.com/torvalds/linux/commit/06fb8acf220d3bd8d1bffe098c41fbe398b36d07.patch
 # 2108e09... has landed
 # b76b3fe... has landed
 # 7fd2c93... has landed
@@ -928,7 +928,7 @@ done
 #
 %prep
 
-%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}%{?relc:-rc%{relc}} -a 2 -a 5 -a 1003 -a 1004
+%setup -q -n linux-%{kernelversion}.%{patchlevel}%{!?relc:%{?sublevel:.%{sublevel}}}%{?relc:-rc%{relc}} -a 2 -a 5 -a 1003 -a 1004
 %if %{with evdi}
 tar xf %{S:1010}
 %endif
@@ -1064,17 +1064,17 @@ sed -i -e 's|800, 600|1024, 768|g' drivers/gpu/drm/vboxvideo/vbox_mode.c
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxdrv drivers/virt/
 sed -i -e 's,\$(VBOXDRV_DIR),drivers/virt/vboxdrv/,g' drivers/virt/vboxdrv/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/virt/vboxdrv/Makefile*
-echo 'obj-m += vboxdrv/' >>drivers/virt/Makefile
+echo 'obj-\$(CONFIG_VBOXGUEST) += vboxdrv/' >>drivers/virt/Makefile
 # VirtualBox network adapter
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxnetadp drivers/net/
 sed -i -e 's,\$(VBOXNETADP_DIR),drivers/net/vboxnetadp/,g' drivers/net/vboxnetadp/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/net/vboxnetadp/Makefile*
-echo 'obj-m += vboxnetadp/' >>drivers/net/Makefile
+echo 'obj-\$(CONFIG_VBOXGUEST) += vboxnetadp/' >>drivers/net/Makefile
 # VirtualBox network filter
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxnetflt drivers/net/
 sed -i -e 's,\$(VBOXNETFLT_DIR),drivers/net/vboxnetflt/,g' drivers/net/vboxnetflt/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/net/vboxnetflt/Makefile*
-echo 'obj-m += vboxnetflt/' >>drivers/net/Makefile
+echo 'obj-\$(CONFIG_VBOXGUEST) += vboxnetflt/' >>drivers/net/Makefile
 %if 0
 # VirtualBox PCI
 # https://forums.gentoo.org/viewtopic-t-1105508-start-0.html -- not very
@@ -1083,7 +1083,7 @@ echo 'obj-m += vboxnetflt/' >>drivers/net/Makefile
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxpci drivers/pci/
 sed -i -e 's,\$(VBOXPCI_DIR),drivers/pci/vboxpci/,g' drivers/pci/vboxpci/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/pci/vboxpci/Makefile*
-echo 'obj-m += vboxpci/' >>drivers/pci/Makefile
+echo 'obj-\$(CONFIG_VBOXGUEST) += vboxpci/' >>drivers/pci/Makefile
 %endif
 patch -p1 -z .1007~ -b <%{S:1007}
 #patch -p1 -z .1009~ -b <%{S:1009}
@@ -1273,6 +1273,7 @@ CreateConfig() {
 	fi
 	[ -e ${config_dir}/${arch}.overrides ] && EXTRAFRAGMENTS="$EXTRAFRAGMENTS ${config_dir}/${arch}.overrides"
 	[ -e ${config_dir}/${cfgarch}.overrides ] && EXTRAFRAGMENTS="$EXTRAFRAGMENTS ${config_dir}/${cfgarch}.overrides"
+	[ -e ${config_dir}/temporary-workarounds.overrides ] && EXTRAFRAGMENTS="$EXTRAFRAGMENTS ${config_dir}/temporary-workarounds.overrides"
 	rm -f .config
 	scripts/kconfig/merge_config.sh -m ${BASECONFIG} %{_sourcedir}/generic-omv-defconfig %{_sourcedir}/*.fragment $EXTRAFRAGMENTS
 	printf '%s' ${type} | grep -q gcc || clangify .config
@@ -1357,10 +1358,11 @@ BuildKernel() {
 	IMAGE=Image
 	DTBS="dtbs"
 %else
-	IMAGE=bzImage
-%endif
 %ifarch %{loongarch64}
 	IMAGE=vmlinux.efi
+%else
+	IMAGE=bzImage
+%endif
 %endif
 %endif
 
