@@ -289,7 +289,7 @@ Source1009:	vbox-modules-6.15.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
-%define evdi_version 1.14.12
+%define evdi_version 1.14.14
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
 
 # Assorted fixes
@@ -521,9 +521,9 @@ BuildRequires:	uboot-mkimage
 # so end users don't have to install compilers (and worse,
 # get compiler error messages on failures)
 %ifarch %{x86_64}
-BuildRequires:	virtualbox-kernel-module-sources >= 7.1.6
+BuildRequires:	virtualbox-kernel-module-sources >= 7.2.6
 %if %{with vbox_orig_mods}
-BuildRequires:	virtualbox-guest-kernel-module-sources >= 7.1.6
+BuildRequires:	virtualbox-guest-kernel-module-sources >= 7.2.6
 %endif
 %endif
 
