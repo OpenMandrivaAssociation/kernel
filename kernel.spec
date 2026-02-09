@@ -252,6 +252,7 @@ Patch51:	linux-5.5-corsair-strafe-quirks.patch
 Patch52:	http://crazy.dev.frugalware.org/smpboot-no-stack-protector-for-gcc10.patch
 Patch55:	linux-5.16-clang-no-attribute-symver.patch
 Patch60:	linux-6.18-clang.patch
+Patch61:	linux-6.19-acpi-clang.patch
 
 ### Additional hardware support
 ### TV tuners:
@@ -291,6 +292,7 @@ Source1009:	vbox-modules-6.15.patch
 # Needed by DisplayLink cruft
 %define evdi_version 1.14.14
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
+Source1011:	evdi-non-x86.patch
 
 # Assorted fixes
 
@@ -996,6 +998,7 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
+patch -p1 -b -z .1011~ <%{S:1011}
 %endif
 
 # Merge TMFF2
