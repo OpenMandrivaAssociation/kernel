@@ -67,7 +67,7 @@
 # compose tar.xz name and release
 %define kernelversion 6
 %define patchlevel 19
-%define sublevel 2
+%define sublevel 3
 #define relc 8
 
 # Having different top level names for packges means that you have to remove
@@ -284,6 +284,8 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 # VirtualBox patches -- added as Source: rather than Patch:
 # because they need to be applied after stuff from the
 # virtualbox-kernel-module-sources package is copied around
+# Based on https://github.com/rpmfusion/VirtualBox-kmod/raw/refs/heads/master/kernel-6.19.patch
+Source1005:	kernel-6.19.patch
 Source1007:	vboxnet-clang.patch
 Source1008:	vbox-modules-7.1.6-compile.patch
 Source1009:	vbox-modules-6.15.patch
@@ -1079,17 +1081,17 @@ sed -i -e 's|800, 600|1024, 768|g' drivers/gpu/drm/vboxvideo/vbox_mode.c
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxdrv drivers/virt/
 sed -i -e 's,\$(VBOXDRV_DIR),drivers/virt/vboxdrv/,g' drivers/virt/vboxdrv/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/virt/vboxdrv/Makefile*
-echo 'obj-\$(CONFIG_VBOXGUEST) += vboxdrv/' >>drivers/virt/Makefile
+echo 'obj-$(CONFIG_VBOXGUEST) += vboxdrv/' >>drivers/virt/Makefile
 # VirtualBox network adapter
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxnetadp drivers/net/
 sed -i -e 's,\$(VBOXNETADP_DIR),drivers/net/vboxnetadp/,g' drivers/net/vboxnetadp/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/net/vboxnetadp/Makefile*
-echo 'obj-\$(CONFIG_VBOXGUEST) += vboxnetadp/' >>drivers/net/Makefile
+echo 'obj-$(CONFIG_VBOXGUEST) += vboxnetadp/' >>drivers/net/Makefile
 # VirtualBox network filter
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxnetflt drivers/net/
 sed -i -e 's,\$(VBOXNETFLT_DIR),drivers/net/vboxnetflt/,g' drivers/net/vboxnetflt/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/net/vboxnetflt/Makefile*
-echo 'obj-\$(CONFIG_VBOXGUEST) += vboxnetflt/' >>drivers/net/Makefile
+echo 'obj-$(CONFIG_VBOXGUEST) += vboxnetflt/' >>drivers/net/Makefile
 %if 0
 # VirtualBox PCI
 # https://forums.gentoo.org/viewtopic-t-1105508-start-0.html -- not very
@@ -1098,8 +1100,9 @@ echo 'obj-\$(CONFIG_VBOXGUEST) += vboxnetflt/' >>drivers/net/Makefile
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxpci drivers/pci/
 sed -i -e 's,\$(VBOXPCI_DIR),drivers/pci/vboxpci/,g' drivers/pci/vboxpci/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/pci/vboxpci/Makefile*
-echo 'obj-\$(CONFIG_VBOXGUEST) += vboxpci/' >>drivers/pci/Makefile
+echo 'obj-$(CONFIG_VBOXGUEST) += vboxpci/' >>drivers/pci/Makefile
 %endif
+patch -p1 -z .1005~ -b <%{S:1005}
 patch -p1 -z .1007~ -b <%{S:1007}
 #patch -p1 -z .1009~ -b <%{S:1009}
 %endif
