@@ -65,10 +65,10 @@
 # IMPORTANT
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
-%define kernelversion 6
-%define patchlevel 19
-%define sublevel 9
-#define relc 8
+%define kernelversion 7
+%define patchlevel 0
+%define sublevel 0
+#define relc 7
 
 # Having different top level names for packges means that you have to remove
 # them by hard :(
@@ -97,7 +97,6 @@
 %bcond_without cross_headers
 
 %bcond_with build_debug
-# FIXME re-enable once ported to 6.15
 %bcond_without evdi
 %bcond_without vbox_orig_mods
 %bcond_without clr
@@ -153,14 +152,14 @@ Source0:	https://git.kernel.org/torvalds/t/linux-%{kernelversion}.%{patchlevel}-
 Source0:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.xz
 Source1:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.sign
 %endif
-Source2:	https://github.com/Kimplul/hid-tmff2/archive/refs/heads/master.tar.gz#/hid-tmff2-20251211.tar.gz
+Source2:	https://github.com/Kimplul/hid-tmff2/archive/refs/heads/master.tar.gz#/hid-tmff2-20260310.tar.gz
 ### This is for stripped SRC RPM
 %if %{with build_nosrc}
 NoSource:	0
 %endif
 Source3:	README.kernel-sources
 Source4:	%{name}.rpmlintrc
-Source5:	https://github.com/linux-thinkpad/tp_smapi/releases/download/tp-smapi%2F0.44/tp_smapi-0.44.tgz
+Source5:	https://github.com/linux-thinkpad/tp_smapi/releases/download/tp-smapi%2F0.45/tp_smapi-0.45.tgz
 ## all in one configs for each kernel
 Source10:	x86-omv-defconfig
 Source11:	i386-omv-defconfig
@@ -234,7 +233,7 @@ Patch37:	socket.h-include-bitsperlong.h.patch
 # FIXME this may need porting, not sure where WC is set in 5.10
 #Patch38:	kernel-5.8-nouveau-write-combining-only-on-x86.patch
 Patch40:	kernel-5.8-aarch64-gcc-10.2-workaround.patch
-Patch41:	tp_smapi-clang.patch
+#Patch41:	tp_smapi-clang.patch
 # (tpg) https://github.com/ClangBuiltLinux/linux/issues/1341
 Patch42:	linux-5.11-disable-ICF-for-CONFIG_UNWINDER_ORC.patch
 # Disabling rdseed breaks starting Qt applications
@@ -285,16 +284,21 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 # because they need to be applied after stuff from the
 # virtualbox-kernel-module-sources package is copied around
 # Based on https://github.com/rpmfusion/VirtualBox-kmod/raw/refs/heads/master/kernel-6.19.patch
-Source1005:	kernel-6.19.patch
+Source1005:	vbox-kernel-7.0.patch
 Source1007:	vboxnet-clang.patch
 Source1008:	vbox-modules-7.1.6-compile.patch
 Source1009:	vbox-modules-6.15.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
-%define evdi_version 1.14.14
+%define evdi_version 1.14.15
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
-Source1011:	evdi-non-x86.patch
+
+# Nexus -- BeOS like IPC, named semaphores, SHM, thread messaging, filesystem event notifications
+# https://github.com/Numerio/Nexus
+# https://v-os.dev/
+Source1020:	https://github.com/Numerio/Nexus/archive/refs/heads/main.tar.gz#/nexus-20260415.tar.gz
+Patch1021:	nexus-compile.patch
 
 # Assorted fixes
 
@@ -436,6 +440,8 @@ Patch998:	https://github.com/torvalds/linux/commit/899558f6782528d5324322ae6e4c2
 #Patch1016:	https://github.com/torvalds/linux/commit/05a7eca409973abbc3d97a726b88b07d256859ae.patch
 # 406e4c9... has landed
 Patch1019:	https://github.com/torvalds/linux/commit/dfb6b6ac7b8403a37c94e5afb0b990643409cbed.patch
+Source2000:	7.0-rc1-compile.patch
+Source2001:	7.0-rc1-compile-x86.patch
 
 BuildRequires:	make
 BuildRequires:	zstd
@@ -939,7 +945,7 @@ done
 #
 %prep
 
-%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 2 -a 5 -a 1003 -a 1004
+%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 2 -a 5 -a 1003 -a 1004 -a 1020
 %if %{with evdi}
 tar xf %{S:1010}
 %endif
@@ -949,14 +955,41 @@ xzcat %{SOURCE1000} |git apply - || git apply %{SOURCE1000}
 rm -rf .git
 %endif
 
+mv Nexus-main/nexus drivers/nexus
+rm drivers/nexus/CMakeLists.txt
+cat >>drivers/Makefile <<'EOF'
+obj-$(CONFIG_NEXUS) += nexus/
+EOF
+sed -i -e '/endmenu/i config NEXUS\n	tristate "BeOS-like IPC etc."\n	help\n	  BeOS like IPC, named semaphores, SHM, thread messaging and FS event notifications' drivers/Kconfig
+sed -i -e 's,obj-m,obj-$(CONFIG_NEXUS),g' drivers/nexus/Makefile
+rm -rf Nexus-main
+
 # uses --sort=name and other gnutar specific options
 sed -i -e '/\${TAR}/iTAR=gtar' kernel/gen_kheaders.sh
 sed -i -e 's, tar , gtar ,g' scripts/Makefile.package
 
 mv tp_smapi-*/*.{c,h} drivers/platform/x86
-sed -i -e 's,  ---help---,help,g' tp_smapi-*/diff/*.add
-cat tp_smapi-*/diff/*.add >>drivers/platform/x86/Kconfig
 cat >>drivers/platform/x86/Kconfig <<EOF
+config THINKPAD_EC
+	tristate "ThinkPad LPC Embedded Controller"
+	depends on X86
+	help
+	  This is a low-level driver for accessing the ThinkPad H8S embedded
+	  controller over the LPC bus (not to be confused with the ACPI Embedded
+	  Controller interface).
+
+config TP_SMAPI
+	tristate "ThinkPad SMAPI Support"
+	depends on X86
+	select THINKPAD_EC
+	default n
+	help
+	  This adds SMAPI support on Lenovo/IBM ThinkPads, for features such
+	  as battery charging control. For more information about this driver
+	  see <http://www.thinkwiki.org/wiki/tp_smapi>.
+
+	  If you have a Lenovo/IBM ThinkPad laptop, say Y or M here.
+
 config SENSORS_HDAPS
 	tristate "Thinkpad HDAPS sensor support"
 	depends on X86
@@ -1000,7 +1033,6 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
-patch -p1 -b -z .1011~ <%{S:1011}
 %endif
 
 # Merge TMFF2
@@ -1138,6 +1170,11 @@ chmod 755 tools/objtool/sync-check.sh
 %ifarch znver1 znver2 znver3
 # Workaround for https://github.com/llvm/llvm-project/issues/82431
 echo 'CFLAGS_ip6_input.o += -march=x86-64-v3' >>net/ipv6/Makefile
+%endif
+
+patch -p1 -z .2000~ -b <%{S:2000}
+%ifarch %{ix86} %{x86_64}
+patch -p1 -z .2001~ -b <%{S:2001}
 %endif
 
 %build
