@@ -57,9 +57,9 @@
 
 # (tpg) package these kernel modules as subpackages
 %ifarch %{aarch64}
-%define modules_subpackages appletalk decnet fddi can adfs affs afs bfs coda efs freevxfs hfs hfsplus hpfs jfs minix ocfs2 omfs orangefs qnx4 qnx6 sysv
+%define modules_subpackages appletalk fddi can adfs affs afs bfs coda efs freevxfs hfs hfsplus hpfs jfs minix ocfs2 omfs orangefs qnx4 qnx6
 %else
-%define modules_subpackages appletalk arcnet comedi infiniband isdn can adfs affs afs bfs coda efs freevxfs hfs hfsplus hpfs jfs minix ocfs2 omfs orangefs qnx4 qnx6 sysv
+%define modules_subpackages appletalk arcnet comedi infiniband isdn can adfs affs afs bfs coda efs freevxfs hfs hfsplus hpfs jfs minix ocfs2 omfs orangefs qnx4 qnx6
 %endif
 
 # IMPORTANT
@@ -67,7 +67,7 @@
 # compose tar.xz name and release
 %define kernelversion 7
 %define patchlevel 0
-%define sublevel 0
+%define sublevel 3
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -135,7 +135,7 @@ Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
 Release:	%{?relc:0.rc%{relc}.}1
-License:	GPLv2
+License:	GPL-2.0
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv} %{loongarch64}
 ExclusiveOS:	Linux
@@ -1685,10 +1685,8 @@ CreateFiles() {
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/orangefs
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/qnx4
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/qnx6
-%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/sysv
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/appletalk
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/can
-%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/decnet
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/comedi
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/infiniband
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/isdn
