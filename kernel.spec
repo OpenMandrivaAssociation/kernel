@@ -44,24 +44,29 @@
     && RPM_BUILD_NCPUS="$(/usr/bin/getconf _NPROCESSORS_ONLN)"; \\\
     [ "$RPM_BUILD_NCPUS" -gt 1 ] && echo "-P $RPM_BUILD_NCPUS")
 
-%define target_arch %(echo %{_arch} | sed -e 's/mips.*/mips/' -e 's/arm.*/arm/' -e 's/aarch64/arm64/' -e 's/x86_64/x86/' -e 's/i.86/x86/' -e 's/znver1/x86/' -e 's/riscv.*/riscv/' -e 's/ppc.*/powerpc/')
+%define target_arch %(echo %{_arch} | sed -e 's/mips.*/mips/' -e 's/arm.*/arm/' -e 's/aarch64/arm64/' -e 's/x86_64/x86/' -e 's/i.86/x86/' -e 's/znver1/x86/' -e 's/riscv.*/riscv/' -e 's/ppc.*/powerpc/' -e 's/loongarch64/loongarch/')
 
 # (tpg) define here per arch which kernel flavours you would like to build
+# we don't currently have gcc on loongarch64, enable all kernels when we do
+%ifarch %{loongarch64}
+%define kernel_flavours desktop server
+%else
 %define kernel_flavours desktop server desktop-gcc server-gcc
+%endif
 # possible options are: desktop server desktop-gcc server-gcc
 
 # (tpg) package these kernel modules as subpackages
 %ifarch %{aarch64}
-%define modules_subpackages appletalk decnet fddi can adfs affs afs bfs coda efs freevxfs hfs hfsplus hpfs jfs minix ocfs2 omfs orangefs qnx4 qnx6 sysv
+%define modules_subpackages appletalk fddi can adfs affs afs bfs coda efs freevxfs hfs hfsplus hpfs jfs minix ocfs2 omfs orangefs qnx4 qnx6
 %else
-%define modules_subpackages appletalk arcnet comedi infiniband isdn can adfs affs afs bfs coda efs freevxfs hfs hfsplus hpfs jfs minix ocfs2 omfs orangefs qnx4 qnx6 sysv
+%define modules_subpackages appletalk arcnet comedi infiniband isdn can adfs affs afs bfs coda efs freevxfs hfs hfsplus hpfs jfs minix ocfs2 omfs orangefs qnx4 qnx6
 %endif
 
 # IMPORTANT
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
-%define kernelversion 6
-%define patchlevel 14
+%define kernelversion 7
+%define patchlevel 0
 %define sublevel 3
 #define relc 7
 
@@ -91,10 +96,10 @@
 %bcond_without build_devel
 %bcond_without cross_headers
 
-%bcond_with lazy_developer
 %bcond_with build_debug
-%bcond_without clr
+%bcond_without evdi
 %bcond_without vbox_orig_mods
+%bcond_without clr
 # FIXME re-enable by default when the patches have been adapted to 5.8
 %bcond_with saa716x
 %bcond_with rtl8821ce
@@ -130,9 +135,9 @@ Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
 Release:	%{?relc:0.rc%{relc}.}1
-License:	GPLv2
+License:	GPL-2.0
 Group:		System/Kernel and hardware
-ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv}
+ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv} %{loongarch64}
 ExclusiveOS:	Linux
 URL:		https://www.kernel.org
 
@@ -147,14 +152,14 @@ Source0:	https://git.kernel.org/torvalds/t/linux-%{kernelversion}.%{patchlevel}-
 Source0:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.xz
 Source1:	http://www.kernel.org/pub/linux/kernel/v%{kernelversion}.x/linux-%{kernelversion}.%{patchlevel}.tar.sign
 %endif
-Source2:	https://github.com/Kimplul/hid-tmff2/archive/refs/heads/master.tar.gz#/hid-tmff2-20241007.tar.gz
+Source2:	https://github.com/Kimplul/hid-tmff2/archive/refs/heads/master.tar.gz#/hid-tmff2-20260310.tar.gz
 ### This is for stripped SRC RPM
 %if %{with build_nosrc}
 NoSource:	0
 %endif
 Source3:	README.kernel-sources
 Source4:	%{name}.rpmlintrc
-Source5:	https://github.com/linux-thinkpad/tp_smapi/releases/download/tp-smapi%2F0.44/tp_smapi-0.44.tgz
+Source5:	https://github.com/linux-thinkpad/tp_smapi/releases/download/tp-smapi%2F0.45/tp_smapi-0.45.tgz
 ## all in one configs for each kernel
 Source10:	x86-omv-defconfig
 Source11:	i386-omv-defconfig
@@ -177,9 +182,12 @@ Source28:	modules.fragment
 Source29:	gcc-plugins.fragment
 Source30:	pps.fragment
 Source31:	cgroups.fragment
-
+Source32:	firmware.fragment
+Source33:	security.fragment
+Source34:	trace.fragment
 # Overrides (highest priority) for configs
 Source200:	znver1.overrides
+Source201:	temporary-workarounds.overrides
 # config and systemd service file from fedora
 Source300:	cpupower.service
 Source301:	cpupower.config
@@ -209,7 +217,8 @@ Source1000:	https://cdn.kernel.org/pub/linux/kernel/v%(echo %{version}|cut -d. -
 Source1001:	revert-7a8b64d17e35810dc3176fe61208b45c15d25402.patch
 Source1002:	revert-9d55bebd9816903b821a403a69a94190442ac043.patch
 
-Patch30:	https://gitweb.gentoo.org/proj/linux-patches.git/plain/5010_enable-cpu-optimizations-universal.patch?h=6.14#/cpu-optimizations.patch
+# FIXME bring this back when it's ported to 6.15
+#Patch30:	https://gitweb.gentoo.org/proj/linux-patches.git/plain/5010_enable-cpu-optimizations-universal.patch?h=6.7#/cpu-optimizations.patch
 Patch31:	die-floppy-die.patch
 Patch32:	0001-Add-support-for-Acer-Predator-macro-keys.patch
 Patch34:	kernel-5.6-kvm-gcc10.patch
@@ -223,11 +232,15 @@ Patch37:	socket.h-include-bitsperlong.h.patch
 # Make Nouveau work on SynQuacer (and probably all other non-x86 boards)
 # FIXME this may need porting, not sure where WC is set in 5.10
 #Patch38:	kernel-5.8-nouveau-write-combining-only-on-x86.patch
-Source39:	tmff2-kernel-6.12.patch
 Patch40:	kernel-5.8-aarch64-gcc-10.2-workaround.patch
-Patch41:	tp_smapi-clang.patch
+#Patch41:	tp_smapi-clang.patch
 # (tpg) https://github.com/ClangBuiltLinux/linux/issues/1341
 Patch42:	linux-5.11-disable-ICF-for-CONFIG_UNWINDER_ORC.patch
+# Disabling rdseed breaks starting Qt applications
+# https://github.com/qt/qtbase/blob/dev/src/corelib/global/qsimd.cpp#L662-L672
+# Users don't appreaciate not being able to boot to a desktop
+# from which they can download the required BIOS update!
+Patch43:	dont-disable-rdseed.patch
 
 # (crazy) see: https://forum.openmandriva.org/t/nvme-ssd-m2-not-seen-by-omlx-4-0/2407
 Patch45:	Unknow-SSD-HFM128GDHTNG-8310B-QUIRK_NO_APST.patch
@@ -237,6 +250,8 @@ Patch47:	https://gitweb.frugalware.org/wip_kernel/raw/23f5e50042768b823e18613151
 Patch51:	linux-5.5-corsair-strafe-quirks.patch
 Patch52:	http://crazy.dev.frugalware.org/smpboot-no-stack-protector-for-gcc10.patch
 Patch55:	linux-5.16-clang-no-attribute-symver.patch
+Patch60:	linux-6.18-clang.patch
+Patch61:	linux-6.19-acpi-clang.patch
 
 ### Additional hardware support
 ### TV tuners:
@@ -268,15 +283,27 @@ Patch209:	extra-wifi-drivers-port-to-5.6.patch
 # VirtualBox patches -- added as Source: rather than Patch:
 # because they need to be applied after stuff from the
 # virtualbox-kernel-module-sources package is copied around
+# Based on https://github.com/rpmfusion/VirtualBox-kmod/raw/refs/heads/master/kernel-6.19.patch
+Source1005:	vbox-kernel-7.0.patch
 Source1007:	vboxnet-clang.patch
 Source1008:	vbox-modules-7.1.6-compile.patch
+Source1009:	vbox-modules-6.15.patch
 
 # EVDI Extensible Virtual Display Interface
 # Needed by DisplayLink cruft
-%define evdi_version 1.14.9
+%define evdi_version 1.14.15
 Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_version}.tar.gz
 
+# Nexus -- BeOS like IPC, named semaphores, SHM, thread messaging, filesystem event notifications
+# https://github.com/Numerio/Nexus
+# https://v-os.dev/
+Source1020:	https://github.com/Numerio/Nexus/archive/refs/heads/main.tar.gz#/nexus-20260415.tar.gz
+Patch1021:	nexus-compile.patch
+
 # Assorted fixes
+
+# https://github.com/Kicksecure/tirdad
+Patch100:	security_tirdad.patch
 
 # Bring back ashmem -- anbox and waydroid still need it
 Patch211:	revert-721412ed3d819e767cac2b06646bf03aa158aaec.patch
@@ -286,7 +313,6 @@ Patch213:	https://salsa.debian.org/kernel-team/linux/raw/master/debian/patches/d
 Patch216:	restore-exporting-symbols-needed-by-binder.patch
 
 Patch214:	ras-fix-build-without-debugfs.patch
-Patch215:	linux-5.19-prefer-amdgpu-over-radeon.patch
 Patch217:	acpi-chipset-workarounds-shouldnt-be-necessary-on-non-x86.patch
 # Revert minimum power limit lock on amdgpu. If you bought a GPU, it means you own it at every level. That a power of Free Software,
 # AMD cannot limit the right to own and prohibit people under volting/under power when they need it or when AMD cards are poorly designed to the point that they heat up, restart and cause very noisy operation.
@@ -305,16 +331,13 @@ Patch230:	linux-5.11-perf-compile.patch
 # (tpg) Armbian ARM Patches
 # https://github.com/armbian/build/tree/main/patch/kernel/archive/
 Patch240:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-emmc.patch
-Patch241:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-fix-spi1-flash-speed.patch
 Patch242:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/board-rockpro64-work-led-heartbeat.patch
 Patch243:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-mmc-signal-voltage-before-reboot.patch
-Patch244:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-fix-inno-usb2-phy-init.patch
 Patch245:	https://github.com/armbian/build/raw/refs/heads/main/patch/kernel/archive/rockchip64-6.11/rk3399-unlock-temperature.patch
 Patch246:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/general-increasing_DMA_block_memory_allocation_to_2048.patch
 Patch247:	https://raw.githubusercontent.com/armbian/build/main/patch/kernel/archive/rockchip64-6.5/general-rk808-configurable-switch-voltage-steps.patch
 Patch248:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-sd-drive-level-8ma.patch
 Patch250:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-enable-dwc3-xhci-usb-trb-quirk.patch
-Patch251:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/add-rockchip-iep-driver.patch
 Patch254:	https://raw.githubusercontent.com/armbian/build/master/patch/kernel/archive/rockchip64-6.0/rk3399-rp64-rng.patch
 
 # (tpg) Manjaro ARM Patches
@@ -329,9 +352,6 @@ Patch303:	rk3399-add-sclk-i2sout-src-clock.patch
 #Patch304:	rtl8723cs-compile.patch
 Patch305:	kernel-6.0-rc2-perf-x86-compile.patch
 #Patch306:	linux-6.1-binutils-2.40.patch
-
-# https://lore.kernel.org/lkml/Y9ES4UKl%2F+DtvAVS@gmail.com/T/
-Patch310:	insn_decoder_test-fix-buffer-overrun.patch
 
 # V4L2 loopback
 # https://github.com/umlaeute/v4l2loopback
@@ -351,66 +371,79 @@ Patch900:	0101-i8042-decrease-debug-message-level-to-info.patch
 Patch901:	0102-increase-the-ext4-default-commit-age.patch
 Patch903:	0104-pci-pme-wakeups.patch
 Patch904:	0105-ksm-wakeups.patch
-#Patch905:	0106-intel_idle-tweak-cpuidle-cstates.patch
 Patch907:	0108-smpboot-reuse-timer-calibration.patch
 Patch908:	0109-initialize-ata-before-graphics.patch
 Patch910:	0111-ipv4-tcp-allow-the-memory-tuning-for-tcp-to-go-a-lit.patch
 Patch913:	0117-migrate-some-systemd-defaults-to-the-kernel-defaults.patch
-Patch914:	0120-use-lfence-instead-of-rep-and-nop.patch
 %endif
 
 # Rockchip 3588 HDMI audio support
 # from https://github.com/andyshrk/linux
-# rk3588-vop2-hdmi-upstream-linux-6.12-rc5-2024-10-29 branch
-Patch950:	0001-arm64-rockchip-Add-rockchip_defconfig.patch
-Patch951:	0002-arm64-rockchip-defconfig-update-for-Linux-6.1-and-en.patch
-Patch952:	0003-arm64-rockchip_defconfig-update-for-linux-6.6.patch
-Patch953:	0004-arm64-rockchip_defconfig-Enable-edp-display.patch
-Patch954:	0005-arm64-rockchip_defconfig-Enable-panthor-GPU.patch
-Patch955:	0006-arm64-rockchip_defconfig-update-for-linux-6.9.patch
-Patch956:	0007-arm64-rockchip_defconfig-Enable-NLS_ISO8859_1-for-vf.patch
-Patch957:	0008-arm64-defconfig-Enable-ROCKCHIP_SAMSUNG_HDPTX-phy-fo.patch
-Patch958:	0009-arm64-rockchip_defconfig-update-for-Linux-6.12.patch
-Patch959:	0010-arm64-add-rpi_defconfig.patch
-Patch960:	0011-arm-Add-rockchip_defconfig.patch
-Patch961:	0012-arm64-dts-add-rootfs-uuid-for-rk3566-box-demo.patch
-Patch962:	0013-Revert-ARM-dts-rockchip-restyle-emac-nodes.patch
-Patch963:	0014-ARM-dts-rockchip-Add-psci-for-rk3036.patch
-Patch964:	0015-arm-dts-rockchip-Fix-emac-on-rk3036-kylin-board.patch
-Patch965:	0016-clk-rockchip-rk3036-Add-1000-MHZ-cpu-clk-rate.patch
-Patch966:	0017-clk-rockchip-rk3036-make-armclk-as-critical.patch
-Patch967:	0018-arm-dts-rockchip-rk3036-kylin-Force-MAC-address.patch
-Patch968:	0019-Revert-Revert-ARM-dts-rockchip-restyle-emac-nodes.patch
-# 0020-ethernet-arc-fix-the-device-for-dma_map_single-dma_u.patch is already upstream
-# 0021-net-arc-rockchip-fix-emac-mdio-node-support.patch is already upstream
-Patch975:	0026-DONT-UPSTREAM-arm64-dts-rockchip-rk3588-evb1-Force-M.patch
-Patch976:	0027-DONT-UPSTREAM-net-r8169-Force-MAC-address.patch
-Patch979:	0030-math.h-add-DIV_ROUND_UP_NO_OVERFLOW.patch
-Patch980:	0031-clk-divider-Fix-divisor-masking-on-64-bit-platforms.patch
-Patch981:	0032-clk-composite-replace-open-coded-abs_diff.patch
-Patch987:	0038-arm64-dts-rockchip-rk3588-evb1-add-bluetooth-rfkill.patch
-Patch988:	0039-arm64-dts-rockchip-rk3588-evb1-improve-PCIe-ethernet.patch
-Patch989:	0040-arm64-dts-rockchip-Slow-down-EMMC-a-bit-to-keep-IO-s.patch
-Patch990:	0041-mfd-rk8xx-Fix-shutdown-handler.patch
-Patch993:	0044-regulator-Add-devm_-of_regulator_get.patch
-Patch994:	0045-pmdomain-rockchip-cleanup-mutex-handling-in-rockchip.patch
-Patch995:	0046-pmdomain-rockchip-forward-rockchip_do_pmu_set_power_.patch
-Patch996:	0047-pmdomain-rockchip-reduce-indentation-in-rockchip_pd_.patch
-Patch997:	0048-dt-bindings-power-rockchip-add-regulator-support.patch
-Patch998:	0049-pmdomain-rockchip-add-regulator-support.patch
-Patch999:	0050-arm64-dts-rockchip-Add-GPU-power-domain-regulator-de.patch
-Patch1005:	0056-arm64-dts-rockchip-Add-wifi-regulator-for-Cool-Pi-4b.patch
-Patch1006:	0057-drm-panthor-Add-defer-probe-for-firmware-load.patch
-Patch1007:	0058-drm-rockchip-Add-DW-DisplayPort-driver.patch
-Patch1012:	0063-drm-rockchip-Set-dma-mask-to-64-bit.patch
-Patch1021:	0072-drm-rockchip-vop2-Register-the-primary-plane-and-ove.patch
-Patch1022:	0073-drm-rockchip-vop2-Set-plane-possible-crtcs-by-possib.patch
-Patch1023:	0074-drm-rockchip-vop2-Add-uv-swap-for-cluster-window.patch
-Patch1024:	0075-dt-bindings-display-vop2-Add-rk3576-support.patch
-# Buildfix for the patchset above to handle kernel 6.12 rather than 6.12-rc5
-Patch1027:	rk3588-hdmi-kernel-6.12-final.patch
+# rk3588-hdmi-dsi-upstream-linux-6.13-rc1-2024-12-05 branch
+# Patches of the series that are commented out don't apply anymore and
+# need rebasing.
+Patch950:	https://github.com/torvalds/linux/commit/e0c5c98b4558d336ecb6b5a3c174816b4ed41db2.patch
+Patch951:	https://github.com/torvalds/linux/commit/cd6e4f6d8babdb5e65525c6dd2d1e373558b38ab.patch
+Patch952:	https://github.com/torvalds/linux/commit/4071b7a0642a41773d61b16ae1d02218bc25345e.patch
+Patch953:	https://github.com/torvalds/linux/commit/6da0ae6e419442449ffa7778de518ca37292352b.patch
+Patch954:	https://github.com/torvalds/linux/commit/d6aa52f8a15e56737de5e73f4f2acbb2632f43c0.patch
+Patch955:	https://github.com/torvalds/linux/commit/250083364dc2764b6ae61a124dfb8afc575e565a.patch
+Patch956:	https://github.com/torvalds/linux/commit/146008b9d4241d4e14e5b173038aa78262c2bbcd.patch
+Patch957:	https://github.com/torvalds/linux/commit/dad4c5aac3a74cf3593fad9f7c7d0e83ae96bfa5.patch
+Patch958:	https://github.com/torvalds/linux/commit/6d478d25de6b7550769b77edcbf8d330238542a8.patch
+Patch959:	https://github.com/torvalds/linux/commit/cc17a3358bece56c8932b6a62da242f841feb2e2.patch
+Patch960:	https://github.com/torvalds/linux/commit/bc1d59cd423b4a327af19bcd726f108f0f5a5da5.patch
+Patch961:	https://github.com/torvalds/linux/commit/00e0ee4050216dc768704c503860ac4ec82e7e41.patch
+#Patch962:	https://github.com/torvalds/linux/commit/839301464ba91c64483923c9a2a344b1c28e56ed.patch
+Patch963:	https://github.com/torvalds/linux/commit/0b7853f3fa5807bfcc193af0ebe4174fb7df21f3.patch
+#Patch964:	https://github.com/torvalds/linux/commit/dd3ada12c3f671e92f67416ba9c267e1b12ed29d.patch
+Patch965:	https://github.com/torvalds/linux/commit/725cb07d90c7949a971378635e7755ff9a54d25d.patch
+Patch966:	https://github.com/torvalds/linux/commit/046fbc970839b287d29053c7a1083e78eecb5822.patch
+#Patch967:	https://github.com/torvalds/linux/commit/f45ac0c8b0145582ba277f149a39ad386b0627b1.patch
+# 516ae4f... has landed
+Patch975:	https://github.com/torvalds/linux/commit/cef2dc6b338e1349b2e9feda9bf41e88510aaf5a.patch
+Patch976:	https://github.com/torvalds/linux/commit/0f13fb4aa5e9aec8fcc30d4cd244a1c94a9ab01f.patch
+Patch979:	https://github.com/torvalds/linux/commit/beba499cda3702062e7708b6b402d07b26d090e5.patch
+Patch981:	https://github.com/torvalds/linux/commit/c8699f87d802bbb6e5aab8292f2e285c56976a35.patch
+Patch982:	https://github.com/torvalds/linux/commit/a7a7cf522d7636dc1280adb1b1de7fe45f9b3305.patch
+Patch983:	https://github.com/torvalds/linux/commit/f0118748bc1f791775c90c52791a1770f4429702.patch
+# 4940862... has landed
+# 1e51ce4... has landed
+# aa868c1... has landed
+# 9d85b74... has landed
+# 2bd8528... has landed
+# 92bd2d2... has landed
+#Patch990:	https://github.com/torvalds/linux/commit/d3fd937a73e239efaf1ced03a5a10637e5ae9a95.patch
+#Patch991:	https://github.com/torvalds/linux/commit/57c6d683477d619dab36bc39ca5b3c011f4a1dab.patch
+#Patch992:	https://github.com/torvalds/linux/commit/ea0dd2c5e19d4c5e8d5109d78ac0d3ef1461fe43.patch
+# bf10475... has landed
+#Patch994:	https://github.com/torvalds/linux/commit/c1cffe7e472cf58c948a52de76007117e7d550ae.patch
+# 0ab95ab... has landed
+# bc27ea8... has landed
+# 565e00d... has landed
+Patch998:	https://github.com/torvalds/linux/commit/899558f6782528d5324322ae6e4c270e150c3d6f.patch
+# b5fb817... has landed
+#Patch1000:	https://github.com/torvalds/linux/commit/b35059eb51972524e48f13d9a6c39448bcd0874b.patch
+#Patch1001:	https://github.com/torvalds/linux/commit/6f0311441ab7b53cdcdf71b10d8a8594f1a47ef1.patch
+#Patch1002:	https://github.com/torvalds/linux/commit/d41ae3d5aa30f6ad8229967e9f97f9cf9d8527f9.patch
+# 6ebd774... has landed
+#Patch1004:	https://github.com/torvalds/linux/commit/353e6fcd1cd010ce89dd90a8cc5bcb506c362025.patch
+#Patch1005:	https://github.com/torvalds/linux/commit/52a77da4f18b009c85fbfd30701b93e5fe5e715a.patch
+#Patch1006:	https://github.com/torvalds/linux/commit/06fb8acf220d3bd8d1bffe098c41fbe398b36d07.patch
+# 2108e09... has landed
+# b76b3fe... has landed
+# 7fd2c93... has landed
+# de56911... has landed
+# c75314e... has landed
+# 8571e14... has landed
+#Patch1015:	https://github.com/torvalds/linux/commit/ec744b5548e79d18670651113a5855fd31e7472e.patch
+#Patch1016:	https://github.com/torvalds/linux/commit/05a7eca409973abbc3d97a726b88b07d256859ae.patch
+# 406e4c9... has landed
+Patch1019:	https://github.com/torvalds/linux/commit/dfb6b6ac7b8403a37c94e5afb0b990643409cbed.patch
+Source2000:	7.0-rc1-compile.patch
+Source2001:	7.0-rc1-compile-x86.patch
 
-Autoreqprov:	no
+BuildRequires:	make
 BuildRequires:	zstd
 BuildRequires:	findutils
 BuildRequires:	bc
@@ -498,9 +531,9 @@ BuildRequires:	uboot-mkimage
 # so end users don't have to install compilers (and worse,
 # get compiler error messages on failures)
 %ifarch %{x86_64}
-BuildRequires:	virtualbox-kernel-module-sources >= 7.1.6
+BuildRequires:	virtualbox-kernel-module-sources >= 7.2.6
 %if %{with vbox_orig_mods}
-BuildRequires:	virtualbox-guest-kernel-module-sources >= 7.1.6
+BuildRequires:	virtualbox-guest-kernel-module-sources >= 7.2.6
 %endif
 %endif
 
@@ -600,7 +633,6 @@ Obsoletes:	%{name}-${flavour}-devel-latest <= %{version}-%{release}
 Provides:	installonlypkg(kernel)
 Requires:	%{name}-${flavour} = %{version}-%{release}
 %rename kernel-release-${flavour}-devel
-AutoReqProv:	no
 %ifarch %{ix86}
 Conflicts:	arch(x86_64)
 Conflicts:	arch(znver1)
@@ -640,7 +672,6 @@ Provides:	kernel-${flavour}-%{version}-%{release}%{disttag}-debuginfo
 Provides:	installonlypkg(kernel)
 Requires:	%{name}-${flavour} = %{version}-%{release}
 %rename kernel-release-${flavour}-debuginfo
-AutoReqProv:	no
 %ifarch %{ix86}
 Conflicts:	arch(x86_64)
 Conflicts:	arch(znver1)
@@ -670,8 +701,6 @@ Summary:	 ${modules} for kernel %{name}-${flavour}
 Group:		System/Kernel and hardware
 Requires:	%{name}-${flavour} = %{version}-%{release}
 Provides:	installonlypkg(kernel-module)
-AutoReq:	no
-AutoProv:	yes
 Requires(posttrans,postun):	kmod
 EOF
 
@@ -712,7 +741,6 @@ Requires:	make
 Requires:	gcc >= 7.2.1_2017.11-3
 Requires:	perl
 Requires:	diffutils
-Autoreqprov:	no
 Provides:	kernel-source = %{version}-%{release}
 Provides:	kernel-source-%{version}-%{release}%{disttag}
 Provides:	installonlypkg(kernel)
@@ -917,20 +945,51 @@ done
 #
 %prep
 
-%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 2 -a 5 -a 1003 -a 1004 -a 1010
+%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 2 -a 5 -a 1003 -a 1004 -a 1020
+%if %{with evdi}
+tar xf %{S:1010}
+%endif
 %if 0%{?sublevel:%{sublevel}}
 [ -e .git ] || git init
 xzcat %{SOURCE1000} |git apply - || git apply %{SOURCE1000}
 rm -rf .git
 %endif
 
+mv Nexus-main/nexus drivers/nexus
+rm drivers/nexus/CMakeLists.txt
+cat >>drivers/Makefile <<'EOF'
+obj-$(CONFIG_NEXUS) += nexus/
+EOF
+sed -i -e '/endmenu/i config NEXUS\n	tristate "BeOS-like IPC etc."\n	help\n	  BeOS like IPC, named semaphores, SHM, thread messaging and FS event notifications' drivers/Kconfig
+sed -i -e 's,obj-m,obj-$(CONFIG_NEXUS),g' drivers/nexus/Makefile
+rm -rf Nexus-main
+
 # uses --sort=name and other gnutar specific options
-sed -i -e 's,^tar ,gtar ,' kernel/gen_kheaders.sh
+sed -i -e '/\${TAR}/iTAR=gtar' kernel/gen_kheaders.sh
+sed -i -e 's, tar , gtar ,g' scripts/Makefile.package
 
 mv tp_smapi-*/*.{c,h} drivers/platform/x86
-sed -i -e 's,  ---help---,help,g' tp_smapi-*/diff/*.add
-cat tp_smapi-*/diff/*.add >>drivers/platform/x86/Kconfig
 cat >>drivers/platform/x86/Kconfig <<EOF
+config THINKPAD_EC
+	tristate "ThinkPad LPC Embedded Controller"
+	depends on X86
+	help
+	  This is a low-level driver for accessing the ThinkPad H8S embedded
+	  controller over the LPC bus (not to be confused with the ACPI Embedded
+	  Controller interface).
+
+config TP_SMAPI
+	tristate "ThinkPad SMAPI Support"
+	depends on X86
+	select THINKPAD_EC
+	default n
+	help
+	  This adds SMAPI support on Lenovo/IBM ThinkPads, for features such
+	  as battery charging control. For more information about this driver
+	  see <http://www.thinkwiki.org/wiki/tp_smapi>.
+
+	  If you have a Lenovo/IBM ThinkPad laptop, say Y or M here.
+
 config SENSORS_HDAPS
 	tristate "Thinkpad HDAPS sensor support"
 	depends on X86
@@ -962,6 +1021,7 @@ sed -i -e '/saa7164/iobj-$(CONFIG_SAA716X_CORE) += saa716x/' drivers/media/pci/M
 find drivers/media/tuners drivers/media/dvb-frontends -name "*.c" -o -name "*.h" -type f | xargs sed -i -e 's,"dvb_frontend.h",<media/dvb_frontend.h>,g'
 %endif
 
+%if %{with evdi}
 # Merge EVDI
 mv evdi-%{evdi_version}/module drivers/gpu/drm/evdi
 rm -rf evdi-%{evdi_version}
@@ -973,6 +1033,7 @@ evdi-$(CONFIG_COMPAT) += evdi_ioc32.o
 obj-$(CONFIG_DRM_EVDI) := evdi.o
 EOF
 echo 'obj-$(CONFIG_DRM_EVDI) += evdi/' >>drivers/gpu/drm/Makefile
+%endif
 
 # Merge TMFF2
 mv hid-tmff2-* drivers/hid/tmff-new
@@ -981,10 +1042,11 @@ config HID_TMFF_NEW
 	tristate "Thrustmaster T300RS, T248, TX, TS-XV wheel support"
 	help
 	  A Linux kernel module for Thrustmaster T300RS, T248, and
-	  (experimental support) TX and TS-XV wheels.
+	  (experimental support) TX, TS-PC and TS-XV wheels.
+
 EOF
 cat >drivers/hid/tmff-new/Makefile <<'EOF'
-hid-tmff-new-y := src/hid-tmff2.o src/tmt300rs/hid-tmt300rs.o src/tmt248/hid-tmt248.o src/tmtx/hid-tmtx.o src/tmtsxw/hid-tmtsxw.o
+hid-tmff-new-y := src/hid-tmff2.o src/tmt248/hid-tmt248.o src/tmt300rs/hid-tmt300rs.o src/tmtspc/hid-tmtspc.o src/tmtsxw/hid-tmtsxw.o src/tmtx/hid-tmtx.o
 obj-$(CONFIG_HID_TMFF_NEW) += hid-tmff-new.o
 EOF
 cat >>drivers/hid/Kconfig <<'EOF'
@@ -993,7 +1055,6 @@ EOF
 cat >>drivers/hid/Makefile <<'EOF'
 obj-$(CONFIG_HID_TMFF_NEW) += tmff-new/
 EOF
-patch -p1 -b -z .tmff2build~ <%{S:39}
 
 %if %{with rtl8821ce}
 # Merge RTL8723DE and RTL8821CE drivers
@@ -1052,17 +1113,17 @@ sed -i -e 's|800, 600|1024, 768|g' drivers/gpu/drm/vboxvideo/vbox_mode.c
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxdrv drivers/virt/
 sed -i -e 's,\$(VBOXDRV_DIR),drivers/virt/vboxdrv/,g' drivers/virt/vboxdrv/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/virt/vboxdrv/Makefile*
-echo 'obj-m += vboxdrv/' >>drivers/virt/Makefile
+echo 'obj-$(CONFIG_VBOXGUEST) += vboxdrv/' >>drivers/virt/Makefile
 # VirtualBox network adapter
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxnetadp drivers/net/
 sed -i -e 's,\$(VBOXNETADP_DIR),drivers/net/vboxnetadp/,g' drivers/net/vboxnetadp/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/net/vboxnetadp/Makefile*
-echo 'obj-m += vboxnetadp/' >>drivers/net/Makefile
+echo 'obj-$(CONFIG_VBOXGUEST) += vboxnetadp/' >>drivers/net/Makefile
 # VirtualBox network filter
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxnetflt drivers/net/
 sed -i -e 's,\$(VBOXNETFLT_DIR),drivers/net/vboxnetflt/,g' drivers/net/vboxnetflt/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/net/vboxnetflt/Makefile*
-echo 'obj-m += vboxnetflt/' >>drivers/net/Makefile
+echo 'obj-$(CONFIG_VBOXGUEST) += vboxnetflt/' >>drivers/net/Makefile
 %if 0
 # VirtualBox PCI
 # https://forums.gentoo.org/viewtopic-t-1105508-start-0.html -- not very
@@ -1071,9 +1132,11 @@ echo 'obj-m += vboxnetflt/' >>drivers/net/Makefile
 cp -a $(ls --sort=time -1d /usr/src/virtualbox-*|head -n1)/vboxpci drivers/pci/
 sed -i -e 's,\$(VBOXPCI_DIR),drivers/pci/vboxpci/,g' drivers/pci/vboxpci/Makefile*
 sed -i -e "s,^KERN_DIR.*,KERN_DIR := $(pwd)," drivers/pci/vboxpci/Makefile*
-echo 'obj-m += vboxpci/' >>drivers/pci/Makefile
+echo 'obj-$(CONFIG_VBOXGUEST) += vboxpci/' >>drivers/pci/Makefile
 %endif
+patch -p1 -z .1005~ -b <%{S:1005}
 patch -p1 -z .1007~ -b <%{S:1007}
+#patch -p1 -z .1009~ -b <%{S:1009}
 %endif
 
 # V4L2 loopback support
@@ -1094,15 +1157,24 @@ cat >>drivers/media/v4l2-core/Makefile <<'EOF'
 obj-$(CONFIG_V4L2_LOOPBACK) += v4l2loopback.o
 EOF
 
+# Port to 6.15 -- FIXME remove once these drivers have been ported upstream
+sed -i -e 's,del_timer_sync,timer_delete_sync,g' drivers/media/pci/saa716x/saa716x_ff_ir.c drivers/media/v4l2-core/v4l2loopback.c drivers/platform/x86/hdaps.c drivers/net/wireless/rtl8723de/include/osdep_service.h drivers/net/wireless/rtl8723de/include/osdep_service_linux.h
+[ -e drivers/virt/vboxdrv/r0drv/linux/timer-r0drv-linux.c ] && sed -i -e 's,del_timer_sync,timer_delete_sync,g' drivers/virt/vboxdrv/r0drv/linux/timer-r0drv-linux.c
+
 # get rid of unwanted files
 find . -name '*~' -o -name '*.orig' -o -name '*.append' -o -name '*.g*ignore' | %kxargs rm -f
 
 # fix missing exec flag on file introduced in 4.14.10-rc1
 chmod 755 tools/objtool/sync-check.sh
 
-%ifarch znver1 znver2 znver3 znver4 znver5
+%ifarch znver1 znver2 znver3
 # Workaround for https://github.com/llvm/llvm-project/issues/82431
 echo 'CFLAGS_ip6_input.o += -march=x86-64-v3' >>net/ipv6/Makefile
+%endif
+
+patch -p1 -z .2000~ -b <%{S:2000}
+%ifarch %{ix86} %{x86_64}
+patch -p1 -z .2001~ -b <%{S:2001}
 %endif
 
 %build
@@ -1256,6 +1328,7 @@ CreateConfig() {
 	fi
 	[ -e ${config_dir}/${arch}.overrides ] && EXTRAFRAGMENTS="$EXTRAFRAGMENTS ${config_dir}/${arch}.overrides"
 	[ -e ${config_dir}/${cfgarch}.overrides ] && EXTRAFRAGMENTS="$EXTRAFRAGMENTS ${config_dir}/${cfgarch}.overrides"
+	[ -e ${config_dir}/temporary-workarounds.overrides ] && EXTRAFRAGMENTS="$EXTRAFRAGMENTS ${config_dir}/temporary-workarounds.overrides"
 	rm -f .config
 	scripts/kconfig/merge_config.sh -m ${BASECONFIG} %{_sourcedir}/generic-omv-defconfig %{_sourcedir}/*.fragment $EXTRAFRAGMENTS
 	printf '%s' ${type} | grep -q gcc || clangify .config
@@ -1269,16 +1342,8 @@ CreateConfig() {
 # (tpg) apply our dynamic configs
 	scripts/config $FIXED_CONFIGS
 
-%if %{without lazy_developer}
-## YES, intentionally, DIE on wrong config
 	printf '%s\n' "=== Configuring ${arch} ${type} kernel ==="
-	make ARCH="${arch}" CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 oldconfig
-%else
-	printf '%s\n' "Lazy developer option is enabled!!. Don't be lazy!."
-## that takes kernel defaults on missing or changed things
-## olddefconfig is similar to yes ... but not that verbose
-	yes "" | make ARCH="${arch}" CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" oldconfig
-%endif
+	make ARCH="${arch}" CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" V=0 olddefconfig
 
 	scripts/config --set-val BUILD_SALT \"$(echo "$arch-$type-%{EVRD}"|sha1sum|awk '{ print $1; }')\"
 
@@ -1325,7 +1390,7 @@ BuildKernel() {
 		CXX=clang++
 		HCC=clang
 		HCXX=clang++
-		BUILD_OPT_CFLAGS="-O3 %{pollyflags}"
+		BUILD_OPT_CFLAGS="-O3 -Wno-unknown-warning-option %{pollyflags}"
 		# Workaround for LLD 16 BTF generation problem
 		#BUILD_LD=ld.bfd
 		#BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
@@ -1348,11 +1413,15 @@ BuildKernel() {
 	IMAGE=Image
 	DTBS="dtbs"
 %else
+%ifarch %{loongarch64}
+	IMAGE=vmlinux.efi
+%else
 	IMAGE=bzImage
 %endif
 %endif
-# FIXME add KBUILD_CFLAGS="$BUILD_OPT_CFLAGS" once that actually works
-	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE modules $DTBS
+%endif
+
+	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KCFLAGS="$BUILD_OPT_CFLAGS" KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE modules $DTBS
 
 # Start installing stuff
 	install -d %{temp_boot}
@@ -1490,6 +1559,7 @@ $DevelRoot/crypto
 $DevelRoot/certs
 $DevelRoot/drivers
 $DevelRoot/fs
+$DevelRoot/include/Kbuild
 $DevelRoot/include/acpi
 $DevelRoot/include/asm-generic
 $DevelRoot/include/clocksource
@@ -1615,10 +1685,8 @@ CreateFiles() {
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/orangefs
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/qnx4
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/qnx6
-%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/fs/sysv
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/appletalk
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/can
-%exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/net/decnet
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/comedi
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/infiniband
 %exclude %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/kernel/drivers/isdn
@@ -1677,13 +1745,14 @@ EOF
 
 ### Create kernel Postun script on the fly
 cat > $kernel_files-postun <<EOF
-
+if [ "$1" = "0" ]; then
 [ -e %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag} ] && rm -rf %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/modules.{alias{,.bin},builtin.bin,dep{,.bin},devname,softdep,symbols{,.bin}} ||:
 [ -e /boot/vmlinuz-%{version}-$kernel_flavour-%{release}%{disttag} ] && rm -rf /boot/vmlinuz-%{version}-$kernel_flavour-%{release}%{disttag}
 [ -e /boot/initrd-%{version}-$kernel_flavour-%{release}%{disttag}.img ] && rm -rf /boot/initrd-%{version}-$kernel_flavour-%{release}%{disttag}.img
 [ -e /boot/System.map-%{version}-$kernel_flavour-%{release}%{disttag} ] && rm -rf /boot/System.map-%{version}-$kernel_flavour-%{release}%{disttag}
 [ -e /boot/config-%{version}-$kernel_flavour-%{release}%{disttag} ] && rm -rf /boot/config-%{version}-$kernel_flavour-%{release}%{disttag}
 [ -e /boot/dtb-%{version}-$kernel_flavour-%{release}%{disttag} ] && rm -rf /boot/dtb-%{version}-$kernel_flavour-%{release}%{disttag}
+fi
 
 %ifarch %{aarch64}
 if [ -d /boot/efi ] && [ -x %{_bindir}/kernel-install ]; then
@@ -1691,7 +1760,10 @@ if [ -d /boot/efi ] && [ -x %{_bindir}/kernel-install ]; then
 fi
 %endif
 
+if [ "$1" = "0" ]; then
 rm -rf %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag} >/dev/null
+fi
+
 if [ -d /var/lib/dkms ]; then
     rm -f /var/lib/dkms/*/kernel-%{version}-$devel_flavour-%{release}%{disttag}-%{_target_cpu} >/dev/null
     rm -rf /var/lib/dkms/*/*/%{version}-$devel_flavour-%{release}%{disttag} >/dev/null
@@ -1845,13 +1917,17 @@ install -c -m 644 %{S:7005} %{temp_root}%{_udevrulesdir}/70-hypervfcopy.rules
 %endif
 
 mkdir -p %{temp_root}%{_bindir}
+%if ! %{cross_compiling}
 cp tools/bpf/resolve_btfids/resolve_btfids %{temp_root}%{_bindir}/
+%endif
 
 # We don't make to repeat the depend code at the install phase
 %if %{with build_source}
 PrepareKernel "" %{release}custom
 %make_build -s mrproper
+%if ! %{cross_compiling}
 cp %{temp_root}%{_bindir}/resolve_btfids tools/bpf/resolve_btfids/
+%endif
 %endif
 
 ###
@@ -1967,7 +2043,9 @@ cd -
 
 %if %{with build_source}
 %files -n %{name}-source
+%if ! %{cross_compiling}
 %{_bindir}/resolve_btfids
+%endif
 %dir %{_kerneldir}
 %dir %{_kerneldir}/arch
 %dir %{_kerneldir}/include
@@ -1976,6 +2054,7 @@ cd -
 %optional %{_kerneldir}/.clippy.toml
 %{_kerneldir}/.cocciconfig
 %{_kerneldir}/.editorconfig
+%{_kerneldir}/.pylintrc
 %{_kerneldir}/Documentation
 %{_kerneldir}/arch/Kconfig
 %{_kerneldir}/arch/arm
@@ -1990,6 +2069,7 @@ cd -
 %{_kerneldir}/drivers
 %{_kerneldir}/fs
 %{_kerneldir}/certs/*
+%{_kerneldir}/include/Kbuild
 %{_kerneldir}/include/acpi
 %{_kerneldir}/include/asm-generic
 %{_kerneldir}/include/clocksource
@@ -2073,12 +2153,14 @@ cd -
 %if %{with build_cpupower}
 %files -n cpupower -f cpupower.lang
 %{_bindir}/cpupower
+%{_libexecdir}/cpupower
 %{_libdir}/libcpupower.so.1
-%{_libdir}/libcpupower.so.0.0.1
+%{_libdir}/libcpupower.so.1.0.1
 %{_unitdir}/cpupower.service
 %doc %{_mandir}/man[1-8]/cpupower*
 %{_datadir}/bash-completion/completions/cpupower
 %config(noreplace) %{_sysconfdir}/sysconfig/cpupower
+%config(noreplace) %{_sysconfdir}/cpupower-service.conf
 
 %files -n cpupower-devel
 %{_libdir}/libcpupower.so
