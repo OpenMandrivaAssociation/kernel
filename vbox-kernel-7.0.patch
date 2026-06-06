@@ -1,0 +1,12 @@
+diff -up linux-7.0/drivers/virt/vboxdrv/linux/SUPDrv-linux.c.omv~ linux-7.0/drivers/virt/vboxdrv/linux/SUPDrv-linux.c
+--- linux-7.0/drivers/virt/vboxdrv/linux/SUPDrv-linux.c.omv~	2026-04-19 22:24:48.972985841 +0200
++++ linux-7.0/drivers/virt/vboxdrv/linux/SUPDrv-linux.c	2026-04-19 22:26:53.225276734 +0200
+@@ -504,7 +504,7 @@ static int __init supdrvLinuxInitKvmSymb
+                 RTThreadPreemptDisable(&Preempt);
+                 if (   uLeaves >= 7
+                     && RTX86IsValidStdRange(uLeaves)
+-                    && (ASMCpuIdEx_EDX(7, 0) & X86_CPUID_STEXT_FEATURE_EDX_CET_IBT))
++                    && (VBoxHost_ASMCpuId_EDX(7) & X86_CPUID_STEXT_FEATURE_EDX_CET_IBT))
+                 {
+                     uint64_t const fSupCet = ASMRdMsr(MSR_IA32_S_CET);
+                     ASMWrMsr(MSR_IA32_S_CET, fSupCet & ~MSR_IA32_CET_ENDBR_EN);
