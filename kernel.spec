@@ -473,6 +473,7 @@ BuildRequires:	lld
 BuildRequires:	pkgconfig(libcap)
 BuildRequires:	pkgconfig(libssl)
 BuildRequires:	diffutils
+BuildRequires:	atomic-devel
 # For git apply
 BuildRequires:	git-core
 # For power tools
