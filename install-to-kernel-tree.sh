@@ -901,7 +901,7 @@ NVIDIA_IF_CFLAGS_EOF
 # RM core CFLAGS
 cat << 'NV_RM_CFLAGS_EOF'
 NV_RM_CFLAGS := -U__KERNEL__
-NV_RM_CFLAGS += -Wno-designated-init
+NV_RM_CFLAGS += $(call cc-option,-Wno-designated-init,)
 NV_RM_CFLAGS += -isystem $(shell $(CC) -print-file-name=include)
 NV_RM_CFLAGS += -include $(src)/src/common/sdk/nvidia/inc/cpuopsys.h
 NV_RM_CFLAGS += -I$(src)/src/nvidia/kernel/inc

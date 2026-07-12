@@ -1280,15 +1280,7 @@ CreateConfig() {
 		#BUILD_KBUILD_LDFLAGS="-fuse-ld=bfd"
 		BUILD_LD="ld.lld --icf=none --no-gc-sections"
 		BUILD_KBUILD_LDFLAGS="-Wl,--icf=none -Wl,--no-gc-sections"
-%ifarch %{aarch64}
-		# Using objcopy rather than llvm-objcopy is a workaround for a BTF
-		# generation problem on aarch64
-		BUILD_TOOLS='LLVM=1 LLVM_IAS=1 OBJCOPY=objcopy'
-%else
-		# Using objcopy rather than llvm-objcopy is a workaround for a BTF
-		# generation problem on aarch64
 		BUILD_TOOLS='LLVM=1 LLVM_IAS=1'
-%endif
 	fi
 
 # (crazy) do not use %{S:X} to copy, if someone messes up we end up with broken stuff again
