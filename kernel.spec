@@ -865,7 +865,6 @@ Summary:	Linux kernel header files mostly used by your C library
 Version:	%{version}
 Release:	%{release}
 Group:		System/Kernel and hardware
-Epoch:		1
 %if 0%{!?relc:1}
 # (tpg) fix bug https://issues.openmandriva.org/show_bug.cgi?id=1580
 Provides:	kernel-headers = 1:%{version}-%{release}
