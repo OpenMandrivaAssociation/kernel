@@ -56,14 +56,32 @@
 # possible options are: desktop server desktop-gcc server-gcc
 #define kernel_flavours desktop server desktop-gcc server-gcc
 
-# Rarely used modules...
-%global modules_subpackages appletalk can adfs affs afs bfs coda efs freevxfs hfs hfsplus hpfs jfs minix ocfs2 omfs orangefs qnx4 qnx6 zd1211rw
-%ifarch %{aarch64}
-%global modules_subpackages %{modules_subpackages} fddi nvidia
+# Rarely used modules → separate kernel-*-modules-* subpackages (see install loop).
+# Matched by directory basename under .../kernel/ or by exact foo.ko basenames.
+#
+# Keep everyday hardware in the main package (USB, common Wi‑Fi, webcams/V4L,
+# NVMe/AHCI, etc.). Split only niche protocols, legacy buses, DVB/TV, staging,
+# and odd firmware-bound drivers.
+
+# Rare / legacy filesystems
+%global modules_subpackages appletalk can adfs affs afs befs bfs coda cramfs efs freevxfs gfs2 hfs hfsplus hpfs jffs2 jfs minix nilfs2 ocfs2 omfs orangefs qnx4 qnx6 romfs ubifs ufs zonefs zd1211rw
+
+# Rare networking (ATM kept available for legacy PPPoA/ADSL; not needed for PPPoE)
+%global modules_subpackages %{modules_subpackages} atm sctp rds tipc hsr batman-adv x25 phonet caif nfc 6lowpan ieee802154 mac802154 openvswitch fddi arcnet isdn
+
+# Legacy / industrial / hobbyist hardware classes
+%global modules_subpackages %{modules_subpackages} firewire pcmcia parport comedi infiniband fpga greybus rapidio gnss w1 uio most siox auxdisplay accessibility staging
+
+# DVB / digital TV / FM radio only — leave media core + UVC webcams in main
+%global modules_subpackages %{modules_subpackages} dvb-core dvb-frontends dvb-usb tuners radio
+
+# Specialized accelerators (not everyday laptop NPUs)
+%global modules_subpackages %{modules_subpackages} habanalabs
+
+%ifarch %{aarch64} %{x86_64}
+%global modules_subpackages %{modules_subpackages} nvidia
 %endif
-%ifarch %{x86_64}
-%global modules_subpackages %{modules_subpackages} arcnet comedi infiniband isdn nvidia
-%endif
+
 # Modules with obscure firmware dependencies (not covered by the kernel-firmware packages)
 %global modules_subpackages %{modules_subpackages} p54spi.ko snd-asihpi.ko snd-usb-6fire.ko bcm203x.ko adf7242.ko ast ath10k_pci.ko ath6kl_sdio.ko at76c50x-usb.ko smsmdtv.ko b43 b43legacy bfusb.ko hci_bcm4377.ko moxa.ko
 
@@ -72,7 +90,7 @@
 # compose tar.xz name and release
 %define kernelversion 7
 %define patchlevel 1
-%define sublevel 3
+%define sublevel 4
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -191,9 +209,25 @@ Source31:	cgroups.fragment
 Source32:	firmware.fragment
 Source33:	security.fragment
 Source34:	trace.fragment
+# Extracted shared subsystem fragments (see CONFIGS.md / manage-kernel-configs.py)
+Source35:	usb.fragment
+Source36:	sound.fragment
+Source37:	media.fragment
+Source38:	crypto.fragment
+Source39:	drm.fragment
+Source40:	scsi.fragment
+Source41:	input.fragment
+Source42:	wireless.fragment
+Source43:	mtd.fragment
+Source44:	net-phy.fragment
+Source45:	gpio.fragment
+Source46:	infiniband.fragment
+Source47:	virt.fragment
+Source48:	misc-drivers.fragment
 # Overrides (highest priority) for configs
 Source200:	znver1.overrides
 Source201:	temporary-workarounds.overrides
+Source202:	arm64.overrides
 # config and systemd service file from fedora
 Source300:	cpupower.service
 Source301:	cpupower.config
