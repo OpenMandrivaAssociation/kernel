@@ -1,6 +1,6 @@
 diff -upr linux/drivers/nexus/index.c linux/drivers/nexus/index.c
---- linux/drivers/nexus/index.c	2026-08-17 17:59:11.000000000 +0200
-+++ linux/drivers/nexus/index.c	2026-08-17 18:26:58.855888684 +0200
+--- linux/drivers/nexus/index.c	2026-09-01 01:10:36.000000000 +0200
++++ linux/drivers/nexus/index.c	2026-09-06 01:27:33.975773079 +0200
 @@ -129,22 +129,35 @@ static int ensure_dir(const char *path)
  		return ret;
  
@@ -90,8 +90,8 @@ diff -upr linux/drivers/nexus/index.c linux/drivers/nexus/index.c
  		ret = PTR_ERR(marker_dentry);
  		goto out_parent_unlock;
 diff -upr linux/drivers/nexus/nexus_core.c linux/drivers/nexus/nexus_core.c
---- linux/drivers/nexus/nexus_core.c	2026-08-17 17:59:11.000000000 +0200
-+++ linux/drivers/nexus/nexus_core.c	2026-08-17 18:26:58.855827463 +0200
+--- linux/drivers/nexus/nexus_core.c	2026-09-01 01:10:36.000000000 +0200
++++ linux/drivers/nexus/nexus_core.c	2026-09-06 01:27:33.975930821 +0200
 @@ -16,6 +16,7 @@
  #include <linux/rbtree.h>
  #include <linux/kallsyms.h>
@@ -119,8 +119,8 @@ diff -upr linux/drivers/nexus/nexus_core.c linux/drivers/nexus/nexus_core.c
  	return nexus_team_init_for(current->tgid);
  }
 diff -upr linux/drivers/nexus/port.c linux/drivers/nexus/port.c
---- linux/drivers/nexus/port.c	2026-08-17 17:59:11.000000000 +0200
-+++ linux/drivers/nexus/port.c	2026-08-17 18:26:58.856022315 +0200
+--- linux/drivers/nexus/port.c	2026-09-01 01:10:36.000000000 +0200
++++ linux/drivers/nexus/port.c	2026-09-06 01:27:33.976072112 +0200
 @@ -15,6 +15,7 @@
  #include <linux/mutex.h>
  #include <linux/rbtree.h>
@@ -140,8 +140,8 @@ diff -upr linux/drivers/nexus/port.c linux/drivers/nexus/port.c
  		break;
  	}
 diff -upr linux/drivers/nexus/sem.c linux/drivers/nexus/sem.c
---- linux/drivers/nexus/sem.c	2026-08-17 17:59:11.000000000 +0200
-+++ linux/drivers/nexus/sem.c	2026-08-17 18:26:58.855939024 +0200
+--- linux/drivers/nexus/sem.c	2026-09-01 01:10:36.000000000 +0200
++++ linux/drivers/nexus/sem.c	2026-09-06 01:27:34.007642644 +0200
 @@ -11,6 +11,7 @@
  #include <linux/sched/signal.h>
  #include <linux/semaphore.h>
@@ -150,23 +150,23 @@ diff -upr linux/drivers/nexus/sem.c linux/drivers/nexus/sem.c
  #include <linux/spinlock.h>
  #include <linux/uaccess.h>
  
-@@ -365,8 +366,7 @@ static int nexus_get_sem_info(sem_id id,
+@@ -398,8 +399,7 @@ static int nexus_get_sem_info(sem_id id,
  	}
  
  	info->sem = sem->id;
 -	strncpy(info->name, sem->name, B_OS_NAME_LENGTH);
 -	info->name[B_OS_NAME_LENGTH - 1] = '\0';
 +	strscpy(info->name, sem->name);
- 	info->count = sem->count;
- 	info->team = sem->owner;
+ 	spin_lock(&sem->lock);
+ 	info->count = sem_unreserved_count(sem);
  	info->latest_holder = sem->latest_holder;
-@@ -390,8 +390,7 @@ static int nexus_get_next_sem_info(team_
+@@ -426,8 +426,7 @@ static int nexus_get_next_sem_info(team_
  			continue;
  
  		out->info.sem = sem->id;
 -		strncpy(out->info.name, sem->name, B_OS_NAME_LENGTH);
 -		out->info.name[B_OS_NAME_LENGTH - 1] = '\0';
 +		strscpy(out->info.name, sem->name);
- 		out->info.count = sem->count;
- 		out->info.team = sem->owner;
+ 		spin_lock(&sem->lock);
+ 		out->info.count = sem_unreserved_count(sem);
  		out->info.latest_holder = sem->latest_holder;

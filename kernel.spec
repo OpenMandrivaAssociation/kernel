@@ -182,7 +182,7 @@
 # compose tar.xz name and release
 %define kernelversion 7
 %define patchlevel 2
-%define sublevel 2
+%define sublevel 3
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -435,7 +435,7 @@ Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_versio
 # Nexus -- BeOS like IPC, named semaphores, SHM, thread messaging, filesystem event notifications
 # https://github.com/Numerio/Nexus
 # https://v-os.dev/
-Source1020:	https://github.com/Numerio/Nexus/archive/refs/heads/main.tar.gz#/nexus-20260827.tar.gz
+Source1020:	https://github.com/Numerio/Nexus/archive/refs/heads/main.tar.gz#/nexus-20260831.tar.gz
 Patch1021:	nexus-compile.patch
 
 # Nvidia GPU driver
