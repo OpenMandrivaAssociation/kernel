@@ -395,7 +395,9 @@ Patch63:	rtw89-ofld-src-other-fits-h2c.patch
 # git clone --depth=1 -b saa716x-7.2 https://github.com/s-moch/linux-saa716x.git
 # tar cJf saa716x-driver-YYYYMMDD.tar.xz -C linux-saa716x drivers/media/pci/saa716x
 # Uses only in-tree frontends (stv090x/stv6110x/si2168/si2157/tda1004x/tda827x/isl6423).
+# OSD_RAW_* / AUDIO_GET_PTS ioctls used by saa716x_ff (Technotrend S2-6400).
 Source1003:	saa716x-driver-20260817.tar.xz
+Patch210:	saa716x-uapi.patch
 
 # VirtualBox patches -- added as Source: rather than Patch:
 # because they need to be applied after stuff from the
