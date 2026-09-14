@@ -1,0 +1,64 @@
+7.3-rc2 kmalloc_obj conversion plus Clang ThinLTO/FORTIFY:
+ld.lld and clang error with __read_overflow in gud.
+
+- Use a typed allocation and a struct copy in gud_get_display_descriptor().
+- Compile the GUD objects without LTO.
+- Do not memchr() a &buf[i*N] slot: FORTIFY treats that as 1 byte
+  even through void *. Scan the name with a byte loop instead.
+
+diff -upr linux/drivers/gpu/drm/gud/Makefile linux/drivers/gpu/drm/gud/Makefile
+--- linux/drivers/gpu/drm/gud/Makefile	2026-09-07 00:07:20.000000000 +0200
++++ linux/drivers/gpu/drm/gud/Makefile	2026-09-07 19:19:59.539474228 +0200
+@@ -1,4 +1,8 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
++# Clang ThinLTO + FORTIFY false-positive __read_overflow at LD gud.o
++CFLAGS_REMOVE_gud_drv.o += $(CC_FLAGS_LTO)
++CFLAGS_REMOVE_gud_pipe.o += $(CC_FLAGS_LTO)
++CFLAGS_REMOVE_gud_connector.o += $(CC_FLAGS_LTO)
+ gud-y				:= gud_drv.o gud_pipe.o gud_connector.o
+ obj-$(CONFIG_DRM_GUD)		+= gud.o
+diff -upr linux/drivers/gpu/drm/gud/gud_connector.c linux/drivers/gpu/drm/gud/gud_connector.c
+--- linux/drivers/gpu/drm/gud/gud_connector.c	2026-09-07 00:07:20.000000000 +0200
++++ linux/drivers/gpu/drm/gud/gud_connector.c	2026-09-07 19:19:59.612702737 +0200
+@@ -397,9 +397,15 @@ static int gud_connector_add_tv_mode(str
+ 
+ 	num_modes = ret / GUD_CONNECTOR_TV_MODE_NAME_LEN;
+ 	for (i = 0; i < num_modes; i++) {
+-		char *mode = &buf[i * GUD_CONNECTOR_TV_MODE_NAME_LEN];
++		char *mode = buf + i * GUD_CONNECTOR_TV_MODE_NAME_LEN;
++		unsigned int j;
+ 
+-		if (!memchr(mode, '\0', GUD_CONNECTOR_TV_MODE_NAME_LEN)) {
++		/* FORTIFY treats memchr(&buf[i*N], ..., N) as a 1-byte read */
++		for (j = 0; j < GUD_CONNECTOR_TV_MODE_NAME_LEN; j++) {
++			if (mode[j] == '\0')
++				break;
++		}
++		if (j == GUD_CONNECTOR_TV_MODE_NAME_LEN) {
+ 			ret = -EIO;
+ 			goto free;
+ 		}
+diff -upr linux/drivers/gpu/drm/gud/gud_drv.c linux/drivers/gpu/drm/gud/gud_drv.c
+--- linux/drivers/gpu/drm/gud/gud_drv.c	2026-09-07 00:07:20.000000000 +0200
++++ linux/drivers/gpu/drm/gud/gud_drv.c	2026-09-07 19:19:59.569173083 +0200
+@@ -79,15 +79,15 @@ static int gud_usb_control_msg(struct us
+ static int gud_get_display_descriptor(struct usb_interface *intf,
+ 				      struct gud_display_descriptor_req *desc)
+ {
+-	void *buf;
++	struct gud_display_descriptor_req *buf;
+ 	int ret;
+ 
+-	buf = kmalloc_obj(*desc);
++	buf = kmalloc_obj(*buf);
+ 	if (!buf)
+ 		return -ENOMEM;
+ 
+-	ret = gud_usb_control_msg(intf, true, GUD_REQ_GET_DESCRIPTOR, 0, buf, sizeof(*desc));
+-	memcpy(desc, buf, sizeof(*desc));
++	ret = gud_usb_control_msg(intf, true, GUD_REQ_GET_DESCRIPTOR, 0, buf, sizeof(*buf));
++	*desc = *buf;
+ 	kfree(buf);
+ 	if (ret < 0)
+ 		return ret;
