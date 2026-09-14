@@ -387,7 +387,8 @@ Patch61:	linux-6.19-acpi-clang.patch
 # Landed in 7.2 (arch/x86/boot/compressed/Makefile already has -fno-jump-tables).
 #Patch62:	linux-7.1-x86-boot-compressed-no-jump-tables.patch
 # 7.2 rtw89: SRC_OTHER=4 does not fit H2C src GENMASK(1, 0); clang FIELD_PREP errors
-Patch63:	rtw89-ofld-src-other-fits-h2c.patch
+# Landed in 7.2.6 (enum member dropped; delays use type=DELAY).
+#Patch63:	rtw89-ofld-src-other-fits-h2c.patch
 # Clang ThinLTO + FORTIFY false-positive __read_overflow at LD gud.o (znver1)
 Patch64:	gud-kmalloc_obj-typed-ptr.patch
 
