@@ -1578,8 +1578,23 @@ BuildKernel() {
 %endif
 %endif
 
-	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KCFLAGS="$BUILD_OPT_CFLAGS" KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE $DTBS
-	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KCFLAGS="$BUILD_OPT_CFLAGS" KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" modules
+%ifarch %{x86_64}
+	# One clang job per core was SIGKILL'd compiling drivers on the
+	# 64GB builders once ThinLTO was off. 8GB per job is 7 jobs there.
+	# That parallelism compiled this tree when ThinLTO was still on.
+	# The build root is an 80% tmpfs.
+	mem_kb=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+	max_jobs=$((mem_kb / 8388608))
+	[ "$max_jobs" -ge 1 ] || max_jobs=1
+	ncpus=$(/usr/bin/getconf _NPROCESSORS_ONLN)
+	[ "$ncpus" -le "$max_jobs" ] || ncpus=$max_jobs
+	echo "Using $ncpus kernel build jobs (MemTotal ${mem_kb} kB)"
+	kjobs="-j$ncpus"
+%else
+	kjobs=
+%endif
+	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KCFLAGS="$BUILD_OPT_CFLAGS" KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE $DTBS $kjobs
+	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KCFLAGS="$BUILD_OPT_CFLAGS" KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" modules $kjobs
 
 # Start installing stuff
 	install -d %{temp_boot}
