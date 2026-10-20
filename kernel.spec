@@ -85,7 +85,8 @@
 # buses, DVB/TV, staging, embedded-SoC audio, and odd firmware-bound drivers.
 
 # Rare / legacy filesystems
-%global modules_subpackages appletalk can adfs affs afs befs bfs coda cramfs efs freevxfs gfs2 hfs hfsplus hpfs jffs2 jfs minix nilfs2 ocfs2 omfs orangefs qnx4 qnx6 romfs ubifs ufs zonefs zd1211rw
+# 7.3 removed appletalk, efs and freevxfs
+%global modules_subpackages can adfs affs afs befs bfs coda cramfs gfs2 hfs hfsplus hpfs jffs2 jfs minix nilfs2 ocfs2 omfs orangefs qnx4 qnx6 romfs ubifs ufs zonefs zd1211rw
 
 # Rare networking (ATM kept available for legacy PPPoA/ADSL; not needed for PPPoE)
 %global modules_subpackages %{modules_subpackages} atm sctp rds tipc hsr batman-adv x25 phonet caif nfc 6lowpan ieee802154 mac802154 openvswitch fddi arcnet isdn
@@ -150,6 +151,7 @@
 %global modules_subpackages %{modules_subpackages} tcs3472.ko=iio tlv493d.ko=iio tmag5273.ko=iio tmp006.ko=iio tmp007.ko=iio tmp117.ko=iio tsl2563.ko=iio tsl2583.ko=iio tsl2591.ko=iio tsl2772.ko=iio tsl4531.ko=iio tsys01.ko=iio
 %global modules_subpackages %{modules_subpackages} tsys02d.ko=iio us5182d.ko=iio vcnl3020.ko=iio vcnl4000.ko=iio vcnl4035.ko=iio veml3235.ko=iio veml3328.ko=iio veml6030.ko=iio veml6040.ko=iio veml6046x00.ko=iio veml6070.ko=iio veml6075.ko=iio
 %global modules_subpackages %{modules_subpackages} vl53l0x-i2c.ko=iio vl53l1x-i2c.ko=iio vl6180.ko=iio yamaha-yas530.ko=iio zopt2201.ko=iio zpa2326.ko=iio zpa2326_i2c.ko=iio zpa2326_spi.ko=iio
+%global modules_subpackages %{modules_subpackages} inv-icm42607-i2c.ko=iio inv-icm42607-spi.ko=iio qmc5883l.ko=iio qmc6308.ko=iio ltc2378.ko=iio adf41513.ko=iio mcp47a1.ko=iio ti-ads112c14.ko=iio slf3s.ko=iio
 
 # Industrial / PMBus / eval-board hwmon. Desktop Super-I/O, CPU, vendor
 # (ASUS/Gigabyte/Corsair/NZXT), Mac, Chromebook and common I2C temps stay in main.
@@ -173,6 +175,7 @@
 %global modules_subpackages %{modules_subpackages} shtc1.ko=hwmon-extra sl28cpld-hwmon.ko=hwmon-extra smpro-hwmon.ko=hwmon-extra sparx5-temp.ko=hwmon-extra stef48h28.ko=hwmon-extra stpddc60.ko=hwmon-extra sy7636a-hwmon.ko=hwmon-extra tc654.ko=hwmon-extra tc74.ko=hwmon-extra tda38640.ko=hwmon-extra thmc50.ko=hwmon-extra tmp513.ko=hwmon-extra
 %global modules_subpackages %{modules_subpackages} tps23861.ko=hwmon-extra tps25990.ko=hwmon-extra tps40422.ko=hwmon-extra tps53679.ko=hwmon-extra tps546d24.ko=hwmon-extra tsc1641.ko=hwmon-extra ucd9000.ko=hwmon-extra ucd9200.ko=hwmon-extra ultra45_env.ko=hwmon-extra vexpress-hwmon.ko=hwmon-extra wm831x-hwmon.ko=hwmon-extra wm8350-hwmon.ko=hwmon-extra
 %global modules_subpackages %{modules_subpackages} xdp710.ko=hwmon-extra xdp720.ko=hwmon-extra xdpe12284.ko=hwmon-extra xdpe152c4.ko=hwmon-extra xdpe1a2g7b.ko=hwmon-extra xgene-hwmon.ko=hwmon-extra yogafan.ko=hwmon-extra zl6100.ko=hwmon-extra
+%global modules_subpackages %{modules_subpackages} kb9002.ko=hwmon-extra mpq82d00.ko=hwmon-extra mpq8646.ko=hwmon-extra sq24860.ko=hwmon-extra vt7505.ko=hwmon-extra altera-socfpga-hwmon.ko=hwmon-extra eic7700-pvt.ko=hwmon-extra polarfire-soc-tvs.ko=hwmon-extra versal-sysmon.ko=hwmon-extra versal-sysmon-i2c.ko=hwmon-extra
 
 # Modules with obscure firmware dependencies (not covered by the kernel-firmware packages)
 %global modules_subpackages %{modules_subpackages} p54spi.ko snd-asihpi.ko snd-usb-6fire.ko bcm203x.ko adf7242.ko ast ath10k_pci.ko ath6kl_sdio.ko at76c50x-usb.ko smsmdtv.ko b43 b43legacy bfusb.ko hci_bcm4377.ko moxa.ko
@@ -181,8 +184,8 @@
 # This is the place where you set kernel version i.e 4.5.0
 # compose tar.xz name and release
 %define kernelversion 7
-%define patchlevel 2
-%define sublevel 11
+%define patchlevel 3
+%define sublevel 0
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -215,7 +218,6 @@
 %bcond_without evdi
 %bcond_without vbox_orig_mods
 %bcond_without clr
-%bcond_without saa716x
 # build perf and cpupower tools
 %if %{cross_compiling}
 %bcond_with bpftool
@@ -386,21 +388,19 @@ Patch60:	linux-6.18-clang.patch
 Patch61:	linux-6.19-acpi-clang.patch
 # Landed in 7.2 (arch/x86/boot/compressed/Makefile already has -fno-jump-tables).
 #Patch62:	linux-7.1-x86-boot-compressed-no-jump-tables.patch
-# 7.2 rtw89: SRC_OTHER=4 does not fit H2C src GENMASK(1, 0); clang FIELD_PREP errors
-# Landed in 7.2.6 (enum member dropped; delays use type=DELAY).
+# 7.3 dropped RTW89_FW_CMD_OFLD_SRC_OTHER (H2C src is 2 bits).
 #Patch63:	rtw89-ofld-src-other-fits-h2c.patch
-# Clang ThinLTO + FORTIFY false-positive __read_overflow at LD gud.o (znver1)
+# 7.3-rc2 kmalloc_obj() conversion: void * + memcpy trips Clang ThinLTO FORTIFY
 Patch64:	gud-kmalloc_obj-typed-ptr.patch
+# Second -jN make raced filechk on cpufeaturemasks.h because of FORCE
+Patch65:	x86-cpufeaturemasks-no-force.patch
 
 ### Additional hardware support
 ### TV tuners:
-# SAA716x DVB driver (Soeren Moch tree, already ported to 7.2)
-# git clone --depth=1 -b saa716x-7.2 https://github.com/s-moch/linux-saa716x.git
-# tar cJf saa716x-driver-YYYYMMDD.tar.xz -C linux-saa716x drivers/media/pci/saa716x
-# Uses only in-tree frontends (stv090x/stv6110x/si2168/si2157/tda1004x/tda827x/isl6423).
-# OSD_RAW_* / AUDIO_GET_PTS ioctls used by saa716x_ff (Technotrend S2-6400).
-Source1003:	saa716x-driver-20260817.tar.xz
-Patch210:	saa716x-uapi.patch
+# SAA716x DVB driver (Soeren Moch tree, already ported to 7.3)
+# git clone --depth=1 -b saa716x-7.3 https://github.com/s-moch/linux-saa716x.git
+# git diff v7.3 >linux-7.3-saa716x.patch
+Patch210:	linux-7.3-saa716x.patch
 
 # VirtualBox patches -- added as Source: rather than Patch:
 # because they need to be applied after stuff from the
@@ -434,6 +434,8 @@ Source1032:	CHANGES.md
 Source1033:	nvidia-symvers-location.patch
 # 615.78.08 of_gpio compat is already non-const; patch keeps that explicit
 Source1034:	nvidia-gpio-const.patch
+# 615 passes the dmem region name as a printf format. Force "%s".
+Source1035:	nvidia-dmem-cgroup-init.patch
 
 # Assorted fixes
 
@@ -1012,12 +1014,25 @@ standard programs, notably the C library.
 
 This package is not suitable for building kernel modules, you
 should use the 'kernel-devel' package instead.
+%if 0%{?relc:1}
+
+The release-candidate kernel does not install those headers.
+kernel-headers owns /usr/include, and the rc copies are not
+byte-identical to it. This package is only here so an upgrade
+removes an older kernel-rc-headers that shipped the same paths.
+%endif
 
 %files headers
+%if 0%{!?relc:1}
 %{_includedir}/*
 # Don't conflict with cpupower-devel
 %if %{with build_cpupower}
 %exclude %{_includedir}/cpufreq.h
+%exclude %{_includedir}/cpuidle.h
+%exclude %{_includedir}/powercap.h
+%endif
+%else
+%{_docdir}/%{name}-headers
 %endif
 
 %if %{with cross_headers}
@@ -1056,7 +1071,7 @@ done
 #
 %prep
 
-%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 2 -a 5 -a 1003 -a 1020
+%setup -q -n linux-%{kernelversion}.%{patchlevel}%{?relc:-rc%{relc}} -a 2 -a 5 -a 1020
 TOPDIR="$(pwd)"
 
 %if %{with evdi}
@@ -1073,6 +1088,7 @@ tar xf %{S:1030}
 cd open-gpu-kernel-modules-%{nvidia_version}
 patch -p1 -b -z .1033~ <%{S:1033}
 patch -p1 -b -z .1034~ <%{S:1034}
+patch -p1 -b -z .1035~ <%{S:1035}
 cp %{S:1031} .
 chmod +x install-to-kernel-tree.sh
 ./install-to-kernel-tree.sh ${TOPDIR}
@@ -1140,12 +1156,6 @@ if [ -d tools/vm ]; then
 	exit 1
 fi
 sed -i -e 's,vm_clean ,,' tools/Makefile
-
-%if %{with saa716x}
-# Wire s-moch saa716x into the in-tree media PCI build (same as upstream saa716x-7.2)
-sed -i -e '/saa7164/isource "drivers/media/pci/saa716x/Kconfig"' drivers/media/pci/Kconfig
-sed -i -e '/saa7164/iobj-$(CONFIG_SAA716X_SUPPORT) += saa716x/' drivers/media/pci/Makefile
-%endif
 
 %if %{with evdi}
 # Merge EVDI
@@ -1561,6 +1571,9 @@ BuildKernel() {
 %endif
 
 	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KCFLAGS="$BUILD_OPT_CFLAGS" KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" $IMAGE $DTBS
+	# Image first so vmlinux.symvers exists before NVIDIA conftest.
+	# cpufeaturemasks.h is generated without FORCE (see Patch65) so
+	# this second -jN make does not race filechk on .tmp_*.
 	%make_build V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KCFLAGS="$BUILD_OPT_CFLAGS" KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" modules
 
 # Start installing stuff
@@ -1579,7 +1592,11 @@ BuildKernel() {
 	%make_build V=0 VERBOSE=0 INSTALL_MOD_PATH=%{temp_root} ARCH=%{target_arch} SRCARCH=%{target_arch} KERNELRELEASE=$KernelVer CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" DEPMOD=/bin/true INSTALL_MOD_STRIP=1 modules_install
 
 # headers
+# rc kernels must not install userspace headers into /usr/include.
+# kernel-headers owns those files, and the copies are not identical.
+%if 0%{!?relc:1}
 	%make_build V=0 VERBOSE=0 INSTALL_HDR_PATH=%{temp_root}%{_prefix} KERNELRELEASE=$KernelVer ARCH=%{target_arch} SRCARCH=%{target_arch} headers_install
+%endif
 
 %ifarch %{armx} %{ppc}
 	%make_build  V=0 VERBOSE=0 ARCH=%{target_arch} CC="$CC" HOSTCC="$HCC" CXX="$CXX" HOSTCXX="$HCXX" LD="$BUILD_LD" HOSTLD="$BUILD_LD" $BUILD_TOOLS KBUILD_HOSTLDFLAGS="$BUILD_KBUILD_LDFLAGS" INSTALL_DTBS_PATH=%{temp_modules}/$KernelVer/dtb dtbs_install
@@ -2070,6 +2087,15 @@ export TOP="$(pwd)"
 # We want to be able to test several times the install part
 rm -rf %{buildroot}
 cp -a %{temp_root} %{buildroot}
+%if 0%{?relc:1}
+mkdir -p %{buildroot}%{_docdir}/%{name}-headers
+cat > %{buildroot}%{_docdir}/%{name}-headers/README << 'EOF'
+Userspace API headers come from the kernel-headers package.
+kernel-rc-headers no longer installs /usr/include, because those
+files collide with kernel-headers whenever the rc and stable
+uapi headers differ.
+EOF
+%endif
 
 # We used to have a copy of PrepareKernel here
 # Now, we make sure that the thing in the linux dir is what we want it to be
@@ -2473,6 +2499,8 @@ done
 %files -n cpupower-devel
 %{_libdir}/libcpupower.so
 %{_includedir}/cpufreq.h
+%{_includedir}/cpuidle.h
+%{_includedir}/powercap.h
 %endif
 
 %ifarch %{ix86} %{x86_64}
