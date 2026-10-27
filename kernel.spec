@@ -250,7 +250,7 @@
 Summary:	Linux kernel built for %{distribution}
 Name:		kernel%{?relc:-rc}
 Version:	%{kernelversion}.%{patchlevel}%{?sublevel:.%{sublevel}}
-Release:	%{?relc:0.rc%{relc}.}3
+Release:	%{?relc:0.rc%{relc}.}4
 License:	GPL-2.0
 Group:		System/Kernel and hardware
 ExclusiveArch:	%{ix86} %{x86_64} %{armx} %{riscv} %{loongarch64}
@@ -419,8 +419,10 @@ Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_versio
 # Nexus -- BeOS like IPC, named semaphores, SHM, thread messaging, filesystem event notifications
 # https://github.com/Numerio/Nexus
 # https://v-os.dev/
-Source1020:	https://github.com/Numerio/Nexus/archive/refs/heads/main.tar.gz#/nexus-20261013.tar.gz
-# 20261013 (e59081b003) already has the 7.2 lookup_one/vfs_* port and strscpy.
+Source1020:	https://github.com/Numerio/Nexus/archive/refs/heads/main.tar.gz#/nexus-20261027.tar.gz
+# 20261027 (b21eb2ea, "nexus: trim comments"). Same Nexus-main/nexus layout,
+# obj-m line, and nexus_team_init() empty definition, so the %prep seds apply.
+# Previous snapshot was 20261013 (e59081b003).
 # nexus-compile.patch was against the 20260831 tree and does not apply.
 #Patch1021:	nexus-compile.patch
 
@@ -752,6 +754,14 @@ Suggests:	microcode-intel
 
 %posttrans -n %{name}-${flavour} -f kernel_files.${flavour}-posttrans
 %postun -n %{name}-${flavour} -f kernel_files.${flavour}-postun
+# Once per transaction, after every payload that dropped files under this
+# kernel's module tree (the flavour package itself and kernel-*-modules-*).
+# dracut resolves a .ko.zst it found on disk through modules.dep; split
+# modules such as nvidia are invisible to it until depmod has run, and
+# running dracut from each module %%posttrans would rebuild the initrd
+# once per subpackage.
+%transfiletriggerin -n %{name}-${flavour} -f kernel_files.${flavour}-modtrigger -- %{_modulesdir}/%{version}-${flavour}-%{release}%{disttag}/kernel
+%transfiletriggerpostun -n %{name}-${flavour} -f kernel_files.${flavour}-modtrigger -- %{_modulesdir}/%{version}-${flavour}-%{release}%{disttag}/kernel
 
 %files -n %{name}-${flavour} -f kernel_files.${flavour}
 EOF
@@ -1851,21 +1861,27 @@ EOF
 cat ../kernel_exclude_debug_files.$kernel_flavour >> $kernel_files
 %endif
 
-### Create kernel Posttrans script
-cat > $kernel_files-posttrans <<EOF
+### depmod + initrd. Not in %posttrans: that runs before we know every
+### kernel-*-modules-* package in this transaction is unpacked, and it
+### runs before DKMS below. The transfiletrigger at the end of the
+### transaction sees both.
+cat > $kernel_files-modtrigger <<EOF
+if [ -e /boot/vmlinuz-%{version}-$kernel_flavour-%{release}%{disttag} ]; then
 [ -x %{_bindir}/depmod ] && %{_bindir}/depmod -a %{version}-$kernel_flavour-%{release}%{disttag}
-
 %ifnarch %{armx} %{riscv}
 [ -x %{_bindir}/dracut ] && %{_bindir}/dracut -f --kver %{version}-$kernel_flavour-%{release}%{disttag}
 [ -x %{_bindir}/update-grub2 ] && %{_bindir}/update-grub2 ||:
 %endif
-
 %ifarch %{aarch64}
 if [ -d /boot/efi ] && [ -x %{_bindir}/kernel-install ]; then
 	%{_bindir}/kernel-install add %{version}-$kernel_flavour-%{release}%{disttag} %{_modulesdir}/%{version}-$kernel_flavour-%{release}%{disttag}/vmlinuz
 fi
 %endif
+fi
+EOF
 
+### Create kernel Posttrans script
+cat > $kernel_files-posttrans <<EOF
 ## cleanup some werid symlinks we never used anyway
 rm -rf vmlinuz-{server,desktop} initrd0.img initrd-{server,desktop} || :
 
@@ -2309,6 +2325,11 @@ EOF
 				if [ "$M" = "hfs" -a "${flavour}" = "desktop" ]; then
 					echo "Obsoletes: hfsutils < 3.2.6-42" >>$SP
 				fi
+				# nvidia userspace Requires: nvidia-kmod. This package
+				# satisfies that so dnf does not pull the DKMS module.
+				if [ "$PKG" = "nvidia" ]; then
+					echo "Provides:	nvidia-kmod = %{nvidia_version}" >>$SP
+				fi
 				cat >>"$SP" <<EOF
 ${PERCENT}description -n %{name}-${flavour}-modules-${PKG}
 ${D}
@@ -2358,6 +2379,9 @@ Requires:	%{name}-${flavour} = %{EVRD}
 Provides:	installonlypkg(kernel-module)
 Requires(posttrans,postun):	kmod
 EOF
+				if [ "$PKG" = "nvidia" ]; then
+					echo "Provides:	nvidia-kmod = %{nvidia_version}" >>$SP
+				fi
 				cat >>"$SP" <<EOF
 ${PERCENT}description -n %{name}-${flavour}-modules-${PKG}
 ${D}
