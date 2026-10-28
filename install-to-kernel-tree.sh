@@ -868,14 +868,19 @@ write_obj_var "nvidia-rm-y" "$nvidia_rm_objs"
 # composite of $(foo-y) and would link nvidia-rm.o itself.
 cat << 'NV_RM_PARTIAL_EOF'
 # Partial link of the RM core. See install-to-kernel-tree.sh.
+# ~1100 object paths. if_changed runs this recipe and stores it in the
+# .cmd file, so the list would appear twice in one /bin/sh -c and exceed
+# MAX_ARG_STRLEN. $(file) writes the list as make expands the recipe.
+# One path per line: $(foreach) inserts a space between items, which
+# would sit at the start of the next line and ld would miss the file.
 quiet_cmd_nv_rm_partial = LD [RM] $@
-      cmd_nv_rm_partial = $(LD) $(ld_flags) -r -T $(src)/src/nvidia/nv-kernel.ld -o $@ $(filter %.o,$^) && $(OBJCOPY) --localize-symbol=memcpy --localize-symbol=memset --remove-section=.note.gnu.property $@
+      cmd_nv_rm_partial = $(file >$@.objs,$(subst $(space),$(newline),$(strip $(filter %.o,$^)))$(newline))$(LD) $(ld_flags) -r -T $(src)/src/nvidia/nv-kernel.ld -o $@ @$@.objs && $(OBJCOPY) --localize-symbol=memcpy --localize-symbol=memset --remove-section=.note.gnu.property $@
 
 $(obj)/nv-kernel.o: $(addprefix $(obj)/,$(nvidia-rm-y)) $(src)/src/nvidia/nv-kernel.ld FORCE
 	$(call if_changed,nv_rm_partial)
 
 targets += nv-kernel.o $(nvidia-rm-y)
-clean-files += nv-kernel.o
+clean-files += nv-kernel.o nv-kernel.o.objs
 
 nvidia-y := $(nvidia-if-y) nv-kernel.o g_nvrm_nvid_string.o
 

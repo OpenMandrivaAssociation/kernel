@@ -239,6 +239,14 @@ link drops symbols that only the interface layer references. Replacing
 would call itself, and the aarch64 device-memory path inside
 `os_mem_copy` would not run for RM copies.
 
+The partial-link recipe does not put those paths on the `ld` command
+line. `if_changed` runs the recipe and stores it in the `.cmd` file, and
+two copies of the ~1100 paths exceed `MAX_ARG_STRLEN` (`/bin/sh:
+Argument list too long`). Make's `$(file)` writes `nv-kernel.o.objs`
+while the recipe is expanded, and the linker reads `@nv-kernel.o.objs`.
+Each path is on its own line. `$(foreach)` would insert a space between
+items, so the next line would not be the real path.
+
 ## Updating to Future Versions
 
 The install script is designed to accommodate changes in the upstream
