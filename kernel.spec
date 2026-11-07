@@ -185,7 +185,7 @@
 # compose tar.xz name and release
 %define kernelversion 7
 %define patchlevel 3
-%define sublevel 1
+%define sublevel 3
 #define relc 7
 
 # Having different top level names for packges means that you have to remove
@@ -427,7 +427,7 @@ Source1020:	https://github.com/Numerio/Nexus/archive/refs/heads/main.tar.gz#/nex
 #Patch1021:	nexus-compile.patch
 
 # Nvidia GPU driver
-%define nvidia_version 615.78.08
+%define nvidia_version 620.70.06
 Source1030:	https://github.com/NVIDIA/open-gpu-kernel-modules/archive/refs/tags/%{nvidia_version}.tar.gz
 # Script to internalize nvidia modules
 Source1031:	install-to-kernel-tree.sh
