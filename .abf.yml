@@ -4,5 +4,5 @@ sources:
   v1.15.1.tar.gz: c9aa5087ca93813ae49b03d29d2f0ffe586a5cf3
   nexus-20261027.tar.gz: c5f685c9a7d098af12e3318568c312e98a5cbff9
   linux-7.3.tar.xz: 01ec5f8fdfd94e191ba8a35f52e64ce6a54a66b6
-  patch-7.3.3.xz: ef5ebebf1bc8850cc09bea00e1cb057566acbd57
   620.70.06.tar.gz: adf0979cb95ae91abf95479111eeaad11a261624
+  patch-7.3.4.xz: ca398ea5e76398b9cc530b444b662d398ed27285
