@@ -379,10 +379,10 @@ Patch43:	dont-disable-rdseed.patch
 # (crazy) see: https://forum.openmandriva.org/t/nvme-ssd-m2-not-seen-by-omlx-4-0/2407
 Patch45:	Unknow-SSD-HFM128GDHTNG-8310B-QUIRK_NO_APST.patch
 # Restore ACPI loglevels to sane values
-Patch46:	https://gitweb.frugalware.org/wip_kernel/raw/86234abea5e625043153f6b8295642fd9f42bff0/source/base/kernel/acpi-use-kern_warning_even_when_error.patch
-Patch47:	https://gitweb.frugalware.org/wip_kernel/raw/23f5e50042768b823e18613151cc81b4c0cf6e22/source/base/kernel/fix-acpi_dbg_level.patch
+Patch46:	acpi-use-kern_warning_even_when_error.patch
+Patch47:	fix-acpi_dbg_level.patch
 Patch51:	linux-5.5-corsair-strafe-quirks.patch
-Patch52:	http://crazy.dev.frugalware.org/smpboot-no-stack-protector-for-gcc10.patch
+Patch52:	smpboot-no-stack-protector-for-gcc10.patch
 Patch55:	linux-5.16-clang-no-attribute-symver.patch
 Patch60:	linux-6.18-clang.patch
 Patch61:	linux-6.19-acpi-clang.patch
@@ -419,10 +419,10 @@ Source1010:	https://github.com/DisplayLink/evdi/archive/refs/tags/v%{evdi_versio
 # Nexus -- BeOS like IPC, named semaphores, SHM, thread messaging, filesystem event notifications
 # https://github.com/Numerio/Nexus
 # https://v-os.dev/
-Source1020:	https://github.com/Numerio/Nexus/archive/refs/heads/main.tar.gz#/nexus-20261027.tar.gz
-# 20261027 (b21eb2ea, "nexus: trim comments"). Same Nexus-main/nexus layout,
-# obj-m line, and nexus_team_init() empty definition, so the %prep seds apply.
-# Previous snapshot was 20261013 (e59081b003).
+Source1020:	https://github.com/Numerio/Nexus/archive/refs/heads/main.tar.gz#/nexus-20261107.tar.gz
+# 20261107 (0730b1cbed, "nexus: let a port's creator take it back after a move").
+# Same Nexus-main/nexus layout and obj-m line. nexus_team_init() already
+# takes (void). Previous snapshot was 20261027 (b21eb2ea). Drops sem.c.
 # nexus-compile.patch was against the 20260831 tree and does not apply.
 #Patch1021:	nexus-compile.patch
 
@@ -497,6 +497,7 @@ Patch305:	kernel-6.0-rc2-perf-x86-compile.patch
 
 # V4L2 loopback
 # https://github.com/umlaeute/v4l2loopback
+# 442d720262 (2026-10-29) emits a uevent when capture or output becomes ready.
 Source400:	https://raw.githubusercontent.com/umlaeute/v4l2loopback/main/v4l2loopback.c
 Source401:	https://raw.githubusercontent.com/umlaeute/v4l2loopback/main/v4l2loopback.h
 Source402:	https://raw.githubusercontent.com/umlaeute/v4l2loopback/main/v4l2loopback_formats.h
